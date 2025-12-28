@@ -1,0 +1,1003 @@
+<div class="page-wrapper">
+  <!-- ============================================
+             HEADER / NAVIGATION
+             ============================================ -->
+  <header class="header">
+    <div class="container">
+      <div class="header__inner">
+        <!-- Logo -->
+        <a href="index.html" class="logo">
+          <span class="logo__icon">🏪</span>
+          <span class="logo__text">aGoraMarket</span>
+        </a>
+
+        <!-- Mobile menu overlay -->
+        <div class="nav-overlay"></div>
+
+        <!-- Main Navigation -->
+        <nav class="nav" aria-label="Main navigation">
+          <a href="pages/marketplace.html" class="nav__link">Browse</a>
+          <a href="pages/marketplace.html?category=vehicles" class="nav__link"
+            >Vehicles</a
+          >
+          <a
+            href="pages/marketplace.html?category=electronics"
+            class="nav__link">Electronics</a
+          >
+          <a href="#how-it-works" class="nav__link">How It Works</a>
+          <a href="#categories" class="nav__link">Categories</a>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="header__actions">
+          <a href="pages/dashboard.html" class="btn btn--ghost">
+            <span>Log In</span>
+          </a>
+          <a href="pages/create-listing.html" class="btn btn--primary">
+            <span>Sell Now</span>
+          </a>
+
+          <!-- Mobile Menu Toggle -->
+          <button class="menu-toggle" aria-label="Toggle menu">
+            <span class="menu-toggle__bar"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================
+             MAIN CONTENT
+             ============================================ -->
+  <main class="main-content">
+    <!-- ============================================
+                 HERO SECTION WITH SEARCH
+                 ============================================ -->
+    <section class="section section--hero">
+      <!-- Decorative blobs (Corporate Memphis style) -->
+      <div
+        class="blob blob--primary"
+        style="width: 400px; height: 400px; top: -100px; right: -100px;"
+      ></div>
+      <div
+        class="blob blob--secondary"
+        style="width: 300px; height: 300px; bottom: -50px; left: -50px;"
+      ></div>
+
+      <div class="container">
+        <div
+          class="hero__content"
+          style="max-width: 900px; margin: 0 auto; text-align: center;"
+        >
+          <!-- Hero Text -->
+          <span class="badge badge--primary mb-4" style="display: inline-block;"
+            >🛡️ Secure Escrow Protection</span
+          >
+          <h1 class="hero__title mb-6">
+            Buy & Sell <span style="color: var(--color-primary);">Anything</span
+            > Locally
+          </h1>
+          <p
+            class="hero__description text-muted"
+            style="font-size: var(--text-lg); margin-bottom: var(--space-8); max-width: 600px; margin-left: auto; margin-right: auto;"
+          >
+            Discover amazing deals near you. Cars, electronics, clothing, and
+            more — all protected by our secure escrow system.
+          </p>
+
+          <!-- Hero Search Box -->
+          <div class="hero-search">
+            <form
+              class="search-form"
+              action="pages/marketplace.html"
+              method="get"
+            >
+              <div class="search-form__grid">
+                <!-- What are you looking for? -->
+                <div class="form-group">
+                  <label class="form-label">What are you looking for?</label>
+                  <div class="input-icon">
+                    <span class="input-icon__icon">🔍</span>
+                    <input
+                      type="text"
+                      name="q"
+                      class="form-input"
+                      placeholder="e.g., BMW, iPhone, Sofa..."
+                    />
+                  </div>
+                </div>
+
+                <!-- Location -->
+                <div class="form-group">
+                  <label class="form-label">Location</label>
+                  <div class="input-icon">
+                    <span class="input-icon__icon">📍</span>
+                    <input
+                      type="text"
+                      name="location"
+                      class="form-input"
+                      placeholder="City, postcode, or area..."
+                    />
+                  </div>
+                </div>
+
+                <!-- Radius -->
+                <div class="form-group search-form__radius">
+                  <label class="form-label">Radius</label>
+                  <select name="radius" class="form-select">
+                    <option value="5">5 km</option>
+                    <option value="10">10 km</option>
+                    <option value="20" selected>20 km</option>
+                    <option value="50">50 km</option>
+                    <option value="100">100 km</option>
+                    <option value="any">Any</option>
+                  </select>
+                </div>
+
+                <!-- Search Button -->
+                <button
+                  type="submit"
+                  class="btn btn--primary btn--lg search-form__btn"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
+
+            <!-- Quick Category Links -->
+            <div class="quick-categories">
+              <span class="text-muted" style="font-size: var(--text-sm);"
+                >Popular:</span
+              >
+              <a
+                href="pages/marketplace.html?category=electronics"
+                class="category-chip">📱 Electronics</a
+              >
+              <a
+                href="pages/marketplace.html?category=motors"
+                class="category-chip">🚗 Motors</a
+              >
+              <a
+                href="pages/marketplace.html?category=fashion"
+                class="category-chip">👕 Fashion</a
+              >
+              <a
+                href="pages/marketplace.html?category=home"
+                class="category-chip">🏠 Home</a
+              >
+              <a
+                href="pages/marketplace.html?category=services"
+                class="category-chip">🔧 Services</a
+              >
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div
+            class="hero__stats flex justify-center gap-8 mt-8"
+            style="padding-top: var(--space-8);"
+          >
+            <div class="stat">
+              <div
+                class="stat__value"
+                style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: var(--font-bold);"
+              >
+                125K+
+              </div>
+              <div class="stat__label text-muted">Active Listings</div>
+            </div>
+            <div class="stat">
+              <div
+                class="stat__value"
+                style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: var(--font-bold);"
+              >
+                50K+
+              </div>
+              <div class="stat__label text-muted">Verified Sellers</div>
+            </div>
+            <div class="stat">
+              <div
+                class="stat__value"
+                style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: var(--font-bold);"
+              >
+                98%
+              </div>
+              <div class="stat__label text-muted">Satisfaction Rate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+                 CATEGORIES SECTION - PRODUCTS
+                 ============================================ -->
+    <section class="section section--gray" id="categories">
+      <div class="container">
+        <div class="section__header">
+          <span class="badge badge--primary">Products</span>
+          <h2 class="section__title mt-4">Shop by Category</h2>
+          <p class="section__subtitle">
+            Find exactly what you're looking for in our curated product
+            categories
+          </p>
+        </div>
+
+        <div
+          class="category-grid"
+          style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-6);"
+        >
+          <!-- Electronics & Technology -->
+          <a
+            href="pages/marketplace.html?category=electronics"
+            class="category-card"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #4ECDC4, #44A08D);"
+            >
+              📱
+            </div>
+            <h4 class="category-card__title">Electronics & Tech</h4>
+            <p class="category-card__count">28,320 listings</p>
+            <div class="category-card__tags">
+              <span>Phones</span>
+              <span>Laptops</span>
+              <span>Gaming</span>
+            </div>
+          </a>
+
+          <!-- Home & Appliances -->
+          <a href="pages/marketplace.html?category=home" class="category-card">
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #667eea, #764ba2);"
+            >
+              🏠
+            </div>
+            <h4 class="category-card__title">Home & Appliances</h4>
+            <p class="category-card__count">24,560 listings</p>
+            <div class="category-card__tags">
+              <span>Appliances</span>
+              <span>Furniture</span>
+              <span>Decor</span>
+            </div>
+          </a>
+
+          <!-- Energy & Hardware -->
+          <a
+            href="pages/marketplace.html?category=hardware"
+            class="category-card"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #FFE66D, #f5af19);"
+            >
+              🔧
+            </div>
+            <h4 class="category-card__title">Energy & Hardware</h4>
+            <p class="category-card__count">8,750 listings</p>
+            <div class="category-card__tags">
+              <span>Tools</span>
+              <span>Solar</span>
+              <span>Materials</span>
+            </div>
+          </a>
+
+          <!-- Fashion & Accessories -->
+          <a
+            href="pages/marketplace.html?category=fashion"
+            class="category-card"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #f093fb, #f5576c);"
+            >
+              👕
+            </div>
+            <h4 class="category-card__title">Fashion & Accessories</h4>
+            <p class="category-card__count">45,120 listings</p>
+            <div class="category-card__tags">
+              <span>Clothing</span>
+              <span>Shoes</span>
+              <span>Jewelry</span>
+            </div>
+          </a>
+
+          <!-- Motors -->
+          <a
+            href="pages/marketplace.html?category=motors"
+            class="category-card"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #FF6B6B, #FF8E53);"
+            >
+              🚗
+            </div>
+            <h4 class="category-card__title">Motors & Automotive</h4>
+            <p class="category-card__count">12,450 listings</p>
+            <div class="category-card__tags">
+              <span>Car Parts</span>
+              <span>Tires</span>
+              <span>Accessories</span>
+            </div>
+          </a>
+
+          <!-- Health & Beauty -->
+          <a
+            href="pages/marketplace.html?category=health-beauty"
+            class="category-card"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #a8edea, #fed6e3);"
+            >
+              💄
+            </div>
+            <h4 class="category-card__title">Health & Beauty</h4>
+            <p class="category-card__count">18,340 listings</p>
+            <div class="category-card__tags">
+              <span>Skincare</span>
+              <span>Makeup</span>
+              <span>Wellness</span>
+            </div>
+          </a>
+
+          <!-- Collectibles & Art -->
+          <a
+            href="pages/marketplace.html?category=collectibles"
+            class="category-card"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #c79081, #dfa579);"
+            >
+              🎨
+            </div>
+            <h4 class="category-card__title">Collectibles & Art</h4>
+            <p class="category-card__count">6,890 listings</p>
+            <div class="category-card__tags">
+              <span>Antiques</span>
+              <span>Art</span>
+              <span>Coins</span>
+            </div>
+          </a>
+
+          <!-- Sports & Outdoors -->
+          <a
+            href="pages/marketplace.html?category=sports"
+            class="category-card"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #45D98E, #38b2ac);"
+            >
+              ⚽
+            </div>
+            <h4 class="category-card__title">Sports & Outdoors</h4>
+            <p class="category-card__count">11,230 listings</p>
+            <div class="category-card__tags">
+              <span>Fitness</span>
+              <span>Bikes</span>
+              <span>Camping</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Services Categories -->
+        <div class="section__header" style="margin-top: var(--space-12);">
+          <span class="badge badge--secondary">Services</span>
+          <h2 class="section__title mt-4">Find Local Services</h2>
+          <p class="section__subtitle">
+            Hire trusted professionals for any job
+          </p>
+        </div>
+
+        <div
+          class="category-grid"
+          style="display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-6);"
+        >
+          <!-- Home Improvement -->
+          <a
+            href="pages/marketplace.html?category=home-improvement"
+            class="category-card category-card--service"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #3498DB, #2c3e50);"
+            >
+              🔨
+            </div>
+            <h4 class="category-card__title">Home Improvement</h4>
+            <p class="category-card__count">4,230 providers</p>
+            <div class="category-card__tags">
+              <span>Electrical</span>
+              <span>Plumbing</span>
+            </div>
+          </a>
+
+          <!-- Health & Wellness -->
+          <a
+            href="pages/marketplace.html?category=health-services"
+            class="category-card category-card--service"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #E74C3C, #c0392b);"
+            >
+              ❤️
+            </div>
+            <h4 class="category-card__title">Health & Wellness</h4>
+            <p class="category-card__count">2,890 providers</p>
+            <div class="category-card__tags">
+              <span>Medical</span>
+              <span>Therapy</span>
+            </div>
+          </a>
+
+          <!-- Professional Services -->
+          <a
+            href="pages/marketplace.html?category=professional"
+            class="category-card category-card--service"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #9B59B6, #8e44ad);"
+            >
+              💼
+            </div>
+            <h4 class="category-card__title">Professional & Digital</h4>
+            <p class="category-card__count">5,670 providers</p>
+            <div class="category-card__tags">
+              <span>Legal</span>
+              <span>Design</span>
+            </div>
+          </a>
+
+          <!-- Education & Training -->
+          <a
+            href="pages/marketplace.html?category=education"
+            class="category-card category-card--service"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #1ABC9C, #16a085);"
+            >
+              📚
+            </div>
+            <h4 class="category-card__title">Education & Training</h4>
+            <p class="category-card__count">3,450 tutors</p>
+            <div class="category-card__tags">
+              <span>Lessons</span>
+              <span>Tutoring</span>
+            </div>
+          </a>
+
+          <!-- Logistics & Transport -->
+          <a
+            href="pages/marketplace.html?category=logistics"
+            class="category-card category-card--service"
+          >
+            <div
+              class="category-card__icon"
+              style="background: linear-gradient(135deg, #F39C12, #e67e22);"
+            >
+              🚚
+            </div>
+            <h4 class="category-card__title">Logistics & Transport</h4>
+            <p class="category-card__count">1,890 providers</p>
+            <div class="category-card__tags">
+              <span>Delivery</span>
+              <span>Moving</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+                 FEATURED LISTINGS SECTION
+                 ============================================ -->
+    <section class="section">
+      <div class="container">
+        <div class="section__header">
+          <div
+            class="flex justify-between items-center"
+            style="max-width: 100%; text-align: left;"
+          >
+            <div>
+              <span class="badge badge--info">Hot Deals</span>
+              <h2 class="section__title mt-4">Featured Listings Near You</h2>
+            </div>
+            <a href="pages/marketplace.html" class="btn btn--outline"
+              >View All →</a
+            >
+          </div>
+        </div>
+
+        <div
+          class="listings-grid"
+          style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-6);"
+        >
+          <!-- Listing Card 1 -->
+          <a href="pages/offer-detail.html" class="listing-card">
+            <div class="listing-card__image">
+              <div
+                class="listing-card__placeholder"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+              >
+                🚗
+              </div>
+              <span class="listing-card__badge listing-card__badge--featured"
+                >Featured</span
+              >
+              <button class="listing-card__favorite" aria-label="Save listing"
+                >♡</button
+              >
+            </div>
+            <div class="listing-card__body">
+              <div class="listing-card__category">Vehicles • Cars</div>
+              <h4 class="listing-card__title">
+                2019 BMW 3 Series 320i M Sport
+              </h4>
+              <div class="listing-card__price">£18,500</div>
+              <div class="listing-card__meta">
+                <span class="listing-card__location">📍 Newcastle, 5km</span>
+                <span class="listing-card__time">2h ago</span>
+              </div>
+              <div class="listing-card__seller">
+                <span class="avatar avatar--sm">JD</span>
+                <span>John D.</span>
+                <span class="seller-rating">⭐ 4.9</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Listing Card 2 -->
+          <a href="pages/offer-detail.html" class="listing-card">
+            <div class="listing-card__image">
+              <div
+                class="listing-card__placeholder"
+                style="background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);"
+              >
+                📱
+              </div>
+              <button class="listing-card__favorite" aria-label="Save listing"
+                >♡</button
+              >
+            </div>
+            <div class="listing-card__body">
+              <div class="listing-card__category">Electronics • Phones</div>
+              <h4 class="listing-card__title">
+                iPhone 15 Pro Max 256GB Titanium
+              </h4>
+              <div class="listing-card__price">£899</div>
+              <div class="listing-card__meta">
+                <span class="listing-card__location">📍 Gateshead, 8km</span>
+                <span class="listing-card__time">5h ago</span>
+              </div>
+              <div class="listing-card__seller">
+                <span class="avatar avatar--sm">SM</span>
+                <span>Sarah M.</span>
+                <span class="seller-rating">⭐ 5.0</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Listing Card 3 -->
+          <a href="pages/offer-detail.html" class="listing-card">
+            <div class="listing-card__image">
+              <div
+                class="listing-card__placeholder"
+                style="background: linear-gradient(135deg, #45D98E 0%, #38b2ac 100%);"
+              >
+                🛋️
+              </div>
+              <span class="listing-card__badge listing-card__badge--urgent"
+                >Urgent</span
+              >
+              <button class="listing-card__favorite" aria-label="Save listing"
+                >♡</button
+              >
+            </div>
+            <div class="listing-card__body">
+              <div class="listing-card__category">Furniture • Sofas</div>
+              <h4 class="listing-card__title">
+                IKEA Kivik 3-Seater Corner Sofa
+              </h4>
+              <div class="listing-card__price">£350</div>
+              <div class="listing-card__meta">
+                <span class="listing-card__location">📍 Durham, 18km</span>
+                <span class="listing-card__time">1d ago</span>
+              </div>
+              <div class="listing-card__seller">
+                <span class="avatar avatar--sm">MR</span>
+                <span>Mike R.</span>
+                <span class="seller-rating">⭐ 4.7</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Listing Card 4 -->
+          <a href="pages/offer-detail.html" class="listing-card">
+            <div class="listing-card__image">
+              <div
+                class="listing-card__placeholder"
+                style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"
+              >
+                👟
+              </div>
+              <button class="listing-card__favorite" aria-label="Save listing"
+                >♡</button
+              >
+            </div>
+            <div class="listing-card__body">
+              <div class="listing-card__category">Fashion • Shoes</div>
+              <h4 class="listing-card__title">
+                Nike Air Jordan 1 Retro High OG
+              </h4>
+              <div class="listing-card__price">£180</div>
+              <div class="listing-card__meta">
+                <span class="listing-card__location">📍 Sunderland, 15km</span>
+                <span class="listing-card__time">3h ago</span>
+              </div>
+              <div class="listing-card__seller">
+                <span class="avatar avatar--sm">AK</span>
+                <span>Alex K.</span>
+                <span class="seller-rating">⭐ 4.8</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+                 HOW IT WORKS SECTION
+                 ============================================ -->
+    <section class="section section--gray" id="how-it-works">
+      <div class="container">
+        <div class="section__header">
+          <span class="badge badge--primary">Simple & Secure</span>
+          <h2 class="section__title mt-4">How LocalMarket Works</h2>
+          <p class="section__subtitle">
+            Buy and sell with confidence using our secure escrow system
+          </p>
+        </div>
+
+        <div class="grid grid-cols-4 gap-6">
+          <!-- Step 1 -->
+          <div class="card card--clickable">
+            <div class="card__body text-center">
+              <div
+                style="width: 80px; height: 80px; margin: 0 auto var(--space-4); background: var(--color-primary-subtle); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: var(--text-3xl);"
+              >
+                🔍
+              </div>
+              <div
+                style="width: 32px; height: 32px; margin: 0 auto var(--space-4); background: var(--color-primary); border-radius: var(--radius-full); color: white; display: flex; align-items: center; justify-content: center; font-weight: var(--font-bold); font-size: var(--text-sm);"
+              >
+                1
+              </div>
+              <h4 class="card__title">Search Nearby</h4>
+              <p class="card__content">
+                Find items near you by category, location, and price. Set your
+                radius to discover local deals.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="card card--clickable">
+            <div class="card__body text-center">
+              <div
+                style="width: 80px; height: 80px; margin: 0 auto var(--space-4); background: rgba(255, 107, 107, 0.1); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: var(--text-3xl);"
+              >
+                💬
+              </div>
+              <div
+                style="width: 32px; height: 32px; margin: 0 auto var(--space-4); background: var(--color-primary); border-radius: var(--radius-full); color: white; display: flex; align-items: center; justify-content: center; font-weight: var(--font-bold); font-size: var(--text-sm);"
+              >
+                2
+              </div>
+              <h4 class="card__title">Chat & Agree</h4>
+              <p class="card__content">
+                Message the seller, ask questions, negotiate price, and arrange
+                viewing or delivery.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="card card--clickable">
+            <div class="card__body text-center">
+              <div
+                style="width: 80px; height: 80px; margin: 0 auto var(--space-4); background: rgba(78, 205, 196, 0.1); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: var(--text-3xl);"
+              >
+                🔒
+              </div>
+              <div
+                style="width: 32px; height: 32px; margin: 0 auto var(--space-4); background: var(--color-primary); border-radius: var(--radius-full); color: white; display: flex; align-items: center; justify-content: center; font-weight: var(--font-bold); font-size: var(--text-sm);"
+              >
+                3
+              </div>
+              <h4 class="card__title">Pay via Escrow</h4>
+              <p class="card__content">
+                Payment is held securely in escrow until you receive and approve
+                the item.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="card card--clickable">
+            <div class="card__body text-center">
+              <div
+                style="width: 80px; height: 80px; margin: 0 auto var(--space-4); background: rgba(255, 230, 109, 0.2); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: var(--text-3xl);"
+              >
+                ✅
+              </div>
+              <div
+                style="width: 32px; height: 32px; margin: 0 auto var(--space-4); background: var(--color-primary); border-radius: var(--radius-full); color: white; display: flex; align-items: center; justify-content: center; font-weight: var(--font-bold); font-size: var(--text-sm);"
+              >
+                4
+              </div>
+              <h4 class="card__title">Complete & Rate</h4>
+              <p class="card__content">
+                Confirm receipt, release payment to seller, and leave a review
+                for future buyers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+                 TRUST & SAFETY SECTION
+                 ============================================ -->
+    <section class="section">
+      <div class="container">
+        <div
+          class="grid"
+          style="grid-template-columns: 1fr 1fr; gap: var(--space-12); align-items: center;"
+        >
+          <!-- Visual -->
+          <div style="position: relative;">
+            <div
+              style="background: linear-gradient(135deg, var(--color-primary-subtle), rgba(78, 205, 196, 0.1)); border-radius: var(--radius-2xl); padding: var(--space-10); position: relative;"
+            >
+              <div class="card" style="margin-bottom: var(--space-4);">
+                <div class="card__body flex items-center gap-4">
+                  <div
+                    style="width: 48px; height: 48px; background: var(--color-primary); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: var(--text-xl);"
+                  >
+                    🛡️
+                  </div>
+                  <div>
+                    <div style="font-weight: var(--font-semibold);">
+                      Escrow Protection
+                    </div>
+                    <div class="text-muted" style="font-size: var(--text-sm);">
+                      Payment held until delivery confirmed
+                    </div>
+                  </div>
+                  <span
+                    style="color: var(--color-primary); font-size: var(--text-xl); margin-left: auto;"
+                    >✓</span
+                  >
+                </div>
+              </div>
+              <div class="card" style="margin-bottom: var(--space-4);">
+                <div class="card__body flex items-center gap-4">
+                  <div
+                    style="width: 48px; height: 48px; background: var(--color-tertiary); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: var(--text-xl);"
+                  >
+                    ✅
+                  </div>
+                  <div>
+                    <div style="font-weight: var(--font-semibold);">
+                      Verified Sellers
+                    </div>
+                    <div class="text-muted" style="font-size: var(--text-sm);">
+                      ID verification for trusted trading
+                    </div>
+                  </div>
+                  <span
+                    style="color: var(--color-primary); font-size: var(--text-xl); margin-left: auto;"
+                    >✓</span
+                  >
+                </div>
+              </div>
+              <div class="card">
+                <div class="card__body flex items-center gap-4">
+                  <div
+                    style="width: 48px; height: 48px; background: var(--color-secondary); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: var(--text-xl);"
+                  >
+                    ⚖️
+                  </div>
+                  <div>
+                    <div style="font-weight: var(--font-semibold);">
+                      Dispute Resolution
+                    </div>
+                    <div class="text-muted" style="font-size: var(--text-sm);">
+                      Fair mediation if issues arise
+                    </div>
+                  </div>
+                  <span
+                    style="color: var(--color-primary); font-size: var(--text-xl); margin-left: auto;"
+                    >✓</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Text -->
+          <div>
+            <span class="badge badge--info">Trust & Safety</span>
+            <h2 class="section__title mt-4">Trade with Complete Confidence</h2>
+            <p
+              class="text-muted"
+              style="font-size: var(--text-lg); margin-bottom: var(--space-6);"
+            >
+              Unlike other marketplaces, LocalMarket protects every transaction
+              with escrow. Your money is held safely until you confirm the item
+              is as described.
+            </p>
+            <ul style="list-style: none; padding: 0;">
+              <li class="flex items-center gap-3 mb-4">
+                <span style="color: var(--color-primary);">✓</span>
+                <span>Money-back guarantee on all escrow purchases</span>
+              </li>
+              <li class="flex items-center gap-3 mb-4">
+                <span style="color: var(--color-primary);">✓</span>
+                <span>Verified seller badges for trusted traders</span>
+              </li>
+              <li class="flex items-center gap-3 mb-4">
+                <span style="color: var(--color-primary);">✓</span>
+                <span>24/7 support for dispute resolution</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <span style="color: var(--color-primary);">✓</span>
+                <span>Secure messaging with no personal info shared</span>
+              </li>
+            </ul>
+            <a
+              href="pages/marketplace.html"
+              class="btn btn--primary btn--lg mt-6">Start Browsing</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+                 CTA SECTION
+                 ============================================ -->
+    <section
+      class="section section--primary"
+      style="position: relative; overflow: hidden;"
+    >
+      <!-- Decorative elements -->
+      <div
+        style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: var(--radius-full);"
+      ></div>
+      <div
+        style="position: absolute; bottom: -80px; left: -80px; width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: var(--radius-full);"
+      ></div>
+
+      <div class="container" style="position: relative; z-index: 1;">
+        <div class="text-center" style="max-width: 700px; margin: 0 auto;">
+          <h2 style="color: white; margin-bottom: var(--space-4);">
+            Ready to Start Selling?
+          </h2>
+          <p
+            style="color: rgba(255,255,255,0.9); font-size: var(--text-lg); margin-bottom: var(--space-8);"
+          >
+            List your items for free and reach thousands of local buyers. Get
+            paid securely through our escrow system.
+          </p>
+          <div class="flex justify-center gap-4">
+            <a
+              href="pages/create-listing.html"
+              class="btn btn--secondary btn--xl"
+            >
+              Create Free Listing
+            </a>
+            <a
+              href="pages/marketplace.html"
+              class="btn btn--xl"
+              style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3);"
+            >
+              Browse Marketplace
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================
+             FOOTER
+             ============================================ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <!-- Brand Column -->
+        <div class="footer__brand">
+          <a href="index.html" class="logo footer__logo">
+            <span class="logo__icon">🏪</span>
+            <span>LocalMarket</span>
+          </a>
+          <p class="footer__description">
+            The safest way to buy and sell locally. Every transaction protected
+            by escrow.
+          </p>
+          <div class="footer__social">
+            <a href="#" class="footer__social-link" aria-label="Twitter">𝕏</a>
+            <a href="#" class="footer__social-link" aria-label="Facebook">📘</a>
+            <a href="#" class="footer__social-link" aria-label="Instagram">📷</a
+            >
+            <a href="#" class="footer__social-link" aria-label="YouTube">▶️</a>
+          </div>
+        </div>
+
+        <!-- Categories Column -->
+        <div class="footer__column">
+          <h4 class="footer__column-title">Categories</h4>
+          <nav class="footer__links">
+            <a
+              href="pages/marketplace.html?category=vehicles"
+              class="footer__link">Vehicles</a
+            >
+            <a
+              href="pages/marketplace.html?category=electronics"
+              class="footer__link">Electronics</a
+            >
+            <a
+              href="pages/marketplace.html?category=property"
+              class="footer__link">Property</a
+            >
+            <a
+              href="pages/marketplace.html?category=fashion"
+              class="footer__link">Fashion</a
+            >
+          </nav>
+        </div>
+
+        <!-- Resources Column -->
+        <div class="footer__column">
+          <h4 class="footer__column-title">Resources</h4>
+          <nav class="footer__links">
+            <a href="#" class="footer__link">Help Center</a>
+            <a href="#" class="footer__link">Safety Tips</a>
+            <a href="#" class="footer__link">Seller Guide</a>
+            <a href="#" class="footer__link">Buyer Guide</a>
+          </nav>
+        </div>
+
+        <!-- Company Column -->
+        <div class="footer__column">
+          <h4 class="footer__column-title">Company</h4>
+          <nav class="footer__links">
+            <a href="#" class="footer__link">About Us</a>
+            <a href="#" class="footer__link">Careers</a>
+            <a href="#" class="footer__link">Blog</a>
+            <a href="#" class="footer__link">Contact</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="footer__bottom">
+        <p>&copy; 2025 LocalMarket. All rights reserved.</p>
+        <nav class="footer__legal-links">
+          <a href="#" class="footer__link">Privacy Policy</a>
+          <a href="#" class="footer__link">Terms of Service</a>
+          <a href="#" class="footer__link">Cookie Policy</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+</div>
