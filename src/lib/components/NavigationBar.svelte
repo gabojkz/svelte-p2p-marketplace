@@ -10,10 +10,26 @@
 
   // Mobile menu state
   let mobileMenuOpen = $state(false);
-
+ 
   // User dropdown state
   let userDropdownOpen = $state(false);
   let unreadMessagesCount = $state(0);
+  let marketplaceUsername = $state(null);
+
+  // Load marketplace username
+  async function loadMarketplaceUser() {
+    if (!user) return;
+    
+    try {
+      const response = await fetch("/api/user/profile");
+      if (response.ok) {
+        const data = await response.json();
+        marketplaceUsername = data?.marketplaceUser?.username || null;
+      }
+    } catch (error) {
+      console.error("Error loading marketplace user:", error);
+    }
+  }
 
   // Toggle mobile menu
   function toggleMobileMenu() {
@@ -34,8 +50,11 @@
   }
 
   // Close dropdowns when clicking outside
+  /** @param {MouseEvent} event */
   function handleClickOutside(event) {
-    const target = event.target;
+    const target = /** @type {HTMLElement | null} */ (event.target);
+    if (!target) return;
+    
     if (
       !target.closest(".user-dropdown") &&
       !target.closest(".user-dropdown-toggle")
@@ -60,7 +79,7 @@
           unreadMessagesCount = data.totalUnread;
         } else {
           const conversations = data.conversations || [];
-          unreadMessagesCount = conversations.reduce((sum, conv) => {
+          unreadMessagesCount = conversations.reduce((/** @type {number} */ sum, /** @type {any} */ conv) => {
             return sum + (conv.userUnreadCount || 0);
           }, 0);
         }
@@ -90,6 +109,7 @@
     document.addEventListener("click", handleClickOutside);
     if (user) {
       loadUnreadCount();
+      loadMarketplaceUser();
       // Refresh unread count every 30 seconds
       const interval = setInterval(loadUnreadCount, 30000);
       return () => {
@@ -224,14 +244,16 @@
                     <span class="user-dropdown__icon">⭐</span>
                     <span>Favorites</span>
                   </a>
-                  <a
-                    href="/profile"
-                    class="user-dropdown__item"
-                    onclick={() => (userDropdownOpen = false)}
-                  >
-                    <span class="user-dropdown__icon">👤</span>
-                    <span>Profile</span>
-                  </a>
+                  {#if marketplaceUsername}
+                    <a
+                      href="/profile/{marketplaceUsername}"
+                      class="user-dropdown__item"
+                      onclick={() => (userDropdownOpen = false)}
+                    >
+                      <span class="user-dropdown__icon">👤</span>
+                      <span>Profile</span>
+                    </a>
+                  {/if}
                   <a
                     href="/settings"
                     class="user-dropdown__item"
