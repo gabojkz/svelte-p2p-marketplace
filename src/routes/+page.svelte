@@ -1,4 +1,6 @@
 <script>
+  import NavigationBar from "$lib/components/NavigationBar.svelte";
+
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
@@ -15,14 +17,6 @@
   let searchQuery = $state("");
   let location = $state("");
   let radius = $state("20");
-
-  // Mobile menu state
-  let mobileMenuOpen = $state(false);
-
-  // Toggle mobile menu
-  function toggleMobileMenu() {
-    mobileMenuOpen = !mobileMenuOpen;
-  }
 
   // Handle search form submission
   /** @param {SubmitEvent} e */
@@ -93,72 +87,8 @@
 <div class="page-wrapper">
   <!-- ============================================
              HEADER / NAVIGATION
-             ============================================ -->
-  <header class="header">
-    <div class="container">
-      <div class="header__inner">
-        <!-- Logo -->
-        <a href="/" class="logo">
-          <span class="logo__icon">M</span>
-          <span class="logo__text">{appName}</span>
-        </a>
-
-        <!-- Mobile menu overlay -->
-        <div
-          class="nav-overlay"
-          class:active={mobileMenuOpen}
-          onclick={toggleMobileMenu}
-          onkeydown={(e) => e.key === "Enter" && toggleMobileMenu()}
-          role="button"
-          tabindex="0"
-          aria-label="Close menu"
-        ></div>
-
-        <!-- Main Navigation -->
-        <nav
-          class="nav"
-          class:active={mobileMenuOpen}
-          aria-label="Main navigation"
-        >
-          <a href="/marketplace" class="nav__link">Browse</a>
-          <a href="/marketplace?category=vehicles" class="nav__link">Vehicles</a
-          >
-          <a href="/marketplace?category=electronics" class="nav__link"
-            >Electronics</a
-          >
-          <a href="#how-it-works" class="nav__link">How It Works</a>
-          <a href="#categories" class="nav__link">Categories</a>
-        </nav>
-
-        <!-- Header Actions -->
-        <div class="header__actions">
-          {#if user}
-            <a href="/dashboard" class="btn btn--ghost">
-              <span>Dashboard</span>
-            </a>
-          {:else}
-            <a href="/login" class="btn btn--ghost">
-              <span>Log In</span>
-            </a>
-          {/if}
-          <a href="/marketplace" class="btn btn--primary">
-            <span>Sell Now</span>
-          </a>
-
-          <!-- Mobile Menu Toggle -->
-          <button
-            class="menu-toggle"
-            class:active={mobileMenuOpen}
-            aria-label="Toggle menu"
-            onclick={toggleMobileMenu}
-          >
-            <span class="menu-toggle__bar"></span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-
+      ============================================ -->
+  <NavigationBar />
   <!-- ============================================
              MAIN CONTENT
              ============================================ -->
