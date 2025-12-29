@@ -48,14 +48,29 @@ export async function GET({ locals, url }) {
 		))
 		.orderBy(desc(conversations.lastMessageAt), desc(conversations.createdAt));
 
-	// Transform to match expected format
-	const userConversations = userConversationsRaw.map(row => ({
-		...row.conversation,
-		otherUser: row.otherUser,
-		listing: row.listing
-	}));
+	// Transform to match expected format and add user's unread count
+	const userConversations = userConversationsRaw.map(row => {
+		const conv = row.conversation;
+		// Determine user's unread count based on their role
+		const userUnreadCount = conv.buyerId === userId 
+			? (conv.buyerUnreadCount || 0)
+			: (conv.sellerUnreadCount || 0);
+		
+		return {
+			...conv,
+			otherUser: row.otherUser,
+			listing: row.listing,
+			userUnreadCount // Add user-specific unread count
+		};
+	});
 
-	return json({ conversations: userConversations });
+	// Calculate total unread count
+	const totalUnread = userConversations.reduce((sum, conv) => sum + (conv.userUnreadCount || 0), 0);
+
+	return json({ 
+		conversations: userConversations,
+		totalUnread 
+	});
 }
 
 /** @type {import('./$types').RequestHandler} */
