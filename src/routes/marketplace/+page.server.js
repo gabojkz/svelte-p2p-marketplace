@@ -1,4 +1,4 @@
-import { categories, listings } from '$lib/server/schema.js';
+import { categories, listings, users } from '$lib/server/schema.js';
 import { eq, and, or, like, sql, desc, asc } from 'drizzle-orm';
 
 /** @type {import('./$types').PageServerLoad} */
@@ -7,6 +7,17 @@ export async function load({ locals, url }) {
 
 	if (!db) {
 		throw new Error('Database connection not found');
+	}
+
+	// Get marketplace user if logged in
+	let marketplaceUser = null;
+	if (locals.session && locals.user) {
+		const [userProfile] = await db
+			.select()
+			.from(users)
+			.where(eq(users.authUserId, locals.user.id))
+			.limit(1);
+		marketplaceUser = userProfile || null;
 	}
 
 	try {
@@ -81,6 +92,7 @@ export async function load({ locals, url }) {
 				locationCity: listings.locationCity,
 				locationPostcode: listings.locationPostcode,
 				categoryId: listings.categoryId,
+				userId: listings.userId,
 				featured: listings.featured,
 				urgent: listings.urgent,
 				viewCount: listings.viewCount,
@@ -131,6 +143,7 @@ export async function load({ locals, url }) {
 			totalCount,
 			currentPage: page,
 			totalPages: Math.ceil(totalCount / limit),
+			marketplaceUser,
 			filters: {
 				searchQuery,
 				categorySlug,

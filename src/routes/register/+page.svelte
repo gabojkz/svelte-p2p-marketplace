@@ -1,6 +1,7 @@
 <script>
 	import { signUp } from '$lib/auth-client.js';
 	import { goto } from '$app/navigation';
+	import Logo from "$lib/components/Logo.svelte";
 	
 	let name = $state('');
 	let email = $state('');
@@ -43,254 +44,231 @@
 </script>
 
 <svelte:head>
-	<title>Create Account — AuthFlow</title>
+	<title>Create Account — Marketto</title>
 </svelte:head>
 
-<main class="auth-page">
-	<a href="/" class="back-link">
-		<span>←</span> Back to home
-	</a>
-	
-	<div class="auth-container animate-slide-up">
-		<div class="auth-header">
-			<div class="auth-logo">⚡</div>
-			<h1>Create your account</h1>
-			<p>Get started with AuthFlow today</p>
-		</div>
-		
-		<form class="auth-form" onsubmit={handleSubmit}>
-			{#if error}
-				<div class="error-banner">
-					<span class="error-icon">⚠️</span>
-					{error}
+<div class="page-wrapper">
+	<!-- Header -->
+	<header class="header">
+		<div class="container">
+			<div class="header__inner">
+				<Logo />
+				<nav class="nav" aria-label="Main navigation">
+					<a href="/marketplace" class="nav__link">Browse</a>
+					<a href="/marketplace" class="nav__link">How It Works</a>
+				</nav>
+				<div class="header__actions">
+					<a href="/login" class="btn btn--ghost">Sign In</a>
 				</div>
-			{/if}
-			
-			<div class="form-group">
-				<label for="name">Full Name</label>
-				<input
-					type="text"
-					id="name"
-					bind:value={name}
-					placeholder="John Doe"
-					required
-					disabled={loading}
-				/>
 			</div>
-			
-			<div class="form-group">
-				<label for="email">Email</label>
-				<input
-					type="email"
-					id="email"
-					bind:value={email}
-					placeholder="you@example.com"
-					required
-					disabled={loading}
-				/>
-			</div>
-			
-			<div class="form-group">
-				<label for="password">Password</label>
-				<input
-					type="password"
-					id="password"
-					bind:value={password}
-					placeholder="••••••••"
-					required
-					disabled={loading}
-					minlength="8"
-				/>
-				<span class="input-hint">Must be at least 8 characters</span>
-			</div>
-			
-			<div class="form-group">
-				<label for="confirmPassword">Confirm Password</label>
-				<input
-					type="password"
-					id="confirmPassword"
-					bind:value={confirmPassword}
-					placeholder="••••••••"
-					required
-					disabled={loading}
-				/>
-			</div>
-			
-			<button type="submit" class="btn btn-primary btn-full" disabled={loading}>
-				{#if loading}
-					<span class="spinner"></span>
-					Creating account...
-				{:else}
-					Create Account
-				{/if}
-			</button>
-		</form>
-		
-		<div class="auth-footer">
-			<p>Already have an account? <a href="/login">Sign in</a></p>
 		</div>
-	</div>
-	
-	<div class="auth-decoration">
-		<div class="glow glow-1"></div>
-		<div class="glow glow-2"></div>
-	</div>
-</main>
+	</header>
+
+	<!-- Main Content -->
+	<main class="main-content">
+		<div class="container container--narrow">
+			<div class="auth-page">
+				<a href="/" class="back-link">
+					<span>←</span> Back to home
+				</a>
+				
+				<div class="auth-container">
+					<div class="auth-header">
+						<h1>Create your account</h1>
+						<p class="text-muted">Get started with Marketto today</p>
+					</div>
+					
+					<form class="auth-form" onsubmit={handleSubmit}>
+						{#if error}
+							<div class="alert alert--error">
+								<span class="error-icon">⚠️</span>
+								{error}
+							</div>
+						{/if}
+						
+						<div class="form-group">
+							<label for="name" class="form-label">Full Name</label>
+							<input
+								id="name"
+								type="text"
+								bind:value={name}
+								class="form-input"
+								placeholder="John Doe"
+								required
+								disabled={loading}
+							/>
+						</div>
+						
+						<div class="form-group">
+							<label for="email" class="form-label">Email</label>
+							<input
+								id="email"
+								type="email"
+								bind:value={email}
+								class="form-input"
+								placeholder="you@example.com"
+								required
+								disabled={loading}
+							/>
+						</div>
+						
+						<div class="form-group">
+							<label for="password" class="form-label">Password</label>
+							<input
+								id="password"
+								type="password"
+								bind:value={password}
+								class="form-input"
+								placeholder="••••••••"
+								required
+								disabled={loading}
+								minlength="8"
+							/>
+							<span class="form-helper">Must be at least 8 characters</span>
+						</div>
+						
+						<div class="form-group">
+							<label for="confirmPassword" class="form-label">Confirm Password</label>
+							<input
+								id="confirmPassword"
+								type="password"
+								bind:value={confirmPassword}
+								class="form-input"
+								placeholder="••••••••"
+								required
+								disabled={loading}
+							/>
+						</div>
+						
+						<button type="submit" class="btn btn--primary btn--full" disabled={loading}>
+							{#if loading}
+								<span class="spinner"></span>
+								Creating account...
+							{:else}
+								Create Account
+							{/if}
+						</button>
+					</form>
+					
+					<div class="auth-footer">
+						<p>Already have an account? <a href="/login">Sign in</a></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<!-- Footer -->
+	<footer class="footer footer--compact">
+		<div class="container">
+			<div class="footer__bottom">
+				<div class="flex items-center gap-3">
+					<span class="logo__icon">🏪</span>
+					<span>&copy; 2025 Marketto. All rights reserved.</span>
+				</div>
+				<nav class="footer__legal-links">
+					<a href="/privacy" class="footer__link">Privacy</a>
+					<a href="/terms" class="footer__link">Terms</a>
+				</nav>
+			</div>
+		</div>
+	</footer>
+</div>
 
 <style>
 	.auth-page {
-		min-height: 100vh;
+		min-height: 60vh;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 2rem;
+		padding: var(--space-16) 0;
 		position: relative;
-		overflow: hidden;
 	}
 
 	.back-link {
 		position: absolute;
-		top: 2rem;
-		left: 2rem;
+		top: var(--space-8);
+		left: var(--space-6);
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
-		color: var(--color-text-secondary);
-		font-size: 0.9rem;
+		gap: var(--space-2);
+		color: var(--color-gray-600);
+		font-size: var(--text-sm);
 		transition: color var(--transition-fast);
+		text-decoration: none;
 	}
 
 	.back-link:hover {
-		color: var(--color-text-primary);
+		color: var(--color-primary);
 	}
 
 	.auth-container {
 		width: 100%;
-		max-width: 420px;
-		background: var(--color-bg-surface);
-		border: 1px solid var(--color-border);
+		max-width: 440px;
+		background: var(--color-white);
+		border: 1px solid var(--color-gray-200);
 		border-radius: var(--radius-xl);
-		padding: 2.5rem;
-		position: relative;
-		z-index: 1;
+		padding: var(--space-10);
+		box-shadow: var(--shadow-lg);
 	}
 
 	.auth-header {
 		text-align: center;
-		margin-bottom: 2rem;
-	}
-
-	.auth-logo {
-		font-size: 3rem;
-		margin-bottom: 1rem;
+		margin-bottom: var(--space-8);
 	}
 
 	.auth-header h1 {
-		font-size: 1.75rem;
-		font-weight: 600;
-		margin-bottom: 0.5rem;
+		font-size: var(--text-3xl);
+		font-weight: var(--font-bold);
+		margin-bottom: var(--space-2);
+		color: var(--color-gray-900);
 	}
 
 	.auth-header p {
-		color: var(--color-text-secondary);
+		color: var(--color-gray-600);
+		font-size: var(--text-base);
 	}
 
 	.auth-form {
 		display: flex;
 		flex-direction: column;
-		gap: 1.25rem;
+		gap: var(--space-6);
 	}
 
-	.error-banner {
+	.alert {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
-		padding: 0.875rem 1rem;
-		background: rgba(242, 63, 66, 0.1);
-		border: 1px solid rgba(242, 63, 66, 0.3);
+		gap: var(--space-3);
+		padding: var(--space-4);
 		border-radius: var(--radius-md);
+		font-size: var(--text-sm);
+	}
+
+	.alert--error {
+		background: rgba(255, 107, 107, 0.1);
+		border: 1px solid rgba(255, 107, 107, 0.3);
 		color: var(--color-error);
-		font-size: 0.9rem;
 	}
 
 	.error-icon {
-		font-size: 1rem;
+		font-size: var(--text-lg);
 	}
 
-	.form-group {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
+	.auth-footer {
+		margin-top: var(--space-8);
+		text-align: center;
+		color: var(--color-gray-600);
+		font-size: var(--text-sm);
 	}
 
-	.form-group label {
-		font-size: 0.9rem;
-		font-weight: 500;
-		color: var(--color-text-secondary);
+	.auth-footer a {
+		color: var(--color-primary);
+		font-weight: var(--font-medium);
+		text-decoration: none;
 	}
 
-	.form-group input {
-		width: 100%;
-		padding: 0.875rem 1rem;
-		background: var(--color-bg-deep);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		color: var(--color-text-primary);
-		font-size: 1rem;
-		transition: all var(--transition-fast);
-	}
-
-	.form-group input::placeholder {
-		color: var(--color-text-muted);
-	}
-
-	.form-group input:focus {
-		outline: none;
-		border-color: var(--color-border-focus);
-		box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.15);
-	}
-
-	.form-group input:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-
-	.input-hint {
-		font-size: 0.8rem;
-		color: var(--color-text-muted);
-	}
-
-	.btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.5rem;
-		padding: 0.875rem 1.5rem;
-		font-size: 1rem;
-		font-weight: 500;
-		border-radius: var(--radius-md);
-		transition: all var(--transition-fast);
-		cursor: pointer;
-	}
-
-	.btn-primary {
-		background: var(--color-accent);
-		color: white;
-		border: none;
-	}
-
-	.btn-primary:hover:not(:disabled) {
-		background: var(--color-accent-hover);
-		transform: translateY(-1px);
-	}
-
-	.btn-primary:disabled {
-		opacity: 0.7;
-		cursor: not-allowed;
-	}
-
-	.btn-full {
-		width: 100%;
+	.auth-footer a:hover {
+		text-decoration: underline;
 	}
 
 	.spinner {
@@ -298,54 +276,23 @@
 		height: 18px;
 		border: 2px solid transparent;
 		border-top-color: currentColor;
-		border-radius: 50%;
+		border-radius: var(--radius-full);
 		animation: spin 0.6s linear infinite;
+		display: inline-block;
 	}
 
 	@keyframes spin {
 		to { transform: rotate(360deg); }
 	}
 
-	.auth-footer {
-		margin-top: 2rem;
-		text-align: center;
-		color: var(--color-text-secondary);
-		font-size: 0.9rem;
-	}
+	@media (max-width: 768px) {
+		.back-link {
+			position: static;
+			margin-bottom: var(--space-4);
+		}
 
-	.auth-footer a {
-		color: var(--color-accent);
-		font-weight: 500;
-	}
-
-	.auth-decoration {
-		position: absolute;
-		inset: 0;
-		overflow: hidden;
-		pointer-events: none;
-	}
-
-	.glow {
-		position: absolute;
-		border-radius: 50%;
-		filter: blur(80px);
-		opacity: 0.4;
-	}
-
-	.glow-1 {
-		width: 400px;
-		height: 400px;
-		background: #eb459e;
-		top: -200px;
-		left: -100px;
-	}
-
-	.glow-2 {
-		width: 300px;
-		height: 300px;
-		background: var(--color-accent);
-		bottom: -150px;
-		right: -100px;
+		.auth-container {
+			padding: var(--space-6);
+		}
 	}
 </style>
-

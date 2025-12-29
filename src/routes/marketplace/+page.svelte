@@ -342,7 +342,7 @@
           <!-- Listings List -->
           <div class="listings-list">
             {#each listings as listing}
-              <ListingCard {listing} />
+              <ListingCard {listing} marketplaceUser={data?.marketplaceUser} />
             {/each}
           </div>
 

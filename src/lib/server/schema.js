@@ -12,7 +12,7 @@ import {
 	index,
 	unique
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { relations, and, or, desc, eq } from 'drizzle-orm';
 
 // ============================================
 // Better Auth required tables
@@ -312,7 +312,58 @@ export const trades = pgTable(
 	})
 );
 
-// 7. trade_messages
+// 7. conversations (for buyer-seller chat about listings)
+export const conversations = pgTable(
+	'conversations',
+	{
+		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+		listingId: bigint('listing_id', { mode: 'number' })
+			.references(() => listings.id, { onDelete: 'cascade' }),
+		buyerId: bigint('buyer_id', { mode: 'number' })
+			.notNull()
+			.references(() => users.id),
+		sellerId: bigint('seller_id', { mode: 'number' })
+			.notNull()
+			.references(() => users.id),
+		lastMessageAt: timestamp('last_message_at'),
+		lastMessagePreview: varchar('last_message_preview', { length: 200 }),
+		buyerUnreadCount: integer('buyer_unread_count').default(0),
+		sellerUnreadCount: integer('seller_unread_count').default(0),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		listingIdx: index('idx_conversations_listing').on(table.listingId),
+		buyerIdx: index('idx_conversations_buyer').on(table.buyerId),
+		sellerIdx: index('idx_conversations_seller').on(table.sellerId),
+		lastMessageIdx: index('idx_conversations_last_message').on(table.lastMessageAt)
+	})
+);
+
+// 8. messages (messages in conversations)
+export const messages = pgTable(
+	'messages',
+	{
+		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+		conversationId: bigint('conversation_id', { mode: 'number' })
+			.notNull()
+			.references(() => conversations.id, { onDelete: 'cascade' }),
+		senderId: bigint('sender_id', { mode: 'number' })
+			.notNull()
+			.references(() => users.id),
+		content: text('content').notNull(),
+		isRead: boolean('is_read').default(false),
+		readAt: timestamp('read_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(table) => ({
+		conversationIdx: index('idx_messages_conversation').on(table.conversationId),
+		senderIdx: index('idx_messages_sender').on(table.senderId),
+		createdIdx: index('idx_messages_created').on(table.conversationId, table.createdAt)
+	})
+);
+
+// 9. trade_messages
 export const tradeMessages = pgTable(
 	'trade_messages',
 	{
@@ -659,7 +710,10 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 	favorites: many(favorites),
 	kycDocuments: many(kycDocuments),
 	notifications: many(notifications),
-	settings: one(userSettings)
+	settings: one(userSettings),
+	buyerConversations: many(conversations, { relationName: 'buyer' }),
+	sellerConversations: many(conversations, { relationName: 'seller' }),
+	sentMessages: many(messages)
 }));
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
@@ -691,7 +745,37 @@ export const listingsRelations = relations(listings, ({ one, many }) => ({
 	attributes: many(listingAttributes),
 	trades: many(trades),
 	paymentMethods: many(listingPaymentMethods),
-	favorites: many(favorites)
+	favorites: many(favorites),
+	conversations: many(conversations)
+}));
+
+export const conversationsRelations = relations(conversations, ({ one, many }) => ({
+	listing: one(listings, {
+		fields: [conversations.listingId],
+		references: [listings.id]
+	}),
+	buyer: one(users, {
+		fields: [conversations.buyerId],
+		references: [users.id],
+		relationName: 'buyer'
+	}),
+	seller: one(users, {
+		fields: [conversations.sellerId],
+		references: [users.id],
+		relationName: 'seller'
+	}),
+	messages: many(messages)
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+	conversation: one(conversations, {
+		fields: [messages.conversationId],
+		references: [conversations.id]
+	}),
+	sender: one(users, {
+		fields: [messages.senderId],
+		references: [users.id]
+	})
 }));
 
 export const tradesRelations = relations(trades, ({ one, many }) => ({
