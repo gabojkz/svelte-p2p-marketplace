@@ -234,12 +234,12 @@
                     <span>Favorites</span>
                   </a>
                   <a
-                    href="/dashboard?tab=profile"
+                    href="/settings"
                     class="user-dropdown__item"
                     onclick={() => (userDropdownOpen = false)}
                   >
-                    <span class="user-dropdown__icon">👤</span>
-                    <span>Profile</span>
+                    <span class="user-dropdown__icon">⚙️</span>
+                    <span>Settings</span>
                   </a>
                 </div>
                 
