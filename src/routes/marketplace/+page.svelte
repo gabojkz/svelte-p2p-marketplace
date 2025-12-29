@@ -2,35 +2,37 @@
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import CategorySelect from "$lib/components/CategorySelect.svelte";
-
-
+  import ListingCard from "$lib/components/ListingCard.svelte";
+  const appName = "Marketto";
   const session = useSession();
   const user = $derived($session.data?.user);
 
   // Get data from server load function
   const { data } = $props();
-  console.log(data);
+
   // Access listings and categories from page data
   const listings = $derived(data?.listings || []);
   const categories = $derived(data?.categories || []);
   const totalCount = $derived(data?.totalCount || 0);
   const currentPage = $derived(data?.currentPage || 1);
   const totalPages = $derived(data?.totalPages || 0);
-  const filters = $derived(data?.filters || {
-    searchQuery: '',
-    categorySlug: '',
-    location: '',
-    sortBy: 'newest'
-  });
+  const filters = $derived(
+    data?.filters || {
+      searchQuery: "",
+      categorySlug: "",
+      location: "",
+      sortBy: "newest",
+    },
+  );
 
   // Handle category change
   /** @param {string} categorySlug */
   function handleCategoryChange(categorySlug) {
     const url = new URL(window.location.href);
-    if (categorySlug === 'all') {
-      url.searchParams.delete('category');
+    if (categorySlug === "all") {
+      url.searchParams.delete("category");
     } else {
-      url.searchParams.set('category', categorySlug);
+      url.searchParams.set("category", categorySlug);
     }
     goto(url.pathname + url.search);
   }
@@ -56,9 +58,9 @@
   <header class="header">
     <div class="container">
       <div class="header__inner">
-        <a href="../index.html" class="logo">
-          <span class="logo__icon">🏪</span>
-          <span class="logo__text">LocalMarket</span>
+        <a href="/" class="logo">
+          <span class="logo__icon">M</span>
+          <span class="logo__text">{appName}</span>
         </a>
 
         <div class="nav-overlay"></div>
@@ -78,7 +80,7 @@
 
         <div class="header__actions">
           <a href="dashboard.html" class="btn btn--ghost">Dashboard</a>
-          <a href="create-listing.html" class="btn btn--primary">+ Sell Item</a>
+          <a href="/create-listing" class="btn btn--primary">+ Sell Item</a>
           <button class="menu-toggle" aria-label="Toggle menu">
             <span class="menu-toggle__bar"></span>
           </button>
@@ -97,28 +99,28 @@
                      ============================================ -->
       <div class="marketplace-layout">
         <!-- Mobile Filter Overlay -->
-        <div 
-          class="filters-overlay" 
+        <div
+          class="filters-overlay"
           class:active={mobileFilterOpen}
           onclick={closeMobileFilters}
           role="button"
           tabindex="0"
           aria-label="Close filters"
-          onkeydown={(e) => e.key === 'Enter' && closeMobileFilters()}
+          onkeydown={(e) => e.key === "Enter" && closeMobileFilters()}
         ></div>
 
         <!-- ============================================
                          UNIFIED SIDEBAR (SEARCH + FILTERS)
                          ============================================ -->
-        <aside 
-          class="filters-sidebar" 
+        <aside
+          class="filters-sidebar"
           id="filtersSidebar"
           class:active={mobileFilterOpen}
         >
           <div class="filter-panel">
             <!-- Sell Button -->
             <a
-              href="create-listing.html"
+              href="/create-listing"
               class="btn btn--outline btn--block sell-btn"
             >
               <span>+</span>Sell Something
@@ -154,16 +156,16 @@
             </div>
 
             <!-- Category Dropdown -->
-            <CategorySelect 
-              categories={categories.map(cat => ({
+            <CategorySelect
+              categories={categories.map((cat) => ({
                 id: cat.id,
                 name: cat.name,
                 slug: cat.slug,
                 type: cat.type,
                 icon: cat.icon,
-                parentId: cat.parentId
+                parentId: cat.parentId,
               }))}
-              selectedValue={filters.categorySlug || 'all'}
+              selectedValue={filters.categorySlug || "all"}
               id="categorySelect"
               onChange={handleCategoryChange}
             />
@@ -276,12 +278,12 @@
             </button>
 
             <!-- Close Button (mobile only) -->
-            <button 
-              class="filter-close-btn" 
+            <button
+              class="filter-close-btn"
               id="filterCloseBtn"
               onclick={closeMobileFilters}
-              aria-label="Close filters"
-            >✕</button>
+              aria-label="Close filters">✕</button
+            >
           </div>
         </aside>
 
@@ -339,466 +341,9 @@
 
           <!-- Listings List -->
           <div class="listings-list">
-            <!-- Listing Card 1 - Featured Vehicle -->
-            <a href="offer-detail.html" class="listing-card listing-card--list">
-              <div class="listing-card__image">
-                <div
-                  class="listing-card__placeholder"
-                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
-                >
-                  🚗
-                </div>
-                <span class="listing-card__badge listing-card__badge--featured"
-                  >Featured</span
-                >
-                <button class="listing-card__favorite" aria-label="Save listing"
-                  >♡</button
-                >
-              </div>
-              <div class="listing-card__body">
-                <div class="listing-card__header">
-                  <div>
-                    <div class="listing-card__category">Vehicles • Cars</div>
-                    <h4 class="listing-card__title">
-                      2019 BMW 3 Series 320i M Sport
-                    </h4>
-                  </div>
-                  <div class="listing-card__price">£18,500</div>
-                </div>
-                <div
-                  class="listing-card__details"
-                  style="display: flex; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-2);"
-                >
-                  <span>45,000 mi</span>
-                  <span>•</span>
-                  <span>Automatic</span>
-                  <span>•</span>
-                  <span>Petrol</span>
-                </div>
-                <div class="listing-card__footer">
-                  <div class="listing-card__meta">
-                    <span class="listing-card__location"
-                      >📍 Newcastle • 5 km</span
-                    >
-                    <span class="listing-card__time">2h ago</span>
-                  </div>
-                  <div class="listing-card__seller">
-                    <span class="avatar avatar--sm">JD</span>
-                    <span>John D.</span>
-                    <span class="seller-badge seller-badge--verified"
-                      >✓ Verified</span
-                    >
-                    <span class="seller-rating">⭐ 4.9</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-
-            <!-- Listing Card 2 - Electronics -->
-            <a href="offer-detail.html" class="listing-card listing-card--list">
-              <div class="listing-card__image">
-                <div
-                  class="listing-card__placeholder"
-                  style="background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);"
-                >
-                  📱
-                </div>
-                <button class="listing-card__favorite" aria-label="Save listing"
-                  >♡</button
-                >
-              </div>
-              <div class="listing-card__body">
-                <div class="listing-card__header">
-                  <div>
-                    <div class="listing-card__category">
-                      Electronics • Phones
-                    </div>
-                    <h4 class="listing-card__title">
-                      iPhone 15 Pro Max 256GB - Natural Titanium
-                    </h4>
-                  </div>
-                  <div class="listing-card__price">£899</div>
-                </div>
-                <div
-                  class="listing-card__details"
-                  style="display: flex; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-2);"
-                >
-                  <span>Like New</span>
-                  <span>•</span>
-                  <span>Unlocked</span>
-                </div>
-                <div class="listing-card__footer">
-                  <div class="listing-card__meta">
-                    <span class="listing-card__location"
-                      >📍 Gateshead • 8 km</span
-                    >
-                    <span class="listing-card__time">5h ago</span>
-                  </div>
-                  <div class="listing-card__seller">
-                    <span class="avatar avatar--sm">SM</span>
-                    <span>Sarah M.</span>
-                    <span class="seller-badge seller-badge--verified"
-                      >✓ Verified</span
-                    >
-                    <span class="seller-rating">⭐ 5.0</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-
-            <!-- Listing Card 3 - Furniture -->
-            <a href="offer-detail.html" class="listing-card listing-card--list">
-              <div class="listing-card__image">
-                <div
-                  class="listing-card__placeholder"
-                  style="background: linear-gradient(135deg, #45D98E 0%, #38b2ac 100%);"
-                >
-                  🛋️
-                </div>
-                <span class="listing-card__badge listing-card__badge--urgent"
-                  >Quick Sale</span
-                >
-                <button class="listing-card__favorite" aria-label="Save listing"
-                  >♡</button
-                >
-              </div>
-              <div class="listing-card__body">
-                <div class="listing-card__header">
-                  <div>
-                    <div class="listing-card__category">Furniture • Sofas</div>
-                    <h4 class="listing-card__title">
-                      IKEA Kivik 3-Seater Corner Sofa - Grey
-                    </h4>
-                  </div>
-                  <div class="listing-card__price">£350</div>
-                </div>
-                <div
-                  class="listing-card__details"
-                  style="display: flex; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-2);"
-                >
-                  <span>Good Condition</span>
-                  <span>•</span>
-                  <span>Collection Only</span>
-                </div>
-                <div class="listing-card__footer">
-                  <div class="listing-card__meta">
-                    <span class="listing-card__location">📍 Durham • 18 km</span
-                    >
-                    <span class="listing-card__time">1d ago</span>
-                  </div>
-                  <div class="listing-card__seller">
-                    <span class="avatar avatar--sm">MR</span>
-                    <span>Mike R.</span>
-                    <span class="seller-rating">⭐ 4.7</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-
-            <!-- Listing Card 4 - Fashion -->
-            <a href="offer-detail.html" class="listing-card listing-card--list">
-              <div class="listing-card__image">
-                <div
-                  class="listing-card__placeholder"
-                  style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"
-                >
-                  👟
-                </div>
-                <button class="listing-card__favorite" aria-label="Save listing"
-                  >♡</button
-                >
-              </div>
-              <div class="listing-card__body">
-                <div class="listing-card__header">
-                  <div>
-                    <div class="listing-card__category">Fashion • Shoes</div>
-                    <h4 class="listing-card__title">
-                      Nike Air Jordan 1 Retro High OG - Size 10
-                    </h4>
-                  </div>
-                  <div class="listing-card__price">£180</div>
-                </div>
-                <div
-                  class="listing-card__details"
-                  style="display: flex; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-2);"
-                >
-                  <span>New with Box</span>
-                  <span>•</span>
-                  <span>UK 10 / EU 45</span>
-                </div>
-                <div class="listing-card__footer">
-                  <div class="listing-card__meta">
-                    <span class="listing-card__location"
-                      >📍 Sunderland • 15 km</span
-                    >
-                    <span class="listing-card__time">3h ago</span>
-                  </div>
-                  <div class="listing-card__seller">
-                    <span class="avatar avatar--sm">AK</span>
-                    <span>Alex K.</span>
-                    <span class="seller-rating">⭐ 4.8</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-
-            <!-- Listing Card 5 - Vehicle -->
-            <a href="offer-detail.html" class="listing-card listing-card--list">
-              <div class="listing-card__image">
-                <div
-                  class="listing-card__placeholder"
-                  style="background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);"
-                >
-                  🏍️
-                </div>
-                <button class="listing-card__favorite" aria-label="Save listing"
-                  >♡</button
-                >
-              </div>
-              <div class="listing-card__body">
-                <div class="listing-card__header">
-                  <div>
-                    <div class="listing-card__category">
-                      Vehicles • Motorcycles
-                    </div>
-                    <h4 class="listing-card__title">
-                      2021 Yamaha MT-07 ABS - Low Mileage
-                    </h4>
-                  </div>
-                  <div class="listing-card__price">£5,995</div>
-                </div>
-                <div
-                  class="listing-card__details"
-                  style="display: flex; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-2);"
-                >
-                  <span>3,200 mi</span>
-                  <span>•</span>
-                  <span>689cc</span>
-                </div>
-                <div class="listing-card__footer">
-                  <div class="listing-card__meta">
-                    <span class="listing-card__location">📍 Hexham • 32 km</span
-                    >
-                    <span class="listing-card__time">6h ago</span>
-                  </div>
-                  <div class="listing-card__seller">
-                    <span class="avatar avatar--sm">TW</span>
-                    <span>Tom W.</span>
-                    <span class="seller-badge seller-badge--verified"
-                      >✓ Verified</span
-                    >
-                    <span class="seller-rating">⭐ 4.9</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-
-            <!-- Listing Card 6 - Electronics -->
-            <a href="offer-detail.html" class="listing-card listing-card--list">
-              <div class="listing-card__image">
-                <div
-                  class="listing-card__placeholder"
-                  style="background: linear-gradient(135deg, #3498DB 0%, #2c3e50 100%);"
-                >
-                  💻
-                </div>
-                <button class="listing-card__favorite" aria-label="Save listing"
-                  >♡</button
-                >
-              </div>
-              <div class="listing-card__body">
-                <div class="listing-card__header">
-                  <div>
-                    <div class="listing-card__category">
-                      Electronics • Laptops
-                    </div>
-                    <h4 class="listing-card__title">
-                      MacBook Pro 14" M3 Pro - 512GB
-                    </h4>
-                  </div>
-                  <div class="listing-card__price">£1,650</div>
-                </div>
-                <div
-                  class="listing-card__details"
-                  style="display: flex; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-2);"
-                >
-                  <span>Excellent</span>
-                  <span>•</span>
-                  <span>18GB RAM</span>
-                </div>
-                <div class="listing-card__footer">
-                  <div class="listing-card__meta">
-                    <span class="listing-card__location"
-                      >📍 Newcastle • 2 km</span
-                    >
-                    <span class="listing-card__time">1h ago</span>
-                  </div>
-                  <div class="listing-card__seller">
-                    <span class="avatar avatar--sm">EB</span>
-                    <span>Emma B.</span>
-                    <span class="seller-badge seller-badge--verified"
-                      >✓ Verified</span
-                    >
-                    <span class="seller-rating">⭐ 5.0</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-
-            <!-- Listing Card 7 - Property -->
-            <a href="offer-detail.html" class="listing-card listing-card--list">
-              <div class="listing-card__image">
-                <div
-                  class="listing-card__placeholder"
-                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
-                >
-                  🏠
-                </div>
-                <span class="listing-card__badge listing-card__badge--featured"
-                  >Premium</span
-                >
-                <button class="listing-card__favorite" aria-label="Save listing"
-                  >♡</button
-                >
-              </div>
-              <div class="listing-card__body">
-                <div class="listing-card__header">
-                  <div>
-                    <div class="listing-card__category">Property • Rent</div>
-                    <h4 class="listing-card__title">
-                      2 Bed Apartment - City Centre Views
-                    </h4>
-                  </div>
-                  <div class="listing-card__price">
-                    £1,200 <span
-                      style="font-size: var(--text-sm); color: var(--color-gray-600);"
-                      >/month</span
-                    >
-                  </div>
-                </div>
-                <div
-                  class="listing-card__details"
-                  style="display: flex; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-2);"
-                >
-                  <span>2 Bed</span>
-                  <span>•</span>
-                  <span>1 Bath</span>
-                  <span>•</span>
-                  <span>Furnished</span>
-                </div>
-                <div class="listing-card__footer">
-                  <div class="listing-card__meta">
-                    <span class="listing-card__location"
-                      >📍 Newcastle • 1 km</span
-                    >
-                    <span class="listing-card__time">4h ago</span>
-                  </div>
-                  <div class="listing-card__seller">
-                    <span class="avatar avatar--sm">RE</span>
-                    <span>RE Agency</span>
-                    <span class="seller-badge seller-badge--business"
-                      >Business</span
-                    >
-                    <span class="seller-rating">⭐ 4.6</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-
-            <!-- Listing Card 8 - Sports -->
-            <a href="offer-detail.html" class="listing-card listing-card--list">
-              <div class="listing-card__image">
-                <div
-                  class="listing-card__placeholder"
-                  style="background: linear-gradient(135deg, #FFE66D 0%, #f5af19 100%);"
-                >
-                  🚴
-                </div>
-                <button class="listing-card__favorite" aria-label="Save listing"
-                  >♡</button
-                >
-              </div>
-              <div class="listing-card__body">
-                <div class="listing-card__header">
-                  <div>
-                    <div class="listing-card__category">Sports • Cycling</div>
-                    <h4 class="listing-card__title">
-                      Specialized Roubaix Carbon Road Bike
-                    </h4>
-                  </div>
-                  <div class="listing-card__price">£1,850</div>
-                </div>
-                <div
-                  class="listing-card__details"
-                  style="display: flex; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-2);"
-                >
-                  <span>56cm Frame</span>
-                  <span>•</span>
-                  <span>Shimano 105</span>
-                </div>
-                <div class="listing-card__footer">
-                  <div class="listing-card__meta">
-                    <span class="listing-card__location"
-                      >📍 Tynemouth • 12 km</span
-                    >
-                    <span class="listing-card__time">8h ago</span>
-                  </div>
-                  <div class="listing-card__seller">
-                    <span class="avatar avatar--sm">DL</span>
-                    <span>David L.</span>
-                    <span class="seller-rating">⭐ 4.8</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-
-            <!-- Listing Card 9 - Baby -->
-            <a href="offer-detail.html" class="listing-card listing-card--list">
-              <div class="listing-card__image">
-                <div
-                  class="listing-card__placeholder"
-                  style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);"
-                >
-                  👶
-                </div>
-                <button class="listing-card__favorite" aria-label="Save listing"
-                  >♡</button
-                >
-              </div>
-              <div class="listing-card__body">
-                <div class="listing-card__header">
-                  <div>
-                    <div class="listing-card__category">
-                      Baby & Kids • Prams
-                    </div>
-                    <h4 class="listing-card__title">
-                      Silver Cross Wave Double Pram
-                    </h4>
-                  </div>
-                  <div class="listing-card__price">£450</div>
-                </div>
-                <div
-                  class="listing-card__details"
-                  style="display: flex; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-2);"
-                >
-                  <span>Good Condition</span>
-                  <span>•</span>
-                  <span>Inc. Accessories</span>
-                </div>
-                <div class="listing-card__footer">
-                  <div class="listing-card__meta">
-                    <span class="listing-card__location">📍 Jesmond • 4 km</span
-                    >
-                    <span class="listing-card__time">12h ago</span>
-                  </div>
-                  <div class="listing-card__seller">
-                    <span class="avatar avatar--sm">LC</span>
-                    <span>Laura C.</span>
-                    <span class="seller-rating">⭐ 4.9</span>
-                  </div>
-                </div>
-              </div>
-            </a>
+            {#each listings as listing}
+              <ListingCard {listing} />
+            {/each}
           </div>
 
           <!-- Pagination -->
@@ -819,37 +364,39 @@
     </div>
   </main>
 
-<style>
-  /* Mobile Filter Overlay - Behind sidebar */
-  .filters-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-  }
+  <style>
+    /* Mobile Filter Overlay - Behind sidebar */
+    .filters-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+    }
 
-  .filters-overlay.active {
-    display: block;
-    opacity: 1;
-    visibility: visible;
-  }
-
-  /* Ensure sidebar is above overlay and fully interactive */
-  .filters-sidebar.active {
-    z-index: 1000;
-  }
-
-  /* On mobile, show overlay when sidebar is active */
-  @media screen and (max-width: 1024px) {
     .filters-overlay.active {
       display: block;
+      opacity: 1;
+      visibility: visible;
     }
-  }
-</style>
+
+    /* Ensure sidebar is above overlay and fully interactive */
+    .filters-sidebar.active {
+      z-index: 1000;
+    }
+
+    /* On mobile, show overlay when sidebar is active */
+    @media screen and (max-width: 1024px) {
+      .filters-overlay.active {
+        display: block;
+      }
+    }
+  </style>
 
   <!-- ============================================
              FOOTER
@@ -859,7 +406,7 @@
       <div class="footer__bottom">
         <div class="flex items-center gap-3">
           <span class="logo__icon">🏪</span>
-          <span>&copy; 2025 LocalMarket. All rights reserved.</span>
+          <span>&copy; 2025 {appName}. All rights reserved.</span>
         </div>
         <nav class="footer__legal-links">
           <a href="#" class="footer__link">Privacy</a>

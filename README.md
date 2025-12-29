@@ -216,3 +216,12 @@ emailAndPassword: {
 ## 📄 License
 
 MIT License - feel free to use this starter for your projects!
+
+
+
+Todos
+- Auth
+    - [ ] Add OAuth providers (Google, GitHub)
+    - [ ] Enable email verification
+    - [ ] Set up password reset
+    - [ ] Add two-factor authentication
