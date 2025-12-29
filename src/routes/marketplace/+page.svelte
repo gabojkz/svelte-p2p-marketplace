@@ -3,6 +3,7 @@
   import { goto } from "$app/navigation";
   import CategorySelect from "$lib/components/CategorySelect.svelte";
   import ListingCard from "$lib/components/ListingCard.svelte";
+  import NavigationBar from "$lib/components/NavigationBar.svelte";
   const appName = "Marketto";
   const session = useSession();
   const user = $derived($session.data?.user);
@@ -55,39 +56,7 @@
   <!-- ============================================
              HEADER
              ============================================ -->
-  <header class="header">
-    <div class="container">
-      <div class="header__inner">
-        <a href="/" class="logo">
-          <span class="logo__icon">M</span>
-          <span class="logo__text">{appName}</span>
-        </a>
-
-        <div class="nav-overlay"></div>
-
-        <nav class="nav" aria-label="Main navigation">
-          <a href="marketplace.html" class="nav__link nav__link--active"
-            >Browse</a
-          >
-          <a href="marketplace.html?category=vehicles" class="nav__link"
-            >Vehicles</a
-          >
-          <a href="marketplace.html?category=electronics" class="nav__link"
-            >Electronics</a
-          >
-          <a href="wallet.html" class="nav__link">Wallet</a>
-        </nav>
-
-        <div class="header__actions">
-          <a href="dashboard.html" class="btn btn--ghost">Dashboard</a>
-          <a href="/create-listing" class="btn btn--primary">+ Sell Item</a>
-          <button class="menu-toggle" aria-label="Toggle menu">
-            <span class="menu-toggle__bar"></span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
+  <NavigationBar></NavigationBar>
 
   <!-- ============================================
              MAIN CONTENT

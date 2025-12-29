@@ -10,7 +10,7 @@
 
   // Mobile menu state
   let mobileMenuOpen = $state(false);
-  
+
   // User dropdown state
   let userDropdownOpen = $state(false);
   let unreadMessagesCount = $state(0);
@@ -37,15 +37,12 @@
   function handleClickOutside(event) {
     const target = event.target;
     if (
-      !target.closest('.user-dropdown') &&
-      !target.closest('.user-dropdown-toggle')
+      !target.closest(".user-dropdown") &&
+      !target.closest(".user-dropdown-toggle")
     ) {
       userDropdownOpen = false;
     }
-    if (
-      !target.closest('.nav') &&
-      !target.closest('.menu-toggle')
-    ) {
+    if (!target.closest(".nav") && !target.closest(".menu-toggle")) {
       mobileMenuOpen = false;
     }
   }
@@ -53,7 +50,7 @@
   // Load unread messages count
   async function loadUnreadCount() {
     if (!user) return;
-    
+
     try {
       const response = await fetch("/api/conversations");
       if (response.ok) {
@@ -129,14 +126,6 @@
         class:active={mobileMenuOpen}
         aria-label="Main navigation"
       >
-        <a href="/marketplace" class="nav__link">Browse</a>
-        <a href="/marketplace?category=vehicles" class="nav__link">Vehicles</a>
-        <a href="/marketplace?category=electronics" class="nav__link"
-          >Electronics</a
-        >
-        <a href="#how-it-works" class="nav__link">How It Works</a>
-        <a href="#categories" class="nav__link">Categories</a>
-        
         <!-- Mobile-only user actions -->
         {#if user}
           <div class="nav__mobile-user">
@@ -202,9 +191,9 @@
                     <div class="user-dropdown__email">{user.email}</div>
                   </div>
                 </div>
-                
+
                 <div class="user-dropdown__divider"></div>
-                
+
                 <div class="user-dropdown__menu">
                   <a
                     href="/dashboard"
@@ -222,7 +211,9 @@
                     <span class="user-dropdown__icon">💬</span>
                     <span>Messages</span>
                     {#if unreadMessagesCount > 0}
-                      <span class="user-dropdown__badge">{unreadMessagesCount}</span>
+                      <span class="user-dropdown__badge"
+                        >{unreadMessagesCount}</span
+                      >
                     {/if}
                   </a>
                   <a
@@ -234,7 +225,7 @@
                     <span>Favorites</span>
                   </a>
                   <a
-                    href="/dashboard?tab=profile"
+                    href="/profile"
                     class="user-dropdown__item"
                     onclick={() => (userDropdownOpen = false)}
                   >
@@ -242,9 +233,9 @@
                     <span>Profile</span>
                   </a>
                 </div>
-                
+
                 <div class="user-dropdown__divider"></div>
-                
+
                 <div class="user-dropdown__menu">
                   <button
                     class="user-dropdown__item user-dropdown__item--danger"
@@ -258,11 +249,6 @@
               </div>
             {/if}
           </div>
-
-          <!-- Desktop: Sell Button -->
-          <a href="/create-listing" class="btn btn--primary">
-            <span>Sell Now</span>
-          </a>
         {:else}
           <!-- Not logged in -->
           <a href="/login" class="btn btn--ghost">
@@ -319,7 +305,11 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-tertiary) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--color-primary) 0%,
+      var(--color-tertiary) 100%
+    );
     color: white;
     display: flex;
     align-items: center;
