@@ -21,11 +21,21 @@
   let modalOpen = $state(false);
   let editingListingId = $state(null);
 
-  // Local state for search and filters
-  let searchQuery = $state(filters.searchQuery || "");
-  let statusFilter = $state(filters.statusFilter || "all");
-  let sortBy = $state(filters.sortBy || "newest");
-  let sortOrder = $state(filters.sortOrder || "desc");
+  // Local state for search and filters - initialize from URL params
+  let searchQuery = $state("");
+  let statusFilter = $state("all");
+  let sortBy = $state("newest");
+  let sortOrder = $state("desc");
+
+  // Initialize from data on mount
+  $effect(() => {
+    if (data?.filters) {
+      searchQuery = data.filters.searchQuery || "";
+      statusFilter = data.filters.statusFilter || "all";
+      sortBy = data.filters.sortBy || "newest";
+      sortOrder = data.filters.sortOrder || "desc";
+    }
+  });
 
   // Filtered and sorted listings
   const filteredListings = $derived.by(() => {
@@ -221,7 +231,7 @@
           <a href="/dashboard" class="nav__link">Dashboard</a>
         </nav>
         <div class="header__actions">
-          <a href="/create-listing" class="btn btn--primary">+ Create Listing</a>
+          <button class="btn btn--primary" onclick={openCreateModal} type="button">+ Create Listing</button>
         </div>
       </div>
     </div>
@@ -270,7 +280,7 @@
         <div class="filters-row">
           <!-- Search -->
           <div class="search-box">
-            <input
+                  <input
               type="text"
               class="search-input"
               placeholder="Search listings..."
@@ -280,12 +290,13 @@
             <button class="search-button" onclick={handleSearch} type="button">
               🔍
             </button>
-          </div>
+              </div>
 
           <!-- Status Filter -->
           <div class="filter-group">
-            <label class="filter-label">Status:</label>
+            <label for="status-filter" class="filter-label">Status:</label>
             <select
+              id="status-filter"
               class="filter-select"
               bind:value={statusFilter}
               onchange={() => handleStatusFilter(statusFilter)}
@@ -296,9 +307,9 @@
               <option value="draft">Draft ({stats.draft || 0})</option>
               <option value="sold">Sold ({stats.sold || 0})</option>
             </select>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
       <!-- Listings Table -->
       <div class="table-container">
@@ -405,7 +416,7 @@
                       {#if listing.urgent}
                         <span class="badge badge--error badge--sm">Urgent</span>
                       {/if}
-                    </div>
+                </div>
                   </td>
                   <td>
                     <div class="table-cell-price">{formatPrice(listing.price)}</div>
@@ -414,18 +425,18 @@
                   <td>
                     <div class="table-cell-category">
                       {listing.category?.name || "N/A"}
-                    </div>
+              </div>
                   </td>
                   <td>
                     <div class="table-cell-location">
                       {listing.locationCity || "N/A"}
-                    </div>
+              </div>
                   </td>
                   <td>
                     <div class="table-cell-status">
                       <label class="status-toggle">
-                        <input
-                          type="checkbox"
+                  <input
+                    type="checkbox"
                           checked={listing.status === "active"}
                           onchange={() => toggleListingStatus(listing.id, listing.status)}
                         />
@@ -433,7 +444,7 @@
                       </label>
                       <span class="badge badge--{getStatusClass(listing.status)}">
                         {listing.status}
-                      </span>
+                  </span>
                     </div>
                   </td>
                   <td>
@@ -480,16 +491,16 @@
       </div>
     </div>
   </main>
-
-  <!-- Listing Modal -->
-  <ListingModal
-    bind:open={modalOpen}
-    bind:listingId={editingListingId}
-    {categories}
-    marketplaceUser={marketplaceUser}
-    onSave={handleModalSave}
-  />
 </div>
+
+<!-- Listing Modal - Outside page-wrapper for proper z-index -->
+<ListingModal
+  bind:open={modalOpen}
+  bind:listingId={editingListingId}
+  {categories}
+  marketplaceUser={marketplaceUser}
+  onSave={handleModalSave}
+/>
 
 <style>
   .page-header {

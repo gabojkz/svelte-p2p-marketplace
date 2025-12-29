@@ -3,12 +3,12 @@
   import { onMount } from "svelte";
 
   // Props
-  const { 
+  let { 
     open = $bindable(false),
     listingId = $bindable(null),
-    categories = $state([]),
-    marketplaceUser = $state(null),
-    onSave = $state(null)
+    categories = [],
+    marketplaceUser = null,
+    onSave = null
   } = $props();
 
   // Form state
@@ -205,10 +205,12 @@
 
   // Load listing when modal opens with ID
   $effect(() => {
-    if (open && listingId) {
-      loadListing();
-    } else if (open && !listingId) {
-      resetForm();
+    if (open) {
+      if (listingId) {
+        loadListing();
+      } else {
+        resetForm();
+      }
     }
   });
 
