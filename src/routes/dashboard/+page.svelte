@@ -1,377 +1,565 @@
 <script>
-  import { useSession, signOut } from "$lib/auth-client.js";
-  import { goto } from "$app/navigation";
-
-  const session = useSession();
-
-  // Derived values for easier access
-  const user = $derived($session.data?.user);
-  const sessionData = $derived($session.data?.session);
-
-  async function handleSignOut() {
-    await signOut();
-    goto("/");
-  }
+  import NavigationBar from "$lib/components/NavigationBar.svelte";
 </script>
 
-<svelte:head>
-  <title>Dashboard — AuthFlow</title>
-</svelte:head>
+<div class="page-wrapper">
+  <!-- Header -->
+  <NavigationBar />
 
-<main class="dashboard">
-  <nav class="dashboard-nav">
-    <a href="/" class="logo">
-      <span class="logo-icon">⚡</span>
-      <span class="logo-text">AuthFlow</span>
-    </a>
-    <div class="nav-actions">
-      <button class="btn btn-outline" onclick={handleSignOut}>
-        Sign Out
-      </button>
-    </div>
-  </nav>
-
-  <div class="dashboard-content animate-slide-up">
-    {#if user}
-      <div class="welcome-section">
-        <div class="avatar">
-          {#if user.image}
-            <img src={user.image} alt={user.name} />
-          {:else}
-            <span class="avatar-initials">
-              {user.name
-                .split(" ")
-                .map((/** @type {string} */ n) => n[0])
-                .join("")
-                .toUpperCase()}
-            </span>
-          {/if}
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+      <!-- Page Header -->
+      <div
+        class="flex justify-between items-center mb-8"
+        style="flex-wrap: wrap; gap: var(--space-4);"
+      >
+        <div>
+          <h1
+            style="font-size: var(--text-3xl); margin-bottom: var(--space-2);"
+          >
+            Dashboard
+          </h1>
+          <p class="text-muted">
+            Welcome back! Here's an overview of your account.
+          </p>
         </div>
-        <h1>Welcome back, {user.name}!</h1>
-        <p>You're successfully authenticated with AuthFlow.</p>
+        <div class="flex gap-3">
+          <a href="deposit.html" class="btn btn--outline">Deposit</a>
+          <a href="create-listing.html" class="btn btn--primary"
+            >+ New Listing</a
+          >
+        </div>
       </div>
 
-      <div class="info-grid stagger-children">
-        <div class="info-card">
-          <div class="info-icon">👤</div>
-          <h3>Profile</h3>
-          <div class="info-details">
-            <div class="info-row">
-              <span class="info-label">Name</span>
-              <span class="info-value">{user.name}</span>
+      <!-- Stats Grid -->
+      <div class="stats-grid grid grid-cols-4 gap-6 mb-8">
+        <div class="stat-card">
+          <div class="stat-card__label">Total Balance</div>
+          <div class="stat-card__value">$12,450</div>
+          <div class="stat-card__change stat-card__change--positive">
+            ↑ $340 today
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Active Trades</div>
+          <div class="stat-card__value">2</div>
+          <a
+            href="#active-trades"
+            style="font-size: var(--text-sm); color: var(--color-primary);"
+            >View trades →</a
+          >
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Completed Trades</div>
+          <div class="stat-card__value">47</div>
+          <div style="font-size: var(--text-xs); color: var(--color-gray-500);">
+            This month: 8
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Reputation</div>
+          <div class="stat-card__value" style="color: var(--color-primary);">
+            ⭐ 4.8
+          </div>
+          <div style="font-size: var(--text-xs); color: var(--color-gray-500);">
+            Based on 47 reviews
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="grid grid-cols-4 gap-4 mb-8">
+        <a
+          href="search.html"
+          class="card card--clickable"
+          style="padding: var(--space-4); text-align: center;"
+        >
+          <div
+            style="font-size: var(--text-2xl); margin-bottom: var(--space-2);"
+          >
+            🛒
+          </div>
+          <div style="font-weight: var(--font-medium);">Buy Crypto</div>
+        </a>
+        <a
+          href="create-listing.html"
+          class="card card--clickable"
+          style="padding: var(--space-4); text-align: center;"
+        >
+          <div
+            style="font-size: var(--text-2xl); margin-bottom: var(--space-2);"
+          >
+            💰
+          </div>
+          <div style="font-weight: var(--font-medium);">Sell Crypto</div>
+        </a>
+        <a
+          href="deposit.html"
+          class="card card--clickable"
+          style="padding: var(--space-4); text-align: center;"
+        >
+          <div
+            style="font-size: var(--text-2xl); margin-bottom: var(--space-2);"
+          >
+            📥
+          </div>
+          <div style="font-weight: var(--font-medium);">Deposit</div>
+        </a>
+        <a
+          href="withdraw.html"
+          class="card card--clickable"
+          style="padding: var(--space-4); text-align: center;"
+        >
+          <div
+            style="font-size: var(--text-2xl); margin-bottom: var(--space-2);"
+          >
+            📤
+          </div>
+          <div style="font-weight: var(--font-medium);">Withdraw</div>
+        </a>
+      </div>
+
+      <div
+        class="grid"
+        style="grid-template-columns: 1fr 380px; gap: var(--space-8);"
+      >
+        <!-- Main Column -->
+        <div>
+          <!-- Active Trades -->
+          <div class="card mb-6" id="active-trades">
+            <div class="card__body">
+              <div class="flex justify-between items-center mb-4">
+                <h3>Active Trades</h3>
+                <a href="transactions.html" style="font-size: var(--text-sm);"
+                  >View all →</a
+                >
+              </div>
+
+              <!-- Trade 1 -->
+              <div
+                style="padding: var(--space-4); border: 1px solid var(--color-gray-200); border-radius: var(--radius-md); margin-bottom: var(--space-4);"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <div class="avatar avatar--sm">JD</div>
+                    <div>
+                      <div style="font-weight: var(--font-semibold);">
+                        Buying from JohnDoe_BTC
+                      </div>
+                      <div
+                        style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                      >
+                        #TR-78234 • Started 15 min ago
+                      </div>
+                    </div>
+                  </div>
+                  <span class="badge badge--warning">Awaiting Payment</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <div style="font-size: var(--text-sm);">
+                    <span class="text-muted">Amount:</span> $500.00 → 0.00741 BTC
+                  </div>
+                  <a href="trade-room.html" class="btn btn--primary btn--sm"
+                    >Continue Trade</a
+                  >
+                </div>
+              </div>
+
+              <!-- Trade 2 -->
+              <div
+                style="padding: var(--space-4); border: 1px solid var(--color-gray-200); border-radius: var(--radius-md);"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="avatar avatar--sm"
+                      style="background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent-blue));"
+                    >
+                      CM
+                    </div>
+                    <div>
+                      <div style="font-weight: var(--font-semibold);">
+                        Selling to CryptoMaster
+                      </div>
+                      <div
+                        style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                      >
+                        #TR-78235 • Started 5 min ago
+                      </div>
+                    </div>
+                  </div>
+                  <span class="badge badge--info">Buyer Paid</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <div style="font-size: var(--text-sm);">
+                    <span class="text-muted">Amount:</span> 0.5 ETH → $1,750.00
+                  </div>
+                  <a href="trade-room.html" class="btn btn--success btn--sm"
+                    >Release Crypto</a
+                  >
+                </div>
+              </div>
             </div>
-            <div class="info-row">
-              <span class="info-label">Email</span>
-              <span class="info-value">{user.email}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Verified</span>
-              <span class="info-value">
-                {#if user.emailVerified}
-                  <span class="badge badge-success">✓ Verified</span>
-                {:else}
-                  <span class="badge badge-warning">Pending</span>
-                {/if}
-              </span>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card__body">
+              <div class="flex justify-between items-center mb-4">
+                <h3>Recent Activity</h3>
+                <a href="transactions.html" style="font-size: var(--text-sm);"
+                  >View all →</a
+                >
+              </div>
+
+              <div style="display: flex; flex-direction: column;">
+                <div
+                  class="flex items-center gap-4"
+                  style="padding: var(--space-3) 0; border-bottom: 1px solid var(--color-gray-100);"
+                >
+                  <div
+                    style="width: 40px; height: 40px; background: rgba(69, 217, 142, 0.1); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--color-primary);"
+                  >
+                    ↓
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: var(--font-medium);">
+                      Trade Completed
+                    </div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      Bought 0.015 BTC from AlphaTrader
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div
+                      style="font-weight: var(--font-semibold); color: var(--color-primary);"
+                    >
+                      +0.015 BTC
+                    </div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      2 hours ago
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="flex items-center gap-4"
+                  style="padding: var(--space-3) 0; border-bottom: 1px solid var(--color-gray-100);"
+                >
+                  <div
+                    style="width: 40px; height: 40px; background: rgba(255, 107, 107, 0.1); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--color-secondary);"
+                  >
+                    ↑
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: var(--font-medium);">
+                      Trade Completed
+                    </div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      Sold 1.0 ETH to MaxRider
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div
+                      style="font-weight: var(--font-semibold); color: var(--color-secondary);"
+                    >
+                      -1.0 ETH
+                    </div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      Yesterday
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="flex items-center gap-4"
+                  style="padding: var(--space-3) 0; border-bottom: 1px solid var(--color-gray-100);"
+                >
+                  <div
+                    style="width: 40px; height: 40px; background: rgba(78, 205, 196, 0.1); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--color-info);"
+                  >
+                    📥
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: var(--font-medium);">
+                      Deposit Received
+                    </div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      External wallet deposit
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div
+                      style="font-weight: var(--font-semibold); color: var(--color-primary);"
+                    >
+                      +0.25 BTC
+                    </div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      2 days ago
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="flex items-center gap-4"
+                  style="padding: var(--space-3) 0;"
+                >
+                  <div
+                    style="width: 40px; height: 40px; background: rgba(155, 89, 182, 0.1); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--color-accent-purple);"
+                  >
+                    ⭐
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: var(--font-medium);">
+                      New Review
+                    </div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      MaxRider left a 5-star review
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      2 days ago
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="info-card">
-          <div class="info-icon">🔐</div>
-          <h3>Session</h3>
-          <div class="info-details">
-            <div class="info-row">
-              <span class="info-label">Session ID</span>
-              <span class="info-value code"
-                >{sessionData?.id?.slice(0, 8)}...</span
+        <!-- Sidebar -->
+        <div>
+          <!-- Wallet Summary -->
+          <div class="card mb-4">
+            <div class="card__body">
+              <div class="flex justify-between items-center mb-4">
+                <h4>Wallet Balance</h4>
+                <a href="wallet.html" style="font-size: var(--text-sm);"
+                  >Manage →</a
+                >
+              </div>
+
+              <div
+                style="display: flex; flex-direction: column; gap: var(--space-4);"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="crypto-icon crypto-icon--btc">₿</div>
+                    <div>
+                      <div style="font-weight: var(--font-semibold);">
+                        Bitcoin
+                      </div>
+                      <div
+                        style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                      >
+                        BTC
+                      </div>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-weight: var(--font-semibold);">0.1523</div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      ≈ $10,275
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="crypto-icon crypto-icon--eth">Ξ</div>
+                    <div>
+                      <div style="font-weight: var(--font-semibold);">
+                        Ethereum
+                      </div>
+                      <div
+                        style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                      >
+                        ETH
+                      </div>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-weight: var(--font-semibold);">0.5420</div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      ≈ $1,890
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="crypto-icon crypto-icon--usdt">₮</div>
+                    <div>
+                      <div style="font-weight: var(--font-semibold);">
+                        Tether
+                      </div>
+                      <div
+                        style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                      >
+                        USDT
+                      </div>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-weight: var(--font-semibold);">285.00</div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      ≈ $285
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- My Listings -->
+          <div class="card mb-4">
+            <div class="card__body">
+              <div class="flex justify-between items-center mb-4">
+                <h4>My Listings</h4>
+                <a href="my-listings.html" style="font-size: var(--text-sm);"
+                  >Manage →</a
+                >
+              </div>
+
+              <div
+                style="display: flex; flex-direction: column; gap: var(--space-3);"
+              >
+                <div
+                  class="flex items-center justify-between"
+                  style="padding: var(--space-2) 0;"
+                >
+                  <div>
+                    <div
+                      style="font-weight: var(--font-medium); font-size: var(--text-sm);"
+                    >
+                      Sell BTC • Bank Transfer
+                    </div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      $67,450 • 0.5 BTC available
+                    </div>
+                  </div>
+                  <span class="badge badge--success">Active</span>
+                </div>
+                <div
+                  class="flex items-center justify-between"
+                  style="padding: var(--space-2) 0;"
+                >
+                  <div>
+                    <div
+                      style="font-weight: var(--font-medium); font-size: var(--text-sm);"
+                    >
+                      Buy ETH • Venmo
+                    </div>
+                    <div
+                      style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                    >
+                      $3,480 • Buying up to 5 ETH
+                    </div>
+                  </div>
+                  <span class="badge badge--neutral">Paused</span>
+                </div>
+              </div>
+
+              <a
+                href="create-listing.html"
+                class="btn btn--outline btn--full mt-4">+ Create New Listing</a
               >
             </div>
-            <div class="info-row">
-              <span class="info-label">Status</span>
-              <span class="info-value">
-                <span class="badge badge-success">Active</span>
-              </span>
+          </div>
+
+          <!-- Account Status -->
+          <div
+            class="card"
+            style="background: linear-gradient(135deg, var(--color-primary-subtle), rgba(78, 205, 196, 0.1));"
+          >
+            <div class="card__body">
+              <h4 style="margin-bottom: var(--space-4);">Account Status</h4>
+
+              <div
+                style="display: flex; flex-direction: column; gap: var(--space-3);"
+              >
+                <div
+                  class="flex items-center gap-2"
+                  style="font-size: var(--text-sm);"
+                >
+                  <span style="color: var(--color-primary);">✓</span>
+                  <span>Email Verified</span>
+                </div>
+                <div
+                  class="flex items-center gap-2"
+                  style="font-size: var(--text-sm);"
+                >
+                  <span style="color: var(--color-primary);">✓</span>
+                  <span>Phone Verified</span>
+                </div>
+                <div
+                  class="flex items-center gap-2"
+                  style="font-size: var(--text-sm);"
+                >
+                  <span style="color: var(--color-primary);">✓</span>
+                  <span>KYC Verified</span>
+                </div>
+                <div
+                  class="flex items-center gap-2"
+                  style="font-size: var(--text-sm);"
+                >
+                  <span style="color: var(--color-primary);">✓</span>
+                  <span>2FA Enabled</span>
+                </div>
+              </div>
+
+              <a
+                href="settings.html"
+                class="btn btn--ghost btn--full mt-4"
+                style="font-size: var(--text-sm);"
+              >
+                ⚙️ Security Settings
+              </a>
             </div>
           </div>
         </div>
-
-        <div class="info-card">
-          <div class="info-icon">🚀</div>
-          <h3>Stack</h3>
-          <div class="stack-tags">
-            <span class="tag">SvelteKit</span>
-            <span class="tag">Better Auth</span>
-            <span class="tag">PostgreSQL</span>
-            <span class="tag">Cloudflare</span>
-            <span class="tag">Supabase</span>
-            <span class="tag">Podman</span>
-          </div>
-        </div>
-
-        <div class="info-card">
-          <div class="info-icon">📚</div>
-          <h3>Next Steps</h3>
-          <ul class="next-steps">
-            <li>Add OAuth providers (Google, GitHub)</li>
-            <li>Enable email verification</li>
-            <li>Set up password reset</li>
-            <li>Add two-factor authentication</li>
-          </ul>
-        </div>
       </div>
-    {:else}
-      <div class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Loading your session...</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__bottom" style="padding-top: 0; border-top: none;">
+        <p>&copy; 2025 CryptoTrade. All rights reserved.</p>
+        <nav class="footer__legal-links">
+          <a href="#" class="footer__link">Privacy</a>
+          <a href="#" class="footer__link">Terms</a>
+        </nav>
       </div>
-    {/if}
-  </div>
-</main>
+    </div>
+  </footer>
+</div>
 
-<style>
-  .dashboard {
-    min-height: 100vh;
-    background: var(--color-bg-deep);
-  }
-
-  .dashboard-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background: var(--color-bg-surface);
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: 1.25rem;
-    color: var(--color-text-primary);
-  }
-
-  .logo-icon {
-    font-size: 1.5rem;
-  }
-
-  .nav-actions {
-    display: flex;
-    gap: 1rem;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
-    cursor: pointer;
-  }
-
-  .btn-outline {
-    border: 1px solid var(--color-border);
-    color: var(--color-text-primary);
-    background: transparent;
-  }
-
-  .btn-outline:hover {
-    background: var(--color-bg-hover);
-    border-color: var(--color-text-muted);
-  }
-
-  .dashboard-content {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 3rem 2rem;
-  }
-
-  .welcome-section {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-
-  .avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    margin: 0 auto 1.5rem;
-    background: var(--gradient-aurora);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.75rem;
-    font-weight: 600;
-    color: white;
-    overflow: hidden;
-  }
-
-  .avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .avatar-initials {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-
-  .welcome-section h1 {
-    font-size: 2rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-
-  .welcome-section p {
-    color: var(--color-text-secondary);
-    font-size: 1.1rem;
-  }
-
-  .info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-  }
-
-  .info-card {
-    background: var(--color-bg-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    transition: all var(--transition-normal);
-  }
-
-  .info-card:hover {
-    background: var(--color-bg-elevated);
-    border-color: var(--color-border-focus);
-  }
-
-  .info-icon {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-  }
-
-  .info-card h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--color-text-primary);
-  }
-
-  .info-details {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .info-label {
-    font-size: 0.9rem;
-    color: var(--color-text-muted);
-  }
-
-  .info-value {
-    font-size: 0.9rem;
-    color: var(--color-text-primary);
-  }
-
-  .info-value.code {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--color-accent);
-  }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.625rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    border-radius: 100px;
-  }
-
-  .badge-success {
-    background: rgba(35, 209, 139, 0.15);
-    color: var(--color-success);
-  }
-
-  .badge-warning {
-    background: rgba(250, 166, 26, 0.15);
-    color: var(--color-warning);
-  }
-
-  .stack-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.375rem 0.75rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    background: var(--color-bg-deep);
-    border: 1px solid var(--color-border);
-    border-radius: 100px;
-    color: var(--color-text-secondary);
-  }
-
-  .next-steps {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .next-steps li {
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-    padding-left: 1.5rem;
-    position: relative;
-  }
-
-  .next-steps li::before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: var(--color-accent);
-  }
-
-  .loading-state {
-    text-align: center;
-    padding: 4rem 2rem;
-  }
-
-  .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--color-border);
-    border-top-color: var(--color-accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 1rem;
-  }
-
-  .loading-state p {
-    color: var(--color-text-secondary);
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-</style>
+<div class="modal-backdrop"></div>
