@@ -1,4 +1,5 @@
 import { createAuth } from '$lib/server/auth.js';
+import { createDb } from '$lib/server/db.js';
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
@@ -6,6 +7,10 @@ export async function handle({ event, resolve }) {
 	const baseUrl = event.url.origin;
 
 	if (databaseUrl) {
+		// Create database connection once per request
+		// postgres.js handles connection pooling automatically
+		event.locals.db = createDb(databaseUrl);
+
 		const auth = createAuth(databaseUrl, baseUrl);
 		const session = await auth.api.getSession({
 			headers: event.request.headers

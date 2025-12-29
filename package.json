@@ -14,6 +14,7 @@
 		"db:migrate": "drizzle-kit migrate",
 		"db:push": "drizzle-kit push",
 		"db:studio": "drizzle-kit studio",
+		"db:seed": "node scripts/seed-categories.js",
 		"podman:up": "podman compose -f podman-compose.yaml up -d",
 		"podman:down": "podman compose -f podman-compose.yaml down",
 		"podman:logs": "podman compose -f podman-compose.yaml logs -f",

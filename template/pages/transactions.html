@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View all your transaction history - deposits, withdrawals, and trades">
+    <title>Transaction History - CryptoTrade</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💱</text></svg>">
+</head>
+<body>
+    <div class="page-wrapper">
+        
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header__inner">
+                    <a href="../index.html" class="logo">
+                        <span class="logo__icon">💱</span>
+                        <span class="logo__text">CryptoTrade</span>
+                    </a>
+                    
+                    <div class="nav-overlay"></div>
+                    
+                    <nav class="nav">
+                        <a href="marketplace.html" class="nav__link">Marketplace</a>
+                        <a href="search.html" class="nav__link">Buy Crypto</a>
+                        <a href="create-listing.html" class="nav__link">Sell Crypto</a>
+                        <a href="wallet.html" class="nav__link">Wallet</a>
+                    </nav>
+                    
+                    <div class="header__actions">
+                        <a href="dashboard.html" class="btn btn--ghost">Dashboard</a>
+                        <button class="menu-toggle" aria-label="Toggle menu">
+                            <span class="menu-toggle__bar"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                
+                <!-- Page Header -->
+                <div class="flex justify-between items-center mb-8" style="flex-wrap: wrap; gap: var(--space-4);">
+                    <div>
+                        <h1 style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">Transaction History</h1>
+                        <p class="text-muted">All deposits, withdrawals, and completed trades</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button class="btn btn--outline">📥 Export CSV</button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="card mb-6" style="padding: var(--space-4);">
+                    <div class="flex gap-4" style="flex-wrap: wrap;">
+                        <select class="form-select" style="width: auto; min-width: 150px;">
+                            <option value="">All Types</option>
+                            <option value="trade">Trades</option>
+                            <option value="deposit">Deposits</option>
+                            <option value="withdraw">Withdrawals</option>
+                        </select>
+                        
+                        <select class="form-select" style="width: auto; min-width: 150px;">
+                            <option value="">All Assets</option>
+                            <option value="btc">Bitcoin (BTC)</option>
+                            <option value="eth">Ethereum (ETH)</option>
+                            <option value="usdt">Tether (USDT)</option>
+                        </select>
+                        
+                        <select class="form-select" style="width: auto; min-width: 150px;">
+                            <option value="">All Status</option>
+                            <option value="complete">Complete</option>
+                            <option value="pending">Pending</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        
+                        <input type="date" class="form-input" style="width: auto;">
+                        <span style="align-self: center; color: var(--color-gray-500);">to</span>
+                        <input type="date" class="form-input" style="width: auto;">
+                        
+                        <button class="btn btn--primary">Apply Filters</button>
+                    </div>
+                </div>
+
+                <!-- Transactions Table -->
+                <div class="card">
+                    <div class="card__body" style="padding: 0;">
+                        <div class="table-wrapper" style="border: none;">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Type</th>
+                                        <th>Asset</th>
+                                        <th>Amount</th>
+                                        <th>USD Value</th>
+                                        <th>Details</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div>Dec 28, 2025</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">10:45 AM</div>
+                                        </td>
+                                        <td><span class="badge badge--success">Trade (Buy)</span></td>
+                                        <td>
+                                            <div class="flex items-center gap-2">
+                                                <div class="crypto-icon crypto-icon--btc" style="width: 24px; height: 24px; font-size: var(--text-xs);">₿</div>
+                                                <span>BTC</span>
+                                            </div>
+                                        </td>
+                                        <td style="color: var(--color-primary); font-weight: var(--font-semibold);">+0.015 BTC</td>
+                                        <td>$1,011.75</td>
+                                        <td>
+                                            <div style="font-size: var(--text-sm);">From: AlphaTrader</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">#TR-78233</div>
+                                        </td>
+                                        <td><span style="color: var(--color-success);">✓ Complete</span></td>
+                                        <td><a href="#" style="font-size: var(--text-sm);">View</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div>Dec 27, 2025</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">3:22 PM</div>
+                                        </td>
+                                        <td><span class="badge badge--error">Trade (Sell)</span></td>
+                                        <td>
+                                            <div class="flex items-center gap-2">
+                                                <div class="crypto-icon crypto-icon--eth" style="width: 24px; height: 24px; font-size: var(--text-xs);">Ξ</div>
+                                                <span>ETH</span>
+                                            </div>
+                                        </td>
+                                        <td style="color: var(--color-secondary); font-weight: var(--font-semibold);">-1.0 ETH</td>
+                                        <td>$3,485.00</td>
+                                        <td>
+                                            <div style="font-size: var(--text-sm);">To: MaxRider</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">#TR-78220</div>
+                                        </td>
+                                        <td><span style="color: var(--color-success);">✓ Complete</span></td>
+                                        <td><a href="#" style="font-size: var(--text-sm);">View</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div>Dec 26, 2025</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">11:08 AM</div>
+                                        </td>
+                                        <td><span class="badge badge--info">Deposit</span></td>
+                                        <td>
+                                            <div class="flex items-center gap-2">
+                                                <div class="crypto-icon crypto-icon--btc" style="width: 24px; height: 24px; font-size: var(--text-xs);">₿</div>
+                                                <span>BTC</span>
+                                            </div>
+                                        </td>
+                                        <td style="color: var(--color-primary); font-weight: var(--font-semibold);">+0.25 BTC</td>
+                                        <td>$16,862.50</td>
+                                        <td>
+                                            <div style="font-size: var(--text-sm);">External deposit</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500); font-family: var(--font-mono);">bc1q...w3kp</div>
+                                        </td>
+                                        <td><span style="color: var(--color-success);">✓ Complete</span></td>
+                                        <td><a href="#" style="font-size: var(--text-sm);">View</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div>Dec 24, 2025</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">9:15 AM</div>
+                                        </td>
+                                        <td><span class="badge badge--warning">Withdraw</span></td>
+                                        <td>
+                                            <div class="flex items-center gap-2">
+                                                <div class="crypto-icon crypto-icon--usdt" style="width: 24px; height: 24px; font-size: var(--text-xs);">₮</div>
+                                                <span>USDT</span>
+                                            </div>
+                                        </td>
+                                        <td style="color: var(--color-secondary); font-weight: var(--font-semibold);">-500 USDT</td>
+                                        <td>$500.00</td>
+                                        <td>
+                                            <div style="font-size: var(--text-sm);">To external wallet</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500); font-family: var(--font-mono);">0x742...dE82</div>
+                                        </td>
+                                        <td><span style="color: var(--color-success);">✓ Complete</span></td>
+                                        <td><a href="#" style="font-size: var(--text-sm);">View</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div>Dec 22, 2025</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">2:45 PM</div>
+                                        </td>
+                                        <td><span class="badge badge--success">Trade (Buy)</span></td>
+                                        <td>
+                                            <div class="flex items-center gap-2">
+                                                <div class="crypto-icon crypto-icon--eth" style="width: 24px; height: 24px; font-size: var(--text-xs);">Ξ</div>
+                                                <span>ETH</span>
+                                            </div>
+                                        </td>
+                                        <td style="color: var(--color-primary); font-weight: var(--font-semibold);">+2.0 ETH</td>
+                                        <td>$6,890.00</td>
+                                        <td>
+                                            <div style="font-size: var(--text-sm);">From: CryptoMaster</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">#TR-78198</div>
+                                        </td>
+                                        <td><span style="color: var(--color-success);">✓ Complete</span></td>
+                                        <td><a href="#" style="font-size: var(--text-sm);">View</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div>Dec 20, 2025</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">5:30 PM</div>
+                                        </td>
+                                        <td><span class="badge badge--warning">Withdraw</span></td>
+                                        <td>
+                                            <div class="flex items-center gap-2">
+                                                <div class="crypto-icon crypto-icon--btc" style="width: 24px; height: 24px; font-size: var(--text-xs);">₿</div>
+                                                <span>BTC</span>
+                                            </div>
+                                        </td>
+                                        <td style="color: var(--color-secondary); font-weight: var(--font-semibold);">-0.05 BTC</td>
+                                        <td>$3,372.50</td>
+                                        <td>
+                                            <div style="font-size: var(--text-sm);">To external wallet</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500); font-family: var(--font-mono);">bc1qx...0wlh</div>
+                                        </td>
+                                        <td><span style="color: var(--color-success);">✓ Complete</span></td>
+                                        <td><a href="#" style="font-size: var(--text-sm);">View</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div>Dec 18, 2025</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">10:00 AM</div>
+                                        </td>
+                                        <td><span class="badge badge--neutral">Trade (Cancelled)</span></td>
+                                        <td>
+                                            <div class="flex items-center gap-2">
+                                                <div class="crypto-icon crypto-icon--btc" style="width: 24px; height: 24px; font-size: var(--text-xs);">₿</div>
+                                                <span>BTC</span>
+                                            </div>
+                                        </td>
+                                        <td style="color: var(--color-gray-500);">0.02 BTC</td>
+                                        <td>$1,349.00</td>
+                                        <td>
+                                            <div style="font-size: var(--text-sm);">With: SafeWhale</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">#TR-78150</div>
+                                        </td>
+                                        <td><span style="color: var(--color-gray-500);">✗ Cancelled</span></td>
+                                        <td><a href="#" style="font-size: var(--text-sm);">View</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-between items-center mt-6">
+                    <p class="text-muted" style="font-size: var(--text-sm);">Showing 1-10 of 47 transactions</p>
+                    <div class="pagination">
+                        <button class="pagination__item" disabled>←</button>
+                        <button class="pagination__item is-active">1</button>
+                        <button class="pagination__item">2</button>
+                        <button class="pagination__item">3</button>
+                        <button class="pagination__item">4</button>
+                        <button class="pagination__item">5</button>
+                        <button class="pagination__item">→</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer__bottom" style="padding-top: 0; border-top: none;">
+                    <p>&copy; 2025 CryptoTrade. All rights reserved.</p>
+                    <nav class="footer__legal-links">
+                        <a href="#" class="footer__link">Privacy</a>
+                        <a href="#" class="footer__link">Terms</a>
+                    </nav>
+                </div>
+            </div>
+        </footer>
+        
+    </div>
+
+    <div class="modal-backdrop"></div>
+    <script src="../js/main.js"></script>
+</body>
+</html>
+

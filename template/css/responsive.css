@@ -1171,20 +1171,10 @@
         transition: left 0.3s ease;
         overflow-y: auto;
         box-shadow: var(--shadow-xl);
-        pointer-events: auto;
     }
     
-    .filters-sidebar.is-active,
-    .filters-sidebar.active {
+    .filters-sidebar.is-active {
         left: 0;
-    }
-    
-    /* Ensure filter panel is interactive */
-    .filters-sidebar.active .filter-panel,
-    .filters-sidebar.is-active .filter-panel {
-        pointer-events: auto;
-        position: relative;
-        z-index: 1;
     }
     
     .filters-sidebar .filter-panel {
@@ -1197,12 +1187,11 @@
     }
     
     /* Hide desktop sidebar, show filter button */
-    .filters-sidebar:not(.is-active):not(.active) {
+    .filters-sidebar:not(.is-active) {
         display: none;
     }
     
-    .filters-sidebar.is-active,
-    .filters-sidebar.active {
+    .filters-sidebar.is-active {
         display: block;
     }
 }
@@ -1213,11 +1202,6 @@
         width: 100%;
         max-width: 100%;
         left: -100%;
-    }
-    
-    .filters-sidebar.is-active,
-    .filters-sidebar.active {
-        left: 0;
     }
     
     .filters-sidebar .filter-panel {

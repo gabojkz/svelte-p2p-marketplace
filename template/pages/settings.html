@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Account Settings - Security, 2FA, payment methods">
+    <title>Settings - CryptoTrade</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💱</text></svg>">
+</head>
+<body>
+    <div class="page-wrapper">
+        
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header__inner">
+                    <a href="../index.html" class="logo">
+                        <span class="logo__icon">💱</span>
+                        <span class="logo__text">CryptoTrade</span>
+                    </a>
+                    
+                    <div class="nav-overlay"></div>
+                    
+                    <nav class="nav">
+                        <a href="marketplace.html" class="nav__link">Marketplace</a>
+                        <a href="search.html" class="nav__link">Buy Crypto</a>
+                        <a href="create-listing.html" class="nav__link">Sell Crypto</a>
+                        <a href="wallet.html" class="nav__link">Wallet</a>
+                    </nav>
+                    
+                    <div class="header__actions">
+                        <a href="dashboard.html" class="btn btn--ghost">Dashboard</a>
+                        <button class="menu-toggle" aria-label="Toggle menu">
+                            <span class="menu-toggle__bar"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                
+                <!-- Page Header -->
+                <div class="mb-8">
+                    <h1 style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">Settings</h1>
+                    <p class="text-muted">Manage your account, security, and preferences</p>
+                </div>
+
+                <div class="grid" style="grid-template-columns: 240px 1fr; gap: var(--space-8);">
+                    
+                    <!-- Settings Sidebar -->
+                    <aside>
+                        <nav style="display: flex; flex-direction: column; gap: var(--space-1);">
+                            <a href="#profile" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--color-primary-subtle); color: var(--color-primary-dark); font-weight: var(--font-medium);">
+                                <span>👤</span> Profile
+                            </a>
+                            <a href="#security" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); color: var(--color-gray-700);">
+                                <span>🔒</span> Security
+                            </a>
+                            <a href="#payment-methods" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); color: var(--color-gray-700);">
+                                <span>💳</span> Payment Methods
+                            </a>
+                            <a href="#notifications" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); color: var(--color-gray-700);">
+                                <span>🔔</span> Notifications
+                            </a>
+                            <a href="kyc.html" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); color: var(--color-gray-700);">
+                                <span>✓</span> Verification
+                            </a>
+                        </nav>
+                    </aside>
+
+                    <!-- Settings Content -->
+                    <div>
+                        
+                        <!-- Profile Section -->
+                        <section class="card mb-6" id="profile">
+                            <div class="card__body">
+                                <h3 style="margin-bottom: var(--space-6);">Profile Information</h3>
+                                
+                                <div class="flex items-center gap-6 mb-6" style="padding-bottom: var(--space-6); border-bottom: 1px solid var(--color-gray-100);">
+                                    <div class="avatar avatar--2xl">ME</div>
+                                    <div>
+                                        <button class="btn btn--outline btn--sm">Change Avatar</button>
+                                        <p style="font-size: var(--text-xs); color: var(--color-gray-500); margin-top: var(--space-2);">
+                                            JPG, PNG • Max 2MB
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <form data-validate>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="form-group">
+                                            <label class="form-label">Username</label>
+                                            <input type="text" class="form-input" value="MyAccount" readonly style="background: var(--color-gray-50);">
+                                            <div class="form-helper">Username cannot be changed</div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Display Name</label>
+                                            <input type="text" class="form-input" value="My Display Name">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">Email</label>
+                                        <div class="flex gap-3">
+                                            <input type="email" class="form-input" value="user@example.com" style="flex: 1;">
+                                            <span class="badge badge--success" style="align-self: center;">Verified</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Phone Number</label>
+                                        <div class="flex gap-3">
+                                            <input type="tel" class="form-input" value="+1 (555) 123-4567" style="flex: 1;">
+                                            <span class="badge badge--success" style="align-self: center;">Verified</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Bio</label>
+                                        <textarea class="form-textarea" rows="3" placeholder="Tell other traders about yourself...">Professional crypto trader with 2+ years experience. Fast releases, fair prices.</textarea>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Timezone</label>
+                                        <select class="form-select">
+                                            <option>Eastern Time (EST/EDT)</option>
+                                            <option>Pacific Time (PST/PDT)</option>
+                                            <option>Central Time (CST/CDT)</option>
+                                            <option>Mountain Time (MST/MDT)</option>
+                                        </select>
+                                    </div>
+
+                                    <button type="submit" class="btn btn--primary">Save Changes</button>
+                                </form>
+                            </div>
+                        </section>
+
+                        <!-- Security Section -->
+                        <section class="card mb-6" id="security">
+                            <div class="card__body">
+                                <h3 style="margin-bottom: var(--space-6);">Security</h3>
+                                
+                                <!-- 2FA -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-primary-subtle); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
+                                    <div class="flex items-center gap-4">
+                                        <span style="font-size: var(--text-2xl);">🔐</span>
+                                        <div>
+                                            <div style="font-weight: var(--font-semibold);">Two-Factor Authentication</div>
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-600);">Add an extra layer of security</div>
+                                        </div>
+                                    </div>
+                                    <span class="badge badge--success">Enabled</span>
+                                </div>
+
+                                <!-- Password -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-gray-50); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
+                                    <div class="flex items-center gap-4">
+                                        <span style="font-size: var(--text-2xl);">🔑</span>
+                                        <div>
+                                            <div style="font-weight: var(--font-semibold);">Password</div>
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-600);">Last changed 30 days ago</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn--outline btn--sm">Change</button>
+                                </div>
+
+                                <!-- Login Activity -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-gray-50); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
+                                    <div class="flex items-center gap-4">
+                                        <span style="font-size: var(--text-2xl);">📱</span>
+                                        <div>
+                                            <div style="font-weight: var(--font-semibold);">Active Sessions</div>
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-600);">3 devices logged in</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn--outline btn--sm">Manage</button>
+                                </div>
+
+                                <!-- Login History -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-gray-50); border-radius: var(--radius-md);">
+                                    <div class="flex items-center gap-4">
+                                        <span style="font-size: var(--text-2xl);">📋</span>
+                                        <div>
+                                            <div style="font-weight: var(--font-semibold);">Login History</div>
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-600);">View recent login activity</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn--outline btn--sm">View</button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Payment Methods Section -->
+                        <section class="card mb-6" id="payment-methods">
+                            <div class="card__body">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3>Payment Methods</h3>
+                                    <button class="btn btn--primary btn--sm">+ Add Method</button>
+                                </div>
+                                
+                                <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+                                    <!-- Bank Account -->
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); border: 1px solid var(--color-gray-200); border-radius: var(--radius-md);">
+                                        <div class="flex items-center gap-4">
+                                            <span style="font-size: var(--text-2xl);">🏦</span>
+                                            <div>
+                                                <div style="font-weight: var(--font-semibold);">Chase Bank ****4521</div>
+                                                <div style="font-size: var(--text-sm); color: var(--color-gray-600);">Bank Transfer</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button class="btn btn--ghost btn--sm">Edit</button>
+                                            <button class="btn btn--ghost btn--sm" style="color: var(--color-error);">Remove</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Venmo -->
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); border: 1px solid var(--color-gray-200); border-radius: var(--radius-md);">
+                                        <div class="flex items-center gap-4">
+                                            <span style="font-size: var(--text-2xl);">💵</span>
+                                            <div>
+                                                <div style="font-weight: var(--font-semibold);">@myvenmo</div>
+                                                <div style="font-size: var(--text-sm); color: var(--color-gray-600);">Venmo</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button class="btn btn--ghost btn--sm">Edit</button>
+                                            <button class="btn btn--ghost btn--sm" style="color: var(--color-error);">Remove</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Zelle -->
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); border: 1px solid var(--color-gray-200); border-radius: var(--radius-md);">
+                                        <div class="flex items-center gap-4">
+                                            <span style="font-size: var(--text-2xl);">⚡</span>
+                                            <div>
+                                                <div style="font-weight: var(--font-semibold);">user@email.com</div>
+                                                <div style="font-size: var(--text-sm); color: var(--color-gray-600);">Zelle</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button class="btn btn--ghost btn--sm">Edit</button>
+                                            <button class="btn btn--ghost btn--sm" style="color: var(--color-error);">Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Notifications Section -->
+                        <section class="card" id="notifications">
+                            <div class="card__body">
+                                <h3 style="margin-bottom: var(--space-6);">Notification Preferences</h3>
+                                
+                                <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+                                    <label class="flex justify-between items-center">
+                                        <div>
+                                            <div style="font-weight: var(--font-medium);">Trade Notifications</div>
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-600);">Get notified when someone starts a trade</div>
+                                        </div>
+                                        <input type="checkbox" checked style="width: 20px; height: 20px; accent-color: var(--color-primary);">
+                                    </label>
+
+                                    <label class="flex justify-between items-center">
+                                        <div>
+                                            <div style="font-weight: var(--font-medium);">Chat Messages</div>
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-600);">Receive notifications for new messages</div>
+                                        </div>
+                                        <input type="checkbox" checked style="width: 20px; height: 20px; accent-color: var(--color-primary);">
+                                    </label>
+
+                                    <label class="flex justify-between items-center">
+                                        <div>
+                                            <div style="font-weight: var(--font-medium);">Payment Received</div>
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-600);">When a buyer marks payment as sent</div>
+                                        </div>
+                                        <input type="checkbox" checked style="width: 20px; height: 20px; accent-color: var(--color-primary);">
+                                    </label>
+
+                                    <label class="flex justify-between items-center">
+                                        <div>
+                                            <div style="font-weight: var(--font-medium);">Price Alerts</div>
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-600);">Get notified when crypto prices change significantly</div>
+                                        </div>
+                                        <input type="checkbox" style="width: 20px; height: 20px; accent-color: var(--color-primary);">
+                                    </label>
+
+                                    <label class="flex justify-between items-center">
+                                        <div>
+                                            <div style="font-weight: var(--font-medium);">Marketing Emails</div>
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-600);">Receive news and promotional content</div>
+                                        </div>
+                                        <input type="checkbox" style="width: 20px; height: 20px; accent-color: var(--color-primary);">
+                                    </label>
+                                </div>
+
+                                <button class="btn btn--primary mt-6">Save Preferences</button>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer__bottom" style="padding-top: 0; border-top: none;">
+                    <p>&copy; 2025 CryptoTrade. All rights reserved.</p>
+                    <nav class="footer__legal-links">
+                        <a href="#" class="footer__link">Privacy</a>
+                        <a href="#" class="footer__link">Terms</a>
+                    </nav>
+                </div>
+            </div>
+        </footer>
+        
+    </div>
+
+    <div class="modal-backdrop"></div>
+    <script src="../js/main.js"></script>
+</body>
+</html>
+

@@ -1,3 +1,54 @@
+<script>
+  import { useSession } from "$lib/auth-client.js";
+  import { goto } from "$app/navigation";
+  import CategorySelect from "$lib/components/CategorySelect.svelte";
+
+
+  const session = useSession();
+  const user = $derived($session.data?.user);
+
+  // Get data from server load function
+  const { data } = $props();
+  console.log(data);
+  // Access listings and categories from page data
+  const listings = $derived(data?.listings || []);
+  const categories = $derived(data?.categories || []);
+  const totalCount = $derived(data?.totalCount || 0);
+  const currentPage = $derived(data?.currentPage || 1);
+  const totalPages = $derived(data?.totalPages || 0);
+  const filters = $derived(data?.filters || {
+    searchQuery: '',
+    categorySlug: '',
+    location: '',
+    sortBy: 'newest'
+  });
+
+  // Handle category change
+  /** @param {string} categorySlug */
+  function handleCategoryChange(categorySlug) {
+    const url = new URL(window.location.href);
+    if (categorySlug === 'all') {
+      url.searchParams.delete('category');
+    } else {
+      url.searchParams.set('category', categorySlug);
+    }
+    goto(url.pathname + url.search);
+  }
+
+  // Mobile filter state
+  let mobileFilterOpen = $state(false);
+
+  // Toggle mobile filter sidebar
+  function toggleMobileFilters() {
+    mobileFilterOpen = !mobileFilterOpen;
+  }
+
+  // Close mobile filters
+  function closeMobileFilters() {
+    mobileFilterOpen = false;
+  }
+</script>
+
 <div class="page-wrapper">
   <!-- ============================================
              HEADER
@@ -45,10 +96,25 @@
                      MAIN LAYOUT (SIDEBAR + LISTINGS)
                      ============================================ -->
       <div class="marketplace-layout">
+        <!-- Mobile Filter Overlay -->
+        <div 
+          class="filters-overlay" 
+          class:active={mobileFilterOpen}
+          onclick={closeMobileFilters}
+          role="button"
+          tabindex="0"
+          aria-label="Close filters"
+          onkeydown={(e) => e.key === 'Enter' && closeMobileFilters()}
+        ></div>
+
         <!-- ============================================
                          UNIFIED SIDEBAR (SEARCH + FILTERS)
                          ============================================ -->
-        <aside class="filters-sidebar" id="filtersSidebar">
+        <aside 
+          class="filters-sidebar" 
+          id="filtersSidebar"
+          class:active={mobileFilterOpen}
+        >
           <div class="filter-panel">
             <!-- Sell Button -->
             <a
@@ -88,30 +154,19 @@
             </div>
 
             <!-- Category Dropdown -->
-            <div class="filter-group">
-              <label class="filter-group__label">Category</label>
-              <select id="categorySelect" class="form-select">
-                <option value="all">All Categories</option>
-                <optgroup label="Products">
-                  <option value="electronics">📱 Electronics & Tech</option>
-                  <option value="home">🏠 Home & Appliances</option>
-                  <option value="hardware">🔧 Energy & Hardware</option>
-                  <option value="fashion">👕 Fashion & Accessories</option>
-                  <option value="motors">🚗 Motors & Automotive</option>
-                  <option value="health-beauty">💄 Health & Beauty</option>
-                  <option value="collectibles">🎨 Collectibles & Art</option>
-                  <option value="sports">⚽ Sports & Outdoors</option>
-                </optgroup>
-                <optgroup label="Services">
-                  <option value="home-improvement">🔨 Home Improvement</option>
-                  <option value="health-services">❤️ Health & Wellness</option>
-                  <option value="professional">💼 Professional & Digital</option
-                  >
-                  <option value="education">📚 Education & Training</option>
-                  <option value="logistics">🚚 Logistics & Transport</option>
-                </optgroup>
-              </select>
-            </div>
+            <CategorySelect 
+              categories={categories.map(cat => ({
+                id: cat.id,
+                name: cat.name,
+                slug: cat.slug,
+                type: cat.type,
+                icon: cat.icon,
+                parentId: cat.parentId
+              }))}
+              selectedValue={filters.categorySlug || 'all'}
+              id="categorySelect"
+              onChange={handleCategoryChange}
+            />
 
             <!-- Price Range -->
             <div class="filter-group">
@@ -221,7 +276,12 @@
             </button>
 
             <!-- Close Button (mobile only) -->
-            <button class="filter-close-btn" id="filterCloseBtn">✕</button>
+            <button 
+              class="filter-close-btn" 
+              id="filterCloseBtn"
+              onclick={closeMobileFilters}
+              aria-label="Close filters"
+            >✕</button>
           </div>
         </aside>
 
@@ -242,6 +302,8 @@
               <button
                 class="mobile-filter-btn"
                 id="mobileFilterBtn"
+                onclick={toggleMobileFilters}
+                aria-label="Open filters"
                 style="display: none;"
               >
                 <span>⚙️</span>
@@ -756,6 +818,38 @@
       </div>
     </div>
   </main>
+
+<style>
+  /* Mobile Filter Overlay - Behind sidebar */
+  .filters-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .filters-overlay.active {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Ensure sidebar is above overlay and fully interactive */
+  .filters-sidebar.active {
+    z-index: 1000;
+  }
+
+  /* On mobile, show overlay when sidebar is active */
+  @media screen and (max-width: 1024px) {
+    .filters-overlay.active {
+      display: block;
+    }
+  }
+</style>
 
   <!-- ============================================
              FOOTER

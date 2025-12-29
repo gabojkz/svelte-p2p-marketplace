@@ -4,6 +4,7 @@
   import "../styles/responsive.css";
 
   let { children } = $props();
+
 </script>
 
 <svelte:head>

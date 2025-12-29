@@ -1,3 +1,94 @@
+<script>
+  import { useSession } from "$lib/auth-client.js";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
+
+  const session = useSession();
+  const user = $derived($session.data?.user);
+
+  // Get data from server load
+  const { data } = $props();
+  const featuredListings = $derived(data?.featuredListings || []);
+
+  // Search form state
+  let searchQuery = $state("");
+  let location = $state("");
+  let radius = $state("20");
+
+  // Mobile menu state
+  let mobileMenuOpen = $state(false);
+
+  // Toggle mobile menu
+  function toggleMobileMenu() {
+    mobileMenuOpen = !mobileMenuOpen;
+  }
+
+  // Handle search form submission
+  /** @param {SubmitEvent} e */
+  function handleSearch(e) {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    if (location) params.set("location", location);
+    if (radius && radius !== "any") params.set("radius", radius);
+
+    goto(`/marketplace?${params.toString()}`);
+  }
+
+  // Navigate to marketplace with category
+  /** @param {string} category */
+  function navigateToCategory(category) {
+    goto(`/marketplace?category=${category}`);
+  }
+
+  // Navigate to marketplace
+  function navigateToMarketplace() {
+    goto("/marketplace");
+  }
+
+  // Navigate to dashboard
+  function navigateToDashboard() {
+    goto("/dashboard");
+  }
+
+  // Navigate to login
+  function navigateToLogin() {
+    goto("/login");
+  }
+
+  // Format number with K suffix
+  /** @param {number} num */
+  function formatNumber(num) {
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(0)}K+`;
+    }
+    return num.toString();
+  }
+
+  // Format price
+  /** @param {string | number | null | undefined} price */
+  function formatPrice(price) {
+    if (!price) return "£0";
+    return `£${Number(price).toLocaleString("en-GB")}`;
+  }
+
+  // Get time ago
+  /** @param {string | Date | null | undefined} date */
+  function getTimeAgo(date) {
+    if (!date) return "Recently";
+    const now = new Date();
+    const then = new Date(date);
+    const diffMs = Number(now) - Number(then);
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+  }
+</script>
+
 <div class="page-wrapper">
   <!-- ============================================
              HEADER / NAVIGATION
@@ -6,23 +97,33 @@
     <div class="container">
       <div class="header__inner">
         <!-- Logo -->
-        <a href="index.html" class="logo">
-          <span class="logo__icon">🏪</span>
+        <a href="/" class="logo">
+          <span class="logo__icon">AGM</span>
           <span class="logo__text">aGoraMarket</span>
         </a>
 
         <!-- Mobile menu overlay -->
-        <div class="nav-overlay"></div>
+        <div
+          class="nav-overlay"
+          class:active={mobileMenuOpen}
+          onclick={toggleMobileMenu}
+          onkeydown={(e) => e.key === "Enter" && toggleMobileMenu()}
+          role="button"
+          tabindex="0"
+          aria-label="Close menu"
+        ></div>
 
         <!-- Main Navigation -->
-        <nav class="nav" aria-label="Main navigation">
-          <a href="pages/marketplace.html" class="nav__link">Browse</a>
-          <a href="pages/marketplace.html?category=vehicles" class="nav__link"
-            >Vehicles</a
+        <nav
+          class="nav"
+          class:active={mobileMenuOpen}
+          aria-label="Main navigation"
+        >
+          <a href="/marketplace" class="nav__link">Browse</a>
+          <a href="/marketplace?category=vehicles" class="nav__link">Vehicles</a
           >
-          <a
-            href="pages/marketplace.html?category=electronics"
-            class="nav__link">Electronics</a
+          <a href="/marketplace?category=electronics" class="nav__link"
+            >Electronics</a
           >
           <a href="#how-it-works" class="nav__link">How It Works</a>
           <a href="#categories" class="nav__link">Categories</a>
@@ -30,15 +131,26 @@
 
         <!-- Header Actions -->
         <div class="header__actions">
-          <a href="pages/dashboard.html" class="btn btn--ghost">
-            <span>Log In</span>
-          </a>
-          <a href="pages/create-listing.html" class="btn btn--primary">
+          {#if user}
+            <a href="/dashboard" class="btn btn--ghost">
+              <span>Dashboard</span>
+            </a>
+          {:else}
+            <a href="/login" class="btn btn--ghost">
+              <span>Log In</span>
+            </a>
+          {/if}
+          <a href="/marketplace" class="btn btn--primary">
             <span>Sell Now</span>
           </a>
 
           <!-- Mobile Menu Toggle -->
-          <button class="menu-toggle" aria-label="Toggle menu">
+          <button
+            class="menu-toggle"
+            class:active={mobileMenuOpen}
+            aria-label="Toggle menu"
+            onclick={toggleMobileMenu}
+          >
             <span class="menu-toggle__bar"></span>
           </button>
         </div>
@@ -87,20 +199,19 @@
 
           <!-- Hero Search Box -->
           <div class="hero-search">
-            <form
-              class="search-form"
-              action="pages/marketplace.html"
-              method="get"
-            >
+            <form class="search-form" onsubmit={handleSearch}>
               <div class="search-form__grid">
                 <!-- What are you looking for? -->
                 <div class="form-group">
-                  <label class="form-label">What are you looking for?</label>
+                  <label for="search-query" class="form-label"
+                    >What are you looking for?</label
+                  >
                   <div class="input-icon">
                     <span class="input-icon__icon">🔍</span>
                     <input
+                      id="search-query"
                       type="text"
-                      name="q"
+                      bind:value={searchQuery}
                       class="form-input"
                       placeholder="e.g., BMW, iPhone, Sofa..."
                     />
@@ -109,12 +220,14 @@
 
                 <!-- Location -->
                 <div class="form-group">
-                  <label class="form-label">Location</label>
+                  <label for="location-input" class="form-label">Location</label
+                  >
                   <div class="input-icon">
                     <span class="input-icon__icon">📍</span>
                     <input
+                      id="location-input"
                       type="text"
-                      name="location"
+                      bind:value={location}
                       class="form-input"
                       placeholder="City, postcode, or area..."
                     />
@@ -123,11 +236,15 @@
 
                 <!-- Radius -->
                 <div class="form-group search-form__radius">
-                  <label class="form-label">Radius</label>
-                  <select name="radius" class="form-select">
+                  <label for="radius-select" class="form-label">Radius</label>
+                  <select
+                    id="radius-select"
+                    bind:value={radius}
+                    class="form-select"
+                  >
                     <option value="5">5 km</option>
                     <option value="10">10 km</option>
-                    <option value="20" selected>20 km</option>
+                    <option value="20">20 km</option>
                     <option value="50">50 km</option>
                     <option value="100">100 km</option>
                     <option value="any">Any</option>
@@ -149,506 +266,43 @@
               <span class="text-muted" style="font-size: var(--text-sm);"
                 >Popular:</span
               >
-              <a
-                href="pages/marketplace.html?category=electronics"
-                class="category-chip">📱 Electronics</a
+              <button
+                type="button"
+                class="category-chip"
+                onclick={() => navigateToCategory("electronics")}
               >
-              <a
-                href="pages/marketplace.html?category=motors"
-                class="category-chip">🚗 Motors</a
+                📱 Electronics
+              </button>
+              <button
+                type="button"
+                class="category-chip"
+                onclick={() => navigateToCategory("motors")}
               >
-              <a
-                href="pages/marketplace.html?category=fashion"
-                class="category-chip">👕 Fashion</a
+                🚗 Motors
+              </button>
+              <button
+                type="button"
+                class="category-chip"
+                onclick={() => navigateToCategory("fashion")}
               >
-              <a
-                href="pages/marketplace.html?category=home"
-                class="category-chip">🏠 Home</a
+                👕 Fashion
+              </button>
+              <button
+                type="button"
+                class="category-chip"
+                onclick={() => navigateToCategory("home")}
               >
-              <a
-                href="pages/marketplace.html?category=services"
-                class="category-chip">🔧 Services</a
+                🏠 Home
+              </button>
+              <button
+                type="button"
+                class="category-chip"
+                onclick={() => navigateToCategory("services")}
               >
+                🔧 Services
+              </button>
             </div>
           </div>
-
-          <!-- Stats -->
-          <div
-            class="hero__stats flex justify-center gap-8 mt-8"
-            style="padding-top: var(--space-8);"
-          >
-            <div class="stat">
-              <div
-                class="stat__value"
-                style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: var(--font-bold);"
-              >
-                125K+
-              </div>
-              <div class="stat__label text-muted">Active Listings</div>
-            </div>
-            <div class="stat">
-              <div
-                class="stat__value"
-                style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: var(--font-bold);"
-              >
-                50K+
-              </div>
-              <div class="stat__label text-muted">Verified Sellers</div>
-            </div>
-            <div class="stat">
-              <div
-                class="stat__value"
-                style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: var(--font-bold);"
-              >
-                98%
-              </div>
-              <div class="stat__label text-muted">Satisfaction Rate</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================
-                 CATEGORIES SECTION - PRODUCTS
-                 ============================================ -->
-    <section class="section section--gray" id="categories">
-      <div class="container">
-        <div class="section__header">
-          <span class="badge badge--primary">Products</span>
-          <h2 class="section__title mt-4">Shop by Category</h2>
-          <p class="section__subtitle">
-            Find exactly what you're looking for in our curated product
-            categories
-          </p>
-        </div>
-
-        <div
-          class="category-grid"
-          style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-6);"
-        >
-          <!-- Electronics & Technology -->
-          <a
-            href="pages/marketplace.html?category=electronics"
-            class="category-card"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #4ECDC4, #44A08D);"
-            >
-              📱
-            </div>
-            <h4 class="category-card__title">Electronics & Tech</h4>
-            <p class="category-card__count">28,320 listings</p>
-            <div class="category-card__tags">
-              <span>Phones</span>
-              <span>Laptops</span>
-              <span>Gaming</span>
-            </div>
-          </a>
-
-          <!-- Home & Appliances -->
-          <a href="pages/marketplace.html?category=home" class="category-card">
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #667eea, #764ba2);"
-            >
-              🏠
-            </div>
-            <h4 class="category-card__title">Home & Appliances</h4>
-            <p class="category-card__count">24,560 listings</p>
-            <div class="category-card__tags">
-              <span>Appliances</span>
-              <span>Furniture</span>
-              <span>Decor</span>
-            </div>
-          </a>
-
-          <!-- Energy & Hardware -->
-          <a
-            href="pages/marketplace.html?category=hardware"
-            class="category-card"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #FFE66D, #f5af19);"
-            >
-              🔧
-            </div>
-            <h4 class="category-card__title">Energy & Hardware</h4>
-            <p class="category-card__count">8,750 listings</p>
-            <div class="category-card__tags">
-              <span>Tools</span>
-              <span>Solar</span>
-              <span>Materials</span>
-            </div>
-          </a>
-
-          <!-- Fashion & Accessories -->
-          <a
-            href="pages/marketplace.html?category=fashion"
-            class="category-card"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #f093fb, #f5576c);"
-            >
-              👕
-            </div>
-            <h4 class="category-card__title">Fashion & Accessories</h4>
-            <p class="category-card__count">45,120 listings</p>
-            <div class="category-card__tags">
-              <span>Clothing</span>
-              <span>Shoes</span>
-              <span>Jewelry</span>
-            </div>
-          </a>
-
-          <!-- Motors -->
-          <a
-            href="pages/marketplace.html?category=motors"
-            class="category-card"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #FF6B6B, #FF8E53);"
-            >
-              🚗
-            </div>
-            <h4 class="category-card__title">Motors & Automotive</h4>
-            <p class="category-card__count">12,450 listings</p>
-            <div class="category-card__tags">
-              <span>Car Parts</span>
-              <span>Tires</span>
-              <span>Accessories</span>
-            </div>
-          </a>
-
-          <!-- Health & Beauty -->
-          <a
-            href="pages/marketplace.html?category=health-beauty"
-            class="category-card"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #a8edea, #fed6e3);"
-            >
-              💄
-            </div>
-            <h4 class="category-card__title">Health & Beauty</h4>
-            <p class="category-card__count">18,340 listings</p>
-            <div class="category-card__tags">
-              <span>Skincare</span>
-              <span>Makeup</span>
-              <span>Wellness</span>
-            </div>
-          </a>
-
-          <!-- Collectibles & Art -->
-          <a
-            href="pages/marketplace.html?category=collectibles"
-            class="category-card"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #c79081, #dfa579);"
-            >
-              🎨
-            </div>
-            <h4 class="category-card__title">Collectibles & Art</h4>
-            <p class="category-card__count">6,890 listings</p>
-            <div class="category-card__tags">
-              <span>Antiques</span>
-              <span>Art</span>
-              <span>Coins</span>
-            </div>
-          </a>
-
-          <!-- Sports & Outdoors -->
-          <a
-            href="pages/marketplace.html?category=sports"
-            class="category-card"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #45D98E, #38b2ac);"
-            >
-              ⚽
-            </div>
-            <h4 class="category-card__title">Sports & Outdoors</h4>
-            <p class="category-card__count">11,230 listings</p>
-            <div class="category-card__tags">
-              <span>Fitness</span>
-              <span>Bikes</span>
-              <span>Camping</span>
-            </div>
-          </a>
-        </div>
-
-        <!-- Services Categories -->
-        <div class="section__header" style="margin-top: var(--space-12);">
-          <span class="badge badge--secondary">Services</span>
-          <h2 class="section__title mt-4">Find Local Services</h2>
-          <p class="section__subtitle">
-            Hire trusted professionals for any job
-          </p>
-        </div>
-
-        <div
-          class="category-grid"
-          style="display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-6);"
-        >
-          <!-- Home Improvement -->
-          <a
-            href="pages/marketplace.html?category=home-improvement"
-            class="category-card category-card--service"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #3498DB, #2c3e50);"
-            >
-              🔨
-            </div>
-            <h4 class="category-card__title">Home Improvement</h4>
-            <p class="category-card__count">4,230 providers</p>
-            <div class="category-card__tags">
-              <span>Electrical</span>
-              <span>Plumbing</span>
-            </div>
-          </a>
-
-          <!-- Health & Wellness -->
-          <a
-            href="pages/marketplace.html?category=health-services"
-            class="category-card category-card--service"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #E74C3C, #c0392b);"
-            >
-              ❤️
-            </div>
-            <h4 class="category-card__title">Health & Wellness</h4>
-            <p class="category-card__count">2,890 providers</p>
-            <div class="category-card__tags">
-              <span>Medical</span>
-              <span>Therapy</span>
-            </div>
-          </a>
-
-          <!-- Professional Services -->
-          <a
-            href="pages/marketplace.html?category=professional"
-            class="category-card category-card--service"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #9B59B6, #8e44ad);"
-            >
-              💼
-            </div>
-            <h4 class="category-card__title">Professional & Digital</h4>
-            <p class="category-card__count">5,670 providers</p>
-            <div class="category-card__tags">
-              <span>Legal</span>
-              <span>Design</span>
-            </div>
-          </a>
-
-          <!-- Education & Training -->
-          <a
-            href="pages/marketplace.html?category=education"
-            class="category-card category-card--service"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #1ABC9C, #16a085);"
-            >
-              📚
-            </div>
-            <h4 class="category-card__title">Education & Training</h4>
-            <p class="category-card__count">3,450 tutors</p>
-            <div class="category-card__tags">
-              <span>Lessons</span>
-              <span>Tutoring</span>
-            </div>
-          </a>
-
-          <!-- Logistics & Transport -->
-          <a
-            href="pages/marketplace.html?category=logistics"
-            class="category-card category-card--service"
-          >
-            <div
-              class="category-card__icon"
-              style="background: linear-gradient(135deg, #F39C12, #e67e22);"
-            >
-              🚚
-            </div>
-            <h4 class="category-card__title">Logistics & Transport</h4>
-            <p class="category-card__count">1,890 providers</p>
-            <div class="category-card__tags">
-              <span>Delivery</span>
-              <span>Moving</span>
-            </div>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================
-                 FEATURED LISTINGS SECTION
-                 ============================================ -->
-    <section class="section">
-      <div class="container">
-        <div class="section__header">
-          <div
-            class="flex justify-between items-center"
-            style="max-width: 100%; text-align: left;"
-          >
-            <div>
-              <span class="badge badge--info">Hot Deals</span>
-              <h2 class="section__title mt-4">Featured Listings Near You</h2>
-            </div>
-            <a href="pages/marketplace.html" class="btn btn--outline"
-              >View All →</a
-            >
-          </div>
-        </div>
-
-        <div
-          class="listings-grid"
-          style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-6);"
-        >
-          <!-- Listing Card 1 -->
-          <a href="pages/offer-detail.html" class="listing-card">
-            <div class="listing-card__image">
-              <div
-                class="listing-card__placeholder"
-                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
-              >
-                🚗
-              </div>
-              <span class="listing-card__badge listing-card__badge--featured"
-                >Featured</span
-              >
-              <button class="listing-card__favorite" aria-label="Save listing"
-                >♡</button
-              >
-            </div>
-            <div class="listing-card__body">
-              <div class="listing-card__category">Vehicles • Cars</div>
-              <h4 class="listing-card__title">
-                2019 BMW 3 Series 320i M Sport
-              </h4>
-              <div class="listing-card__price">£18,500</div>
-              <div class="listing-card__meta">
-                <span class="listing-card__location">📍 Newcastle, 5km</span>
-                <span class="listing-card__time">2h ago</span>
-              </div>
-              <div class="listing-card__seller">
-                <span class="avatar avatar--sm">JD</span>
-                <span>John D.</span>
-                <span class="seller-rating">⭐ 4.9</span>
-              </div>
-            </div>
-          </a>
-
-          <!-- Listing Card 2 -->
-          <a href="pages/offer-detail.html" class="listing-card">
-            <div class="listing-card__image">
-              <div
-                class="listing-card__placeholder"
-                style="background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);"
-              >
-                📱
-              </div>
-              <button class="listing-card__favorite" aria-label="Save listing"
-                >♡</button
-              >
-            </div>
-            <div class="listing-card__body">
-              <div class="listing-card__category">Electronics • Phones</div>
-              <h4 class="listing-card__title">
-                iPhone 15 Pro Max 256GB Titanium
-              </h4>
-              <div class="listing-card__price">£899</div>
-              <div class="listing-card__meta">
-                <span class="listing-card__location">📍 Gateshead, 8km</span>
-                <span class="listing-card__time">5h ago</span>
-              </div>
-              <div class="listing-card__seller">
-                <span class="avatar avatar--sm">SM</span>
-                <span>Sarah M.</span>
-                <span class="seller-rating">⭐ 5.0</span>
-              </div>
-            </div>
-          </a>
-
-          <!-- Listing Card 3 -->
-          <a href="pages/offer-detail.html" class="listing-card">
-            <div class="listing-card__image">
-              <div
-                class="listing-card__placeholder"
-                style="background: linear-gradient(135deg, #45D98E 0%, #38b2ac 100%);"
-              >
-                🛋️
-              </div>
-              <span class="listing-card__badge listing-card__badge--urgent"
-                >Urgent</span
-              >
-              <button class="listing-card__favorite" aria-label="Save listing"
-                >♡</button
-              >
-            </div>
-            <div class="listing-card__body">
-              <div class="listing-card__category">Furniture • Sofas</div>
-              <h4 class="listing-card__title">
-                IKEA Kivik 3-Seater Corner Sofa
-              </h4>
-              <div class="listing-card__price">£350</div>
-              <div class="listing-card__meta">
-                <span class="listing-card__location">📍 Durham, 18km</span>
-                <span class="listing-card__time">1d ago</span>
-              </div>
-              <div class="listing-card__seller">
-                <span class="avatar avatar--sm">MR</span>
-                <span>Mike R.</span>
-                <span class="seller-rating">⭐ 4.7</span>
-              </div>
-            </div>
-          </a>
-
-          <!-- Listing Card 4 -->
-          <a href="pages/offer-detail.html" class="listing-card">
-            <div class="listing-card__image">
-              <div
-                class="listing-card__placeholder"
-                style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"
-              >
-                👟
-              </div>
-              <button class="listing-card__favorite" aria-label="Save listing"
-                >♡</button
-              >
-            </div>
-            <div class="listing-card__body">
-              <div class="listing-card__category">Fashion • Shoes</div>
-              <h4 class="listing-card__title">
-                Nike Air Jordan 1 Retro High OG
-              </h4>
-              <div class="listing-card__price">£180</div>
-              <div class="listing-card__meta">
-                <span class="listing-card__location">📍 Sunderland, 15km</span>
-                <span class="listing-card__time">3h ago</span>
-              </div>
-              <div class="listing-card__seller">
-                <span class="avatar avatar--sm">AK</span>
-                <span>Alex K.</span>
-                <span class="seller-rating">⭐ 4.8</span>
-              </div>
-            </div>
-          </a>
         </div>
       </div>
     </section>
@@ -660,7 +314,7 @@
       <div class="container">
         <div class="section__header">
           <span class="badge badge--primary">Simple & Secure</span>
-          <h2 class="section__title mt-4">How LocalMarket Works</h2>
+          <h2 class="section__title mt-4">How aGoraMarket Works</h2>
           <p class="section__subtitle">
             Buy and sell with confidence using our secure escrow system
           </p>
@@ -842,7 +496,7 @@
               class="text-muted"
               style="font-size: var(--text-lg); margin-bottom: var(--space-6);"
             >
-              Unlike other marketplaces, LocalMarket protects every transaction
+              Unlike other marketplaces, aGoraMarket protects every transaction
               with escrow. Your money is held safely until you confirm the item
               is as described.
             </p>
@@ -864,9 +518,8 @@
                 <span>Secure messaging with no personal info shared</span>
               </li>
             </ul>
-            <a
-              href="pages/marketplace.html"
-              class="btn btn--primary btn--lg mt-6">Start Browsing</a
+            <a href="/marketplace" class="btn btn--primary btn--lg mt-6"
+              >Start Browsing</a
             >
           </div>
         </div>
@@ -900,14 +553,11 @@
             paid securely through our escrow system.
           </p>
           <div class="flex justify-center gap-4">
-            <a
-              href="pages/create-listing.html"
-              class="btn btn--secondary btn--xl"
-            >
+            <a href="/marketplace" class="btn btn--secondary btn--xl">
               Create Free Listing
             </a>
             <a
-              href="pages/marketplace.html"
+              href="/marketplace"
               class="btn btn--xl"
               style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3);"
             >
@@ -927,7 +577,7 @@
       <div class="footer__grid">
         <!-- Brand Column -->
         <div class="footer__brand">
-          <a href="index.html" class="logo footer__logo">
+          <a href="/" class="logo footer__logo">
             <span class="logo__icon">🏪</span>
             <span>LocalMarket</span>
           </a>
@@ -936,11 +586,26 @@
             by escrow.
           </p>
           <div class="footer__social">
-            <a href="#" class="footer__social-link" aria-label="Twitter">𝕏</a>
-            <a href="#" class="footer__social-link" aria-label="Facebook">📘</a>
-            <a href="#" class="footer__social-link" aria-label="Instagram">📷</a
+            <button
+              type="button"
+              class="footer__social-link"
+              aria-label="Twitter">𝕏</button
             >
-            <a href="#" class="footer__social-link" aria-label="YouTube">▶️</a>
+            <button
+              type="button"
+              class="footer__social-link"
+              aria-label="Facebook">📘</button
+            >
+            <button
+              type="button"
+              class="footer__social-link"
+              aria-label="Instagram">📷</button
+            >
+            <button
+              type="button"
+              class="footer__social-link"
+              aria-label="YouTube">▶️</button
+            >
           </div>
         </div>
 
@@ -948,21 +613,17 @@
         <div class="footer__column">
           <h4 class="footer__column-title">Categories</h4>
           <nav class="footer__links">
-            <a
-              href="pages/marketplace.html?category=vehicles"
-              class="footer__link">Vehicles</a
+            <a href="/marketplace?category=vehicles" class="footer__link"
+              >Vehicles</a
             >
-            <a
-              href="pages/marketplace.html?category=electronics"
-              class="footer__link">Electronics</a
+            <a href="/marketplace?category=electronics" class="footer__link"
+              >Electronics</a
             >
-            <a
-              href="pages/marketplace.html?category=property"
-              class="footer__link">Property</a
+            <a href="/marketplace?category=property" class="footer__link"
+              >Property</a
             >
-            <a
-              href="pages/marketplace.html?category=fashion"
-              class="footer__link">Fashion</a
+            <a href="/marketplace?category=fashion" class="footer__link"
+              >Fashion</a
             >
           </nav>
         </div>
@@ -971,10 +632,10 @@
         <div class="footer__column">
           <h4 class="footer__column-title">Resources</h4>
           <nav class="footer__links">
-            <a href="#" class="footer__link">Help Center</a>
-            <a href="#" class="footer__link">Safety Tips</a>
-            <a href="#" class="footer__link">Seller Guide</a>
-            <a href="#" class="footer__link">Buyer Guide</a>
+            <button type="button" class="footer__link">Help Center</button>
+            <button type="button" class="footer__link">Safety Tips</button>
+            <button type="button" class="footer__link">Seller Guide</button>
+            <button type="button" class="footer__link">Buyer Guide</button>
           </nav>
         </div>
 
@@ -982,22 +643,83 @@
         <div class="footer__column">
           <h4 class="footer__column-title">Company</h4>
           <nav class="footer__links">
-            <a href="#" class="footer__link">About Us</a>
-            <a href="#" class="footer__link">Careers</a>
-            <a href="#" class="footer__link">Blog</a>
-            <a href="#" class="footer__link">Contact</a>
+            <button type="button" class="footer__link">About Us</button>
+            <button type="button" class="footer__link">Careers</button>
+            <button type="button" class="footer__link">Blog</button>
+            <button type="button" class="footer__link">Contact</button>
           </nav>
         </div>
       </div>
 
       <div class="footer__bottom">
-        <p>&copy; 2025 LocalMarket. All rights reserved.</p>
+        <p>&copy; 2025 aGoraMarket. All rights reserved.</p>
         <nav class="footer__legal-links">
-          <a href="#" class="footer__link">Privacy Policy</a>
-          <a href="#" class="footer__link">Terms of Service</a>
-          <a href="#" class="footer__link">Cookie Policy</a>
+          <button type="button" class="footer__link">Privacy Policy</button>
+          <button type="button" class="footer__link">Terms of Service</button>
+          <button type="button" class="footer__link">Cookie Policy</button>
         </nav>
       </div>
     </div>
   </footer>
 </div>
+
+<style>
+  /* Mobile menu styles */
+  .nav-overlay.active {
+    display: block;
+  }
+
+  .nav.active {
+    transform: translateX(0);
+  }
+
+  .menu-toggle.active .menu-toggle__bar {
+    transform: rotate(45deg);
+  }
+
+  .menu-toggle.active .menu-toggle__bar::before {
+    transform: rotate(-90deg);
+    top: 0;
+  }
+
+  .menu-toggle.active .menu-toggle__bar::after {
+    opacity: 0;
+  }
+
+  /* Category card button styles */
+  .category-card {
+    cursor: pointer;
+    border: none;
+    background: none;
+    text-align: left;
+    padding: 0;
+    width: 100%;
+  }
+
+  .category-chip {
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .category-chip:hover {
+    text-decoration: underline;
+  }
+
+  /* Footer button styles */
+  .footer__social-link,
+  .footer__link {
+    cursor: pointer;
+  }
+
+  .footer__social-link:focus,
+  .footer__link:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+</style>

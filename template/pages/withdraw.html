@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Withdraw cryptocurrency to your external wallet">
+    <title>Withdraw - CryptoTrade</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💱</text></svg>">
+</head>
+<body>
+    <div class="page-wrapper">
+        
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header__inner">
+                    <a href="../index.html" class="logo">
+                        <span class="logo__icon">💱</span>
+                        <span class="logo__text">CryptoTrade</span>
+                    </a>
+                    
+                    <div class="nav-overlay"></div>
+                    
+                    <nav class="nav">
+                        <a href="marketplace.html" class="nav__link">Marketplace</a>
+                        <a href="search.html" class="nav__link">Buy Crypto</a>
+                        <a href="create-listing.html" class="nav__link">Sell Crypto</a>
+                        <a href="wallet.html" class="nav__link">Wallet</a>
+                    </nav>
+                    
+                    <div class="header__actions">
+                        <a href="dashboard.html" class="btn btn--ghost">Dashboard</a>
+                        <button class="menu-toggle" aria-label="Toggle menu">
+                            <span class="menu-toggle__bar"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content" style="background: var(--color-gray-100);">
+            <div class="container" style="max-width: 600px;">
+                
+                <!-- Page Header -->
+                <div class="text-center mb-8">
+                    <h1 style="margin-bottom: var(--space-2);">Withdraw Cryptocurrency</h1>
+                    <p class="text-muted">Send crypto to your external wallet (MetaMask, Ledger, etc.)</p>
+                </div>
+
+                <!-- Withdrawal Form -->
+                <div class="card mb-6">
+                    <div class="card__body" style="padding: var(--space-8);">
+                        <form data-validate>
+                            
+                            <!-- Select Cryptocurrency -->
+                            <div class="form-group">
+                                <label class="form-label form-label--required">Select Cryptocurrency</label>
+                                <select class="form-select form-input--lg" required>
+                                    <option value="">Choose asset...</option>
+                                    <option value="btc">Bitcoin (BTC) - Available: 0.1523 BTC</option>
+                                    <option value="eth">Ethereum (ETH) - Available: 0.542 ETH</option>
+                                    <option value="usdt">Tether (USDT) - Available: 285.00 USDT</option>
+                                </select>
+                            </div>
+
+                            <!-- Network Selection -->
+                            <div class="form-group">
+                                <label class="form-label form-label--required">Network</label>
+                                <select class="form-select" required>
+                                    <option value="btc">Bitcoin Network</option>
+                                </select>
+                                <div class="form-helper">Make sure to select the correct network for your receiving wallet</div>
+                            </div>
+
+                            <!-- Wallet Address -->
+                            <div class="form-group">
+                                <label class="form-label form-label--required">Withdrawal Address</label>
+                                <input type="text" class="form-input form-input--lg" placeholder="Enter your external wallet address" required style="font-family: var(--font-mono); font-size: var(--text-sm);">
+                                <div class="form-helper">Double-check the address. Transactions cannot be reversed.</div>
+                            </div>
+
+                            <!-- Amount -->
+                            <div class="form-group">
+                                <label class="form-label form-label--required">Amount</label>
+                                <div style="position: relative;">
+                                    <input type="number" class="form-input form-input--lg" placeholder="0.00" required step="0.00000001" style="padding-right: 100px;">
+                                    <div style="position: absolute; right: var(--space-4); top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: var(--space-2);">
+                                        <span style="font-weight: var(--font-semibold);">BTC</span>
+                                        <button type="button" class="btn btn--ghost btn--sm" style="font-size: var(--text-xs); padding: var(--space-1) var(--space-2);">MAX</button>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between mt-2" style="font-size: var(--text-sm);">
+                                    <span class="text-muted">Available: 0.1523 BTC</span>
+                                    <span class="text-muted">≈ $10,275.00 USD</span>
+                                </div>
+                            </div>
+
+                            <!-- Fee Information -->
+                            <div style="padding: var(--space-4); background: var(--color-gray-50); border-radius: var(--radius-md); margin-bottom: var(--space-6);">
+                                <div class="flex justify-between mb-2" style="font-size: var(--text-sm);">
+                                    <span class="text-muted">Amount</span>
+                                    <span>0.1000 BTC</span>
+                                </div>
+                                <div class="flex justify-between mb-2" style="font-size: var(--text-sm);">
+                                    <span class="text-muted">Network Fee</span>
+                                    <span>0.0001 BTC</span>
+                                </div>
+                                <div style="border-top: 1px solid var(--color-gray-200); padding-top: var(--space-2); margin-top: var(--space-2);">
+                                    <div class="flex justify-between" style="font-size: var(--text-sm); font-weight: var(--font-semibold);">
+                                        <span>You will receive</span>
+                                        <span>0.0999 BTC</span>
+                                    </div>
+                                    <div class="flex justify-end" style="font-size: var(--text-xs); color: var(--color-gray-500);">
+                                        ≈ $6,738.25 USD
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2FA Verification -->
+                            <div class="form-group">
+                                <label class="form-label form-label--required">2FA Verification Code</label>
+                                <input type="text" class="form-input" placeholder="Enter 6-digit code" required maxlength="6" pattern="[0-9]{6}">
+                                <div class="form-helper">Enter the code from your authenticator app</div>
+                            </div>
+
+                            <!-- Security Warning -->
+                            <div class="alert alert--warning mb-6">
+                                <span class="alert__icon">⚠️</span>
+                                <div class="alert__content">
+                                    <div class="alert__title">Security Check</div>
+                                    <p class="alert__message">
+                                        Please verify that the withdrawal address is correct. Cryptocurrency transactions are irreversible.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn--primary btn--xl btn--full">
+                                Withdraw Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Recent Withdrawals -->
+                <div class="card mb-6">
+                    <div class="card__body">
+                        <h4 style="margin-bottom: var(--space-4);">Recent Withdrawals</h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-3); background: var(--color-gray-50); border-radius: var(--radius-md);">
+                                <div>
+                                    <div style="font-weight: var(--font-medium);">-500 USDT</div>
+                                    <div style="font-size: var(--text-xs); color: var(--color-gray-500);">Dec 24, 2025 • To: 0x742d...dE82</div>
+                                </div>
+                                <span class="badge badge--success">Complete</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-3); background: var(--color-gray-50); border-radius: var(--radius-md);">
+                                <div>
+                                    <div style="font-weight: var(--font-medium);">-0.05 BTC</div>
+                                    <div style="font-size: var(--text-xs); color: var(--color-gray-500);">Dec 20, 2025 • To: bc1qxy...0wlh</div>
+                                </div>
+                                <span class="badge badge--success">Complete</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back Link -->
+                <div class="text-center">
+                    <a href="wallet.html" class="btn btn--ghost">← Back to Wallet</a>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer__bottom" style="padding-top: 0; border-top: none;">
+                    <p>&copy; 2025 CryptoTrade. All rights reserved.</p>
+                    <nav class="footer__legal-links">
+                        <a href="#" class="footer__link">Privacy</a>
+                        <a href="#" class="footer__link">Terms</a>
+                    </nav>
+                </div>
+            </div>
+        </footer>
+        
+    </div>
+
+    <div class="modal-backdrop"></div>
+    <script src="../js/main.js"></script>
+</body>
+</html>
+

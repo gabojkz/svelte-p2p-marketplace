@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dispute Resolution Portal - Upload evidence and resolve trade conflicts">
+    <title>Dispute Resolution - Trade #TR-78234 - CryptoTrade</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💱</text></svg>">
+</head>
+<body>
+    <div class="page-wrapper">
+        
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header__inner">
+                    <a href="../index.html" class="logo">
+                        <span class="logo__icon">💱</span>
+                        <span class="logo__text">CryptoTrade</span>
+                    </a>
+                    
+                    <div style="flex: 1; text-align: center;">
+                        <span style="font-weight: var(--font-semibold);">Dispute #DSP-12345</span>
+                        <span class="badge badge--error" style="margin-left: var(--space-2);">Under Review</span>
+                    </div>
+                    
+                    <div class="header__actions">
+                        <a href="dashboard.html" class="btn btn--ghost">Dashboard</a>
+                        <button class="menu-toggle" aria-label="Toggle menu">
+                            <span class="menu-toggle__bar"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                
+                <!-- Alert Banner -->
+                <div class="alert alert--warning mb-6">
+                    <span class="alert__icon">⚠️</span>
+                    <div class="alert__content">
+                        <div class="alert__title">Dispute in Progress</div>
+                        <p class="alert__message">
+                            This trade is currently under review by our support team. Please provide any additional evidence to help resolve this dispute.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid" style="grid-template-columns: 1fr 380px; gap: var(--space-8);">
+                    
+                    <!-- Main Content -->
+                    <div>
+                        <!-- Trade Summary -->
+                        <div class="card mb-6">
+                            <div class="card__body">
+                                <h3 style="margin-bottom: var(--space-4);">Trade Details</h3>
+                                
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <div style="font-size: var(--text-sm); color: var(--color-gray-500); margin-bottom: var(--space-1);">Trade ID</div>
+                                        <div style="font-family: var(--font-mono); font-weight: var(--font-semibold);">#TR-78234</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: var(--text-sm); color: var(--color-gray-500); margin-bottom: var(--space-1);">Amount</div>
+                                        <div style="font-weight: var(--font-semibold);">$500.00 USD → 0.00741 BTC</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: var(--text-sm); color: var(--color-gray-500); margin-bottom: var(--space-1);">Trading Partner</div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="avatar avatar--sm">JD</div>
+                                            <a href="user-profile.html">JohnDoe_BTC</a>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: var(--text-sm); color: var(--color-gray-500); margin-bottom: var(--space-1);">Payment Method</div>
+                                        <div>Bank Transfer</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: var(--text-sm); color: var(--color-gray-500); margin-bottom: var(--space-1);">Trade Started</div>
+                                        <div>Dec 28, 2025 • 10:32 AM</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: var(--text-sm); color: var(--color-gray-500); margin-bottom: var(--space-1);">Dispute Opened</div>
+                                        <div>Dec 28, 2025 • 11:15 AM</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dispute Reason -->
+                        <div class="card mb-6">
+                            <div class="card__body">
+                                <h4 style="margin-bottom: var(--space-4);">Dispute Reason</h4>
+                                <div style="padding: var(--space-4); background: var(--color-gray-50); border-radius: var(--radius-md);">
+                                    <div style="font-weight: var(--font-semibold); margin-bottom: var(--space-2);">Seller not responding</div>
+                                    <p style="font-size: var(--text-sm); color: var(--color-gray-700);">
+                                        I sent the payment via bank transfer over an hour ago and marked it as paid. 
+                                        The seller has not responded to my messages and has not released the crypto.
+                                        I've attached proof of payment below.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Evidence Section -->
+                        <div class="card mb-6">
+                            <div class="card__body">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h4>Evidence & Attachments</h4>
+                                    <button class="btn btn--primary btn--sm">+ Add Evidence</button>
+                                </div>
+
+                                <!-- Uploaded Evidence -->
+                                <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+                                    <div style="display: flex; gap: var(--space-4); padding: var(--space-4); background: var(--color-gray-50); border-radius: var(--radius-md);">
+                                        <div style="width: 80px; height: 80px; background: var(--color-gray-200); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: var(--text-2xl);">
+                                            📄
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <div style="font-weight: var(--font-semibold); margin-bottom: var(--space-1);">payment_proof.png</div>
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-500); margin-bottom: var(--space-2);">
+                                                Uploaded Dec 28, 2025 • 11:20 AM
+                                            </div>
+                                            <p style="font-size: var(--text-sm); color: var(--color-gray-700);">
+                                                Screenshot of bank transfer confirmation showing $500 sent to the seller's account.
+                                            </p>
+                                        </div>
+                                        <button class="btn btn--ghost btn--sm">View</button>
+                                    </div>
+
+                                    <div style="display: flex; gap: var(--space-4); padding: var(--space-4); background: var(--color-gray-50); border-radius: var(--radius-md);">
+                                        <div style="width: 80px; height: 80px; background: var(--color-gray-200); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: var(--text-2xl);">
+                                            📄
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <div style="font-weight: var(--font-semibold); margin-bottom: var(--space-1);">chat_screenshot.png</div>
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-500); margin-bottom: var(--space-2);">
+                                                Uploaded Dec 28, 2025 • 11:22 AM
+                                            </div>
+                                            <p style="font-size: var(--text-sm); color: var(--color-gray-700);">
+                                                Screenshot of trade chat showing unanswered messages.
+                                            </p>
+                                        </div>
+                                        <button class="btn btn--ghost btn--sm">View</button>
+                                    </div>
+                                </div>
+
+                                <!-- Upload New Evidence -->
+                                <div class="file-upload mt-4" style="border: 2px dashed var(--color-gray-300); border-radius: var(--radius-md); padding: var(--space-6); text-align: center; cursor: pointer;">
+                                    <input type="file" class="file-upload__input" style="display: none;" accept="image/*,.pdf" multiple>
+                                    <div class="file-upload__preview"></div>
+                                    <div style="font-size: var(--text-2xl); margin-bottom: var(--space-2);">📎</div>
+                                    <p class="file-upload__label" style="font-size: var(--text-sm); color: var(--color-gray-600);">
+                                        Drag and drop files or click to upload
+                                    </p>
+                                    <p style="font-size: var(--text-xs); color: var(--color-gray-400); margin-top: var(--space-2);">
+                                        Supports: PNG, JPG, PDF • Max 10MB
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Communication Thread -->
+                        <div class="card">
+                            <div class="card__body">
+                                <h4 style="margin-bottom: var(--space-4);">Dispute Communication</h4>
+
+                                <!-- Messages -->
+                                <div style="display: flex; flex-direction: column; gap: var(--space-4); margin-bottom: var(--space-4);">
+                                    <!-- Support Message -->
+                                    <div style="padding: var(--space-4); background: rgba(78, 205, 196, 0.1); border-radius: var(--radius-md); border-left: 3px solid var(--color-info);">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span class="badge badge--info">Support Team</span>
+                                            <span style="font-size: var(--text-xs); color: var(--color-gray-500);">Dec 28, 2025 • 11:30 AM</span>
+                                        </div>
+                                        <p style="font-size: var(--text-sm);">
+                                            We've received your dispute and are reviewing the evidence. We've reached out to the seller
+                                            and are awaiting their response. We'll update you within 24 hours.
+                                        </p>
+                                    </div>
+
+                                    <!-- User Message -->
+                                    <div style="padding: var(--space-4); background: var(--color-gray-50); border-radius: var(--radius-md);">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <div class="avatar avatar--sm" style="background: var(--color-primary);">ME</div>
+                                            <span style="font-weight: var(--font-medium);">You</span>
+                                            <span style="font-size: var(--text-xs); color: var(--color-gray-500);">Dec 28, 2025 • 11:45 AM</span>
+                                        </div>
+                                        <p style="font-size: var(--text-sm);">
+                                            Thank you for looking into this. I've added additional evidence showing my bank statement 
+                                            with the transaction. Please let me know if you need anything else.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Reply Form -->
+                                <form>
+                                    <div class="form-group">
+                                        <textarea class="form-textarea" rows="3" placeholder="Add a message to the support team..."></textarea>
+                                    </div>
+                                    <div class="flex justify-end">
+                                        <button type="submit" class="btn btn--primary">Send Message</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div>
+                        <!-- Status Card -->
+                        <div class="card mb-4">
+                            <div class="card__body">
+                                <h4 style="margin-bottom: var(--space-4);">Dispute Status</h4>
+                                
+                                <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                                    <div class="flex items-center gap-3">
+                                        <div style="width: 28px; height: 28px; background: var(--color-primary); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs);">✓</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: var(--text-sm); font-weight: var(--font-medium);">Dispute Opened</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">11:15 AM</div>
+                                        </div>
+                                    </div>
+                                    <div style="width: 2px; height: 20px; background: var(--color-primary); margin-left: 13px;"></div>
+                                    <div class="flex items-center gap-3">
+                                        <div style="width: 28px; height: 28px; background: var(--color-primary); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs);">✓</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: var(--text-sm); font-weight: var(--font-medium);">Evidence Submitted</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">11:22 AM</div>
+                                        </div>
+                                    </div>
+                                    <div style="width: 2px; height: 20px; background: var(--color-accent-yellow); margin-left: 13px;"></div>
+                                    <div class="flex items-center gap-3">
+                                        <div style="width: 28px; height: 28px; background: var(--color-accent-yellow); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: var(--text-xs);">⏳</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--color-accent-yellow);">Under Review</div>
+                                            <div style="font-size: var(--text-xs); color: var(--color-gray-500);">In progress</div>
+                                        </div>
+                                    </div>
+                                    <div style="width: 2px; height: 20px; background: var(--color-gray-200); margin-left: 13px;"></div>
+                                    <div class="flex items-center gap-3">
+                                        <div style="width: 28px; height: 28px; background: var(--color-gray-200); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--color-gray-500); font-size: var(--text-xs);">4</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: var(--text-sm); color: var(--color-gray-500);">Resolution</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Escrow Status -->
+                        <div class="card mb-4">
+                            <div class="card__body text-center">
+                                <div style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">🔒</div>
+                                <h4 style="margin-bottom: var(--space-2);">Funds in Escrow</h4>
+                                <div style="font-family: var(--font-display); font-size: var(--text-xl); font-weight: var(--font-bold); color: var(--color-primary);">
+                                    0.00741 BTC
+                                </div>
+                                <p style="font-size: var(--text-sm); color: var(--color-gray-500); margin-top: var(--space-2);">
+                                    Funds are held securely until the dispute is resolved
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Help Card -->
+                        <div class="card" style="background: var(--color-gray-50);">
+                            <div class="card__body">
+                                <h4 style="margin-bottom: var(--space-4);">Need Help?</h4>
+                                <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                                    <a href="#" style="display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm);">
+                                        <span>📖</span>
+                                        <span>Dispute Resolution Guide</span>
+                                    </a>
+                                    <a href="#" style="display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm);">
+                                        <span>💬</span>
+                                        <span>Contact Support</span>
+                                    </a>
+                                    <a href="#" style="display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm);">
+                                        <span>❓</span>
+                                        <span>FAQ</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer__bottom" style="padding-top: 0; border-top: none;">
+                    <p>&copy; 2025 CryptoTrade. All rights reserved.</p>
+                    <nav class="footer__legal-links">
+                        <a href="#" class="footer__link">Privacy</a>
+                        <a href="#" class="footer__link">Terms</a>
+                    </nav>
+                </div>
+            </div>
+        </footer>
+        
+    </div>
+
+    <div class="modal-backdrop"></div>
+    <script src="../js/main.js"></script>
+</body>
+</html>
+

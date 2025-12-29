@@ -4,6 +4,7 @@
 declare global {
 	namespace App {
 		interface Locals {
+			db?: ReturnType<typeof import('$lib/server/db.js').createDb>;
 			session: {
 				id: string;
 				userId: string;
