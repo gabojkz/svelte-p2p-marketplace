@@ -2,6 +2,7 @@
   import NavigationBar from "$lib/components/NavigationBar.svelte";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
+  import { useSession, signOut } from "$lib/auth-client.js";
 
   const { data } = $props();
 
@@ -11,6 +12,8 @@
   const conversation = $derived(data?.conversation);
   const messages = $derived(data?.messages || []);
   const trade = $derived(data?.trade);
+  const session = useSession();
+  const user = $derived($session.data?.user);
 
   // State
   let sidebarOpen = $state(false);
@@ -50,7 +53,10 @@
   function formatTime(date) {
     if (!date) return "";
     const d = new Date(date);
-    return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   // Format price
@@ -80,11 +86,14 @@
     messageInput = "";
 
     try {
-      const response = await fetch(`/api/conversations/${conversation.id}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content })
-      });
+      const response = await fetch(
+        `/api/conversations/${conversation.id}/messages`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        },
+      );
 
       if (!response.ok) {
         throw new Error("Failed to send message");
@@ -118,6 +127,27 @@
       setTimeout(scrollToBottom, 100);
     }
   });
+
+  console.log("User:", user);
+  console.log("Listing:", listing);
+  async function startTrade() {
+    const confirmStart = confirm("Do you wanna start this trade?");
+    if (confirmStart) {
+      // create a new trade
+      const newTrade = {
+        status: "pending",
+        listingId: listing.id,
+        buyerId: user.id,
+        sellerId: listing.sellerId,
+      };
+
+      await fetch("/api/trades", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTrade),
+      });
+    }
+  }
 </script>
 
 <div class="trade-room-page">
@@ -134,13 +164,19 @@
       </button>
 
       <div style="flex: 1; text-align: center;">
-        <div style="font-weight: var(--font-semibold); font-size: var(--text-sm);">
+        <div
+          style="font-weight: var(--font-semibold); font-size: var(--text-sm);"
+        >
           {listing?.title || "Trade Room"}
         </div>
         {#if trade}
-          <span class="badge badge--warning" style="font-size: 10px;">In Progress</span>
+          <span class="badge badge--warning" style="font-size: 10px;"
+            >In Progress</span
+          >
         {:else}
-          <span class="badge badge--info" style="font-size: 10px;">New Trade</span>
+          <span class="badge badge--info" style="font-size: 10px;"
+            >New Trade</span
+          >
         {/if}
       </div>
 
@@ -165,10 +201,15 @@
             <div class="flex items-center gap-3">
               <div class="avatar avatar--sm">{getSellerInitials()}</div>
               <div>
-                <div style="font-weight: var(--font-semibold); font-size: var(--text-sm);">
+                <div
+                  style="font-weight: var(--font-semibold); font-size: var(--text-sm);"
+                >
                   {seller.firstName || seller.username}
                 </div>
-                <div class="flex items-center gap-1" style="font-size: var(--text-xs); color: var(--color-gray-500);">
+                <div
+                  class="flex items-center gap-1"
+                  style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                >
                   <span class="status-dot status-dot--online"></span>
                   <span>Online</span>
                 </div>
@@ -205,7 +246,9 @@
             {/if}
             <div>
               <div class="chat-message__bubble">{message.content}</div>
-              <span class="chat-message__time">{formatTime(message.createdAt)}</span>
+              <span class="chat-message__time"
+                >{formatTime(message.createdAt)}</span
+              >
             </div>
           </div>
         {/each}
@@ -215,7 +258,11 @@
       {#if conversation}
         <div class="chat-input">
           <form onsubmit={handleSendMessage}>
-            <button type="button" class="btn btn--ghost btn--sm" style="padding: var(--space-2);">
+            <button
+              type="button"
+              class="btn btn--ghost btn--sm"
+              style="padding: var(--space-2);"
+            >
               📎
             </button>
             <input
@@ -226,7 +273,11 @@
               bind:value={messageInput}
               disabled={sending}
             />
-            <button type="submit" class="btn btn--primary btn--sm" disabled={sending || !messageInput.trim()}>
+            <button
+              type="submit"
+              class="btn btn--primary btn--sm"
+              disabled={sending || !messageInput.trim()}
+            >
               <span style="display: none;">Send</span>
               <span>➤</span>
             </button>
@@ -238,7 +289,9 @@
       <div class="mobile-tab-bar">
         <button class="is-active">💬 Chat</button>
         <button onclick={toggleSidebar} type="button">📋 Trade Details</button>
-        <button onclick={() => alert("Help feature coming soon")} type="button">⚠️ Help</button>
+        <button onclick={() => alert("Help feature coming soon")} type="button"
+          >⚠️ Help</button
+        >
       </div>
     </div>
 
@@ -257,10 +310,16 @@
       <!-- Trade Status Card -->
       <div class="card">
         <div class="card__body">
-          <h4 style="margin-bottom: var(--space-4); font-size: var(--text-base);">Trade Status</h4>
+          <h4
+            style="margin-bottom: var(--space-4); font-size: var(--text-base);"
+          >
+            Trade Status
+          </h4>
 
           <!-- Progress Steps -->
-          <div style="display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4);">
+          <div
+            style="display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4);"
+          >
             <div class="flex items-center gap-2">
               <div
                 style="width: 24px; height: 24px; background: var(--color-primary); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;"
@@ -268,21 +327,16 @@
                 ✓
               </div>
               <div style="flex: 1;">
-                <div style="font-size: var(--text-xs); font-weight: var(--font-medium);">Trade Started</div>
+                <div
+                  style="font-size: var(--text-xs); font-weight: var(--font-medium);"
+                >
+                  Trade Started
+                </div>
               </div>
             </div>
-            <div style="width: 2px; height: 16px; background: var(--color-primary); margin-left: 11px;"></div>
-            <div class="flex items-center gap-2">
-              <div
-                style="width: 24px; height: 24px; background: var(--color-primary); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;"
-              >
-                ✓
-              </div>
-              <div style="flex: 1;">
-                <div style="font-size: var(--text-xs); font-weight: var(--font-medium);">Item Reserved</div>
-              </div>
-            </div>
-            <div style="width: 2px; height: 16px; background: var(--color-accent-yellow); margin-left: 11px;"></div>
+            <div
+              style="width: 2px; height: 16px; background: var(--color-accent-yellow); margin-left: 11px;"
+            ></div>
             <div class="flex items-center gap-2">
               <div
                 style="width: 24px; height: 24px; background: var(--color-accent-yellow); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 10px;"
@@ -290,12 +344,16 @@
                 3
               </div>
               <div style="flex: 1;">
-                <div style="font-size: var(--text-xs); font-weight: var(--font-medium); color: var(--color-accent-yellow);">
-                  Meeting Scheduled
+                <div
+                  style="font-size: var(--text-xs); font-weight: var(--font-medium); color: var(--color-accent-yellow);"
+                >
+                  Confirm Trade
                 </div>
               </div>
             </div>
-            <div style="width: 2px; height: 16px; background: var(--color-gray-200); margin-left: 11px;"></div>
+            <div
+              style="width: 2px; height: 16px; background: var(--color-gray-200); margin-left: 11px;"
+            ></div>
             <div class="flex items-center gap-2">
               <div
                 style="width: 24px; height: 24px; background: var(--color-gray-200); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--color-gray-500); font-size: 10px;"
@@ -303,12 +361,23 @@
                 4
               </div>
               <div style="flex: 1;">
-                <div style="font-size: var(--text-xs); color: var(--color-gray-500);">Complete Trade</div>
+                <div
+                  style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                >
+                  Complete Trade
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Buttons -->
+          <button
+            class="btn btn--primary btn--full btn--sm mb-2"
+            onclick={startTrade}
+            type="button"
+          >
+            Start Trade
+          </button>
           <button
             class="btn btn--primary btn--full btn--sm mb-2"
             onclick={() => alert("Complete trade feature coming soon")}
@@ -330,22 +399,33 @@
       {#if listing}
         <div class="card">
           <div class="card__body">
-            <h4 style="margin-bottom: var(--space-3); font-size: var(--text-base);">Trade Details</h4>
+            <h4
+              style="margin-bottom: var(--space-3); font-size: var(--text-base);"
+            >
+              Trade Details
+            </h4>
 
-            <div style="display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-xs);">
+            <div
+              style="display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-xs);"
+            >
               {#if trade}
                 <div class="flex justify-between">
                   <span class="text-muted">Trade ID</span>
-                  <span style="font-family: var(--font-mono);">#{trade.id}</span>
+                  <span style="font-family: var(--font-mono);">#{trade.id}</span
+                  >
                 </div>
               {/if}
               <div class="flex justify-between">
                 <span class="text-muted">Item</span>
-                <span style="font-weight: var(--font-medium);">{listing.title}</span>
+                <span style="font-weight: var(--font-medium);"
+                  >{listing.title}</span
+                >
               </div>
               <div class="flex justify-between">
                 <span class="text-muted">Price</span>
-                <span style="font-weight: var(--font-semibold); color: var(--color-primary);">
+                <span
+                  style="font-weight: var(--font-semibold); color: var(--color-primary);"
+                >
                   {formatPrice(listing.price)}
                 </span>
               </div>
@@ -365,16 +445,25 @@
       {#if seller}
         <div class="card">
           <div class="card__body">
-            <h4 style="margin-bottom: var(--space-3); font-size: var(--text-base);">Seller</h4>
+            <h4
+              style="margin-bottom: var(--space-3); font-size: var(--text-base);"
+            >
+              Seller
+            </h4>
 
             <div class="flex items-center gap-3 mb-3">
               <div class="avatar">{getSellerInitials()}</div>
               <div>
-                <div style="font-weight: var(--font-semibold); font-size: var(--text-sm);">
+                <div
+                  style="font-weight: var(--font-semibold); font-size: var(--text-sm);"
+                >
                   {seller.firstName || seller.username}
                 </div>
-                <div style="font-size: var(--text-xs); color: var(--color-gray-500);">
-                  {#if seller && /** @type {any} */ (seller).emailVerified}✓ Verified{/if}
+                <div
+                  style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                >
+                  {#if seller && /** @type {any} */ (seller).emailVerified}✓
+                    Verified{/if}
                 </div>
               </div>
             </div>
@@ -391,9 +480,13 @@
       {/if}
 
       <!-- Escrow Info -->
-      <div style="padding: var(--space-3); background: var(--color-primary-subtle); border-radius: var(--radius-md); text-align: center;">
+      <div
+        style="padding: var(--space-3); background: var(--color-primary-subtle); border-radius: var(--radius-md); text-align: center;"
+      >
         <span style="font-size: var(--text-lg);">🛡️</span>
-        <p style="font-size: var(--text-xs); margin-top: var(--space-1);">Protected by LocalMarket Escrow</p>
+        <p style="font-size: var(--text-xs); margin-top: var(--space-1);">
+          Protected by LocalMarket Escrow
+        </p>
       </div>
     </aside>
 

@@ -6,7 +6,6 @@
 
   const session = useSession();
   const user = $derived($session.data?.user);
-  const sessionData = $derived($session.data?.session);
 
   // Mobile menu state
   let mobileMenuOpen = $state(false);
