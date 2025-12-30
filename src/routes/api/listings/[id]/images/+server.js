@@ -1,7 +1,7 @@
 import { json, error } from '@sveltejs/kit';
 import { listings, users, listingImages } from '$lib/server/schema.js';
 import { eq, sql } from 'drizzle-orm';
-import { getR2Bucket, generateImagePath, uploadToR2, getR2PublicUrl } from '$lib/server/r2.js';
+import { getR2Bucket, generateImagePath, uploadToR2, getR2PublicUrl, isLocalDevelopment } from '$lib/server/r2.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ params, request, locals, platform }) {
@@ -42,11 +42,9 @@ export async function POST({ params, request, locals, platform }) {
 		throw error(403, 'Access denied');
 	}
 
-	// Get R2 bucket
+	// Get R2 bucket (null in local development)
 	const bucket = getR2Bucket(platform);
-	if (!bucket) {
-		throw error(500, 'R2 bucket not configured');
-	}
+	const isLocal = isLocalDevelopment(platform);
 
 	try {
 		// Parse FormData
@@ -96,7 +94,7 @@ export async function POST({ params, request, locals, platform }) {
 			// Read file as ArrayBuffer
 			const arrayBuffer = await file.arrayBuffer();
 
-			// Upload full image to R2
+			// Upload full image to R2 or local storage
 			const fullImageUrl = await uploadToR2(
 				bucket,
 				fullImagePath,
@@ -200,32 +198,55 @@ export async function DELETE({ params, request, locals, platform }) {
 	}
 
 	try {
-		// Delete from R2
+		// Delete from R2 or local storage
 		const bucket = getR2Bucket(platform);
-		if (bucket) {
+		const isLocal = isLocalDevelopment(platform);
+		
+		if (bucket || isLocal) {
 			// Extract key from URL
 			const imageUrl = image.imageUrl;
 			const customDomain = process.env.R2_PUBLIC_URL || '';
 			
 			let key = imageUrl;
-			if (customDomain && imageUrl.startsWith(customDomain)) {
+			if (isLocal) {
+				// Local: extract from /uploads/listings/...
+				if (imageUrl.startsWith('/uploads/')) {
+					key = imageUrl.replace('/uploads/', '');
+				}
+			} else if (customDomain && imageUrl.startsWith(customDomain)) {
 				key = imageUrl.replace(customDomain + '/', '');
 			} else {
 				// Extract key from R2 URL format
 				const urlParts = imageUrl.split('/');
-				key = urlParts.slice(urlParts.indexOf('listings')).join('/');
+				const listingsIndex = urlParts.indexOf('listings');
+				if (listingsIndex !== -1) {
+					key = urlParts.slice(listingsIndex).join('/');
+				}
 			}
 
 			try {
-				await bucket.delete(key);
+				if (bucket) {
+					await bucket.delete(key);
+				} else {
+					// Local development: use deleteFromR2 which handles local deletion
+					const { deleteFromR2 } = await import('$lib/server/r2.js');
+					await deleteFromR2(null, key);
+				}
 				
 				// Also delete thumbnail if different
 				if (image.thumbnailUrl && image.thumbnailUrl !== image.imageUrl) {
 					let thumbKey = image.thumbnailUrl;
-					if (customDomain && image.thumbnailUrl.startsWith(customDomain)) {
+					if (isLocal && image.thumbnailUrl.startsWith('/uploads/')) {
+						thumbKey = image.thumbnailUrl.replace('/uploads/', '');
+					} else if (customDomain && image.thumbnailUrl.startsWith(customDomain)) {
 						thumbKey = image.thumbnailUrl.replace(customDomain + '/', '');
 					}
-					await bucket.delete(thumbKey);
+					if (bucket) {
+						await bucket.delete(thumbKey);
+					} else {
+						const { deleteFromR2 } = await import('$lib/server/r2.js');
+						await deleteFromR2(null, thumbKey);
+					}
 				}
 			} catch (r2Error) {
 				console.error('Error deleting from R2:', r2Error);
