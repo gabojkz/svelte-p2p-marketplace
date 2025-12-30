@@ -3,6 +3,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { createDb } from './db.js';
 import * as schema from './schema.js';
 import bcrypt from 'bcryptjs';
+import { eq, and } from 'drizzle-orm';
 
 // Singleton auth instances to avoid recreating on every request
 /** @type {Map<string, ReturnType<typeof betterAuth>>} */
@@ -65,7 +66,42 @@ export function createAuth(databaseUrl, baseUrl) {
 			expiresIn: 60 * 60 * 24 * 7, // 7 days
 			updateAge: 60 * 60 * 24 // 1 day
 		},
-		trustedOrigins: [baseUrl]
+		trustedOrigins: [baseUrl],
+		hooks: {
+			user: {
+				created: {
+					before: async (user) => {
+						// Validate email domain before user creation
+						if (user.email) {
+							const emailParts = user.email.toLowerCase().trim().split('@');
+							if (emailParts.length !== 2) {
+								throw new Error('Invalid email format');
+							}
+
+							const domain = emailParts[1];
+
+							// Check if domain is in allowed list
+							const [allowedDomain] = await db
+								.select()
+								.from(schema.allowedEmailDomains)
+								.where(
+									and(
+										eq(schema.allowedEmailDomains.domain, domain),
+										eq(schema.allowedEmailDomains.isActive, true)
+									)
+								)
+								.limit(1);
+
+							if (!allowedDomain) {
+								throw new Error(`Email domain "${domain}" is not allowed. Please use one of the supported email providers.`);
+							}
+						}
+
+						return user;
+					}
+				}
+			}
+		}
 	});
 
 	// Cache the instance

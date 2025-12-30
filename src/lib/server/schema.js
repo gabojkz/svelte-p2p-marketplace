@@ -684,6 +684,22 @@ export const searchHistory = pgTable(
 	})
 );
 
+// 21. allowed_email_domains
+export const allowedEmailDomains = pgTable(
+	'allowed_email_domains',
+	{
+		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+		domain: varchar('domain', { length: 255 }).notNull().unique(),
+		isActive: boolean('is_active').default(true),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		domainIdx: index('idx_allowed_email_domains_domain').on(table.domain),
+		activeIdx: index('idx_allowed_email_domains_active').on(table.isActive)
+	})
+);
+
 // ============================================
 // Relations (for Drizzle ORM)
 // ============================================

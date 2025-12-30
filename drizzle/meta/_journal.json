@@ -15,6 +15,13 @@
       "when": 1767104086883,
       "tag": "0001_cloudy_colleen_wing",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767117824412,
+      "tag": "0002_fair_shinobi_shaw",
+      "breakpoints": true
     }
   ]
 }

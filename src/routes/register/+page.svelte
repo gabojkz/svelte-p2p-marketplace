@@ -9,11 +9,69 @@
 	let confirmPassword = $state('');
 	let error = $state('');
 	let loading = $state(false);
+	let emailError = $state('');
+	let checkingEmail = $state(false);
+
+	// Validate email domain
+	async function validateEmailDomain(emailValue) {
+		if (!emailValue || !emailValue.includes('@')) {
+			emailError = '';
+			return true;
+		}
+
+		checkingEmail = true;
+		emailError = '';
+
+		try {
+			const response = await fetch('/api/auth/validate-email', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email: emailValue })
+			});
+
+			const data = await response.json();
+
+			if (data.valid) {
+				emailError = '';
+				return true;
+			} else {
+				emailError = data.error || 'Email domain is not allowed';
+				return false;
+			}
+		} catch (err) {
+			console.error('Error validating email:', err);
+			// Don't block registration if validation service fails
+			return true;
+		} finally {
+			checkingEmail = false;
+		}
+	}
+
+	// Handle email input with debounce
+	/** @type {ReturnType<typeof setTimeout> | null} */
+	let emailTimeout = null;
+	
+	async function handleEmailInput() {
+		if (emailTimeout) clearTimeout(emailTimeout);
+		emailTimeout = setTimeout(async () => {
+			if (email) {
+				await validateEmailDomain(email);
+			}
+		}, 500);
+	}
 	
 	/** @param {SubmitEvent} e */
 	async function handleSubmit(e) {
 		e.preventDefault();
 		error = '';
+		emailError = '';
+		
+		// Validate email domain before submitting
+		const isEmailValid = await validateEmailDomain(email);
+		if (!isEmailValid) {
+			error = emailError || 'Please use an allowed email domain';
+			return;
+		}
 		
 		if (password !== confirmPassword) {
 			error = 'Passwords do not match';
@@ -106,10 +164,23 @@
 								type="email"
 								bind:value={email}
 								class="form-input"
+								class:form-input--error={!!emailError}
 								placeholder="you@example.com"
 								required
-								disabled={loading}
+								disabled={loading || checkingEmail}
+								oninput={handleEmailInput}
 							/>
+							{#if checkingEmail}
+								<span class="form-helper" style="color: var(--color-gray-500);">
+									Checking email domain...
+								</span>
+							{:else if emailError}
+								<span class="form-error">{emailError}</span>
+							{:else}
+								<span class="form-helper">
+									Only certain email providers are allowed
+								</span>
+							{/if}
 						</div>
 						
 						<div class="form-group">
@@ -283,6 +354,17 @@
 
 	@keyframes spin {
 		to { transform: rotate(360deg); }
+	}
+
+	.form-error {
+		color: var(--color-error);
+		font-size: var(--text-sm);
+		margin-top: var(--space-1);
+		display: block;
+	}
+
+	.form-input--error {
+		border-color: var(--color-error);
 	}
 
 	@media (max-width: 768px) {
