@@ -108,9 +108,6 @@
           style="max-width: 900px; margin: 0 auto; text-align: center;"
         >
           <!-- Hero Text -->
-          <span class="badge badge--primary mb-4" style="display: inline-block;"
-            >🛡️ Secure Escrow Protection</span
-          >
           <h1 class="hero__title mb-6">
             Buy & Sell <span style="color: var(--color-primary);">Anything</span
             > Locally
@@ -120,7 +117,7 @@
             style="font-size: var(--text-lg); margin-bottom: var(--space-8); max-width: 600px; margin-left: auto; margin-right: auto;"
           >
             Discover amazing deals near you. Cars, electronics, clothing, and
-            more — all protected by our secure escrow system.
+            more — all from local sellers in your area.
           </p>
 
           <!-- Hero Search Box -->
@@ -242,7 +239,7 @@
           <span class="badge badge--primary">Simple & Secure</span>
           <h2 class="section__title mt-4">How {appName} Works</h2>
           <p class="section__subtitle">
-            Buy and sell with confidence using our secure escrow system
+            Buy and sell with confidence in your local community
           </p>
         </div>
 
@@ -295,17 +292,17 @@
               <div
                 style="width: 80px; height: 80px; margin: 0 auto var(--space-4); background: rgba(78, 205, 196, 0.1); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: var(--text-3xl);"
               >
-                🔒
+                💳
               </div>
               <div
                 style="width: 32px; height: 32px; margin: 0 auto var(--space-4); background: var(--color-primary); border-radius: var(--radius-full); color: white; display: flex; align-items: center; justify-content: center; font-weight: var(--font-bold); font-size: var(--text-sm);"
               >
                 3
               </div>
-              <h4 class="card__title">Pay via Escrow</h4>
+              <h4 class="card__title">Complete Payment</h4>
               <p class="card__content">
-                Payment is held securely in escrow until you receive and approve
-                the item.
+                Arrange payment with the seller and complete your purchase
+                securely.
               </p>
             </div>
           </div>
@@ -348,27 +345,6 @@
             <div
               style="background: linear-gradient(135deg, var(--color-primary-subtle), rgba(78, 205, 196, 0.1)); border-radius: var(--radius-2xl); padding: var(--space-10); position: relative;"
             >
-              <div class="card" style="margin-bottom: var(--space-4);">
-                <div class="card__body flex items-center gap-4">
-                  <div
-                    style="width: 48px; height: 48px; background: var(--color-primary); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: var(--text-xl);"
-                  >
-                    🛡️
-                  </div>
-                  <div>
-                    <div style="font-weight: var(--font-semibold);">
-                      Escrow Protection
-                    </div>
-                    <div class="text-muted" style="font-size: var(--text-sm);">
-                      Payment held until delivery confirmed
-                    </div>
-                  </div>
-                  <span
-                    style="color: var(--color-primary); font-size: var(--text-xl); margin-left: auto;"
-                    >✓</span
-                  >
-                </div>
-              </div>
               <div class="card" style="margin-bottom: var(--space-4);">
                 <div class="card__body flex items-center gap-4">
                   <div
@@ -422,14 +398,10 @@
               class="text-muted"
               style="font-size: var(--text-lg); margin-bottom: var(--space-6);"
             >
-              Unlike other marketplaces, {appName} protects every transaction with
-              escrow. Your money is held safely until you confirm the item is as described.
+              {appName} connects you with trusted local sellers in your community.
+              Buy and sell with confidence knowing you're dealing with verified members.
             </p>
             <ul style="list-style: none; padding: 0;">
-              <li class="flex items-center gap-3 mb-4">
-                <span style="color: var(--color-primary);">✓</span>
-                <span>Money-back guarantee on all escrow purchases</span>
-              </li>
               <li class="flex items-center gap-3 mb-4">
                 <span style="color: var(--color-primary);">✓</span>
                 <span>Verified seller badges for trusted traders</span>
@@ -474,8 +446,8 @@
           <p
             style="color: rgba(255,255,255,0.9); font-size: var(--text-lg); margin-bottom: var(--space-8);"
           >
-            List your items for free and reach thousands of local buyers. Get
-            paid securely through our escrow system.
+            List your items for free and reach thousands of local buyers. Connect
+            directly with buyers in your area.
           </p>
           <div class="flex justify-center gap-4">
             <a href="/login" class="btn btn--secondary btn--xl">
@@ -507,8 +479,7 @@
             <span>LocalMarket</span>
           </a>
           <p class="footer__description">
-            The safest way to buy and sell locally. Every transaction protected
-            by escrow.
+            The best way to buy and sell locally. Connect with your community.
           </p>
           <div class="footer__social">
             <button
