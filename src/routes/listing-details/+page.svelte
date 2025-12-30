@@ -512,12 +512,6 @@
                       >
                         💬 Message Seller
                       </button>
-                      <a
-                        href="/trade-initiation?listingId={listing.id}"
-                        class="btn btn--outline btn--lg btn--full"
-                      >
-                        🛡️ Buy with Escrow Protection
-                      </a>
                     {:else}
                       <a
                         href="/my-listings"
@@ -526,26 +520,6 @@
                         ✏️ Edit Listing
                       </a>
                     {/if}
-                  </div>
-
-                  <div
-                    class="escrow-info"
-                    style="margin-top: var(--space-4); padding: var(--space-4); background: var(--color-primary-subtle); border-radius: var(--radius-md);"
-                  >
-                    <div
-                      style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);"
-                    >
-                      <span>🛡️</span>
-                      <strong style="color: var(--color-primary-dark);">
-                        Escrow Protection
-                      </strong>
-                    </div>
-                    <p
-                      style="font-size: var(--text-sm); color: var(--color-gray-600);"
-                    >
-                      Your payment is held securely until you receive and
-                      approve the item.
-                    </p>
                   </div>
                 </div>
               </div>
@@ -682,10 +656,10 @@
                   <ul
                     style="font-size: var(--text-xs); color: var(--color-gray-600); display: flex; flex-direction: column; gap: var(--space-2);"
                   >
-                    <li>• Use Escrow for secure payment</li>
                     <li>• Meet in a public place for viewings</li>
                     <li>• Check item condition before buying</li>
                     <li>• Never pay before seeing the item</li>
+                    <li>• Verify seller's identity and reviews</li>
                   </ul>
                 </div>
               </div>
