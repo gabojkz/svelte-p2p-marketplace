@@ -15,6 +15,7 @@
   const similarListings = $derived(data?.similarListings || []);
   const marketplaceUser = $derived(data?.marketplaceUser);
   const initialIsFavorite = $derived(data?.isFavorite || false);
+  const listingImages = $derived(listing?.images || []);
 
   // Local state
   let favoriteState = $state(false);
@@ -24,6 +25,13 @@
     favoriteState = initialIsFavorite;
   });
   let selectedImageIndex = $state(0);
+
+  // Reset selected image index when images change
+  $effect(() => {
+    if (listingImages.length > 0) {
+      selectedImageIndex = 0;
+    }
+  });
 
   // Format price
   /** @param {string | number | null | undefined} price */
@@ -149,6 +157,20 @@
     });
     return labels[condition] || condition;
   }
+
+  // Get main gallery background style
+  const mainGalleryStyle = $derived(
+    listingImages.length > 0
+      ? "background: var(--color-gray-100); border-radius: var(--radius-xl); height: 450px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3); position: relative; overflow: hidden;"
+      : "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: var(--radius-xl); height: 450px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3); position: relative; overflow: hidden;"
+  );
+
+  // Get thumbnail border style
+  /** @param {number} index */
+  function getThumbnailBorderStyle(index) {
+    const borderColor = selectedImageIndex === index ? "var(--color-primary)" : "transparent";
+    return `background: var(--color-gray-100); border: 2px solid ${borderColor}; border-radius: var(--radius-md); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; padding: 0;`;
+  }
 </script>
 
 <div class="page-wrapper">
@@ -187,12 +209,22 @@
             <div class="listing-gallery" style="margin-bottom: var(--space-6);">
               <div
                 class="listing-gallery__main"
-                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: var(--radius-xl); height: 450px; display: flex; align-items: center; justify-content: center; font-size: 6rem; margin-bottom: var(--space-3); position: relative;"
+                style={mainGalleryStyle}
               >
-                {#if listing.type === "product"}
-                  📦
+                {#if listingImages.length > 0 && listingImages[selectedImageIndex]}
+                  <img
+                    src={listingImages[selectedImageIndex].imageUrl}
+                    alt={listing.title}
+                    style="width: 100%; height: 100%; object-fit: contain; background: var(--color-gray-50);"
+                  />
                 {:else}
-                  🔧
+                  <div style="font-size: 6rem;">
+                    {#if listing.type === "product"}
+                      📦
+                    {:else}
+                      🔧
+                    {/if}
+                  </div>
                 {/if}
                 {#if listing.featured}
                   <span
@@ -212,7 +244,7 @@
                 {/if}
                 {#if user && !isSeller}
                   <button
-                    style="position: absolute; top: var(--space-4); right: var(--space-4); background: rgba(255,255,255,0.9); border: none; padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); cursor: pointer; font-size: var(--text-lg);"
+                    style="position: absolute; top: var(--space-4); right: var(--space-4); background: rgba(255,255,255,0.9); border: none; padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); cursor: pointer; font-size: var(--text-lg); z-index: 10;"
                     onclick={toggleFavorite}
                     type="button"
                   >
@@ -220,17 +252,27 @@
                   </button>
                 {/if}
               </div>
-              <!-- Placeholder for thumbnail gallery -->
-              <div
-                class="listing-gallery__thumbs"
-                style="display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-2);"
-              >
+              <!-- Thumbnail gallery -->
+              {#if listingImages.length > 1}
                 <div
-                  style="background: linear-gradient(135deg, #667eea, #764ba2); border-radius: var(--radius-md); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: var(--text-2xl); cursor: pointer; border: 2px solid var(--color-primary);"
+                  class="listing-gallery__thumbs"
+                  style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: var(--space-2); max-width: 100%;"
                 >
-                  {listing.type === "product" ? "📦" : "🔧"}
+                  {#each listingImages as image, index}
+                    <button
+                      type="button"
+                      onclick={() => selectedImageIndex = index}
+                      style={getThumbnailBorderStyle(index)}
+                    >
+                      <img
+                        src={image.thumbnailUrl || image.imageUrl}
+                        alt="Thumbnail {index + 1}"
+                        style="width: 100%; height: 100%; object-fit: cover;"
+                      />
+                    </button>
+                  {/each}
                 </div>
-              </div>
+              {/if}
             </div>
 
             <!-- Title & Quick Info -->

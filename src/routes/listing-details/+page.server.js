@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { listings, users, user, categories, reviews, trades, favorites } from '$lib/server/schema';
+import { listings, users, user, categories, reviews, trades, favorites, listingImages } from '$lib/server/schema';
 import { eq, and, or, ne, sql, desc } from 'drizzle-orm';
 
 /** @type {import('./$types').PageServerLoad} */
@@ -148,11 +148,19 @@ export async function load({ params, locals, url }) {
 		subcategory = sub || null;
 	}
 
+	// Get listing images
+	const listingImagesData = await db
+		.select()
+		.from(listingImages)
+		.where(eq(listingImages.listingId, listingId))
+		.orderBy(listingImages.displayOrder);
+
 	return {
 		listing: {
 			...listing.listing,
 			category: listing.category,
 			subcategory: subcategory,
+			images: listingImagesData,
 			seller: listing.seller ? {
 				...listing.seller,
 				emailVerified: listing.authUser?.emailVerified || false,
