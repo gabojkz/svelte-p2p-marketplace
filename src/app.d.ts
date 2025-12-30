@@ -25,6 +25,7 @@ declare global {
 			env?: {
 				DATABASE_URL: string;
 				BETTER_AUTH_SECRET: string;
+				R2_BUCKET?: R2Bucket;
 			};
 			context?: ExecutionContext;
 			caches?: CacheStorage & { default: Cache };

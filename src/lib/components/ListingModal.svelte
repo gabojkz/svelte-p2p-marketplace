@@ -215,17 +215,22 @@
       // Upload images if any
       if (images.length > 0 && newListingId) {
         try {
-          const imageData = images.map(img => ({
-            imageUrl: img.imageUrl,
-            thumbnailUrl: img.thumbnailUrl || img.imageUrl,
-            isPrimary: img.isPrimary || false
-          }));
-
-          const imageResponse = await fetch(`/api/listings/${newListingId}/images`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ images: imageData })
+          // Create FormData for file uploads
+          const formData = new FormData();
+          
+          // Add files to FormData
+          images.forEach(img => {
+            if (img.file instanceof File) {
+              formData.append('images', img.file);
+            }
           });
+
+          if (formData.has('images')) {
+            const imageResponse = await fetch(`/api/listings/${newListingId}/images`, {
+              method: "POST",
+              // Don't set Content-Type header - browser will set it with boundary for FormData
+              body: formData
+            });
 
           if (!imageResponse.ok) {
             console.warn("Failed to upload images, but listing was saved");
