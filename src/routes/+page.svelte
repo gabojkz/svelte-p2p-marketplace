@@ -41,11 +41,6 @@
     goto("/marketplace");
   }
 
-  // Navigate to dashboard
-  function navigateToDashboard() {
-    goto("/dashboard");
-  }
-
   // Navigate to login
   function navigateToLogin() {
     goto("/login");

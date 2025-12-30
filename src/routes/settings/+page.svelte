@@ -22,7 +22,7 @@
     bio: marketplaceUser?.bio || "",
     phone: marketplaceUser?.phone || "",
     locationCity: marketplaceUser?.locationCity || "",
-    locationPostcode: marketplaceUser?.locationPostcode || ""
+    locationPostcode: marketplaceUser?.locationPostcode || "",
   });
 
   let settingsForm = $state({
@@ -33,7 +33,7 @@
     showPhone: settings?.showPhone ?? false,
     currencyPreference: settings?.currencyPreference || "GBP",
     language: settings?.language || "en",
-    timezone: settings?.timezone || "UTC"
+    timezone: settings?.timezone || "UTC",
   });
 
   // Update form when data changes
@@ -45,7 +45,7 @@
         bio: marketplaceUser.bio || "",
         phone: marketplaceUser.phone || "",
         locationCity: marketplaceUser.locationCity || "",
-        locationPostcode: marketplaceUser.locationPostcode || ""
+        locationPostcode: marketplaceUser.locationPostcode || "",
       };
     }
   });
@@ -60,7 +60,7 @@
         showPhone: settings.showPhone ?? false,
         currencyPreference: settings.currencyPreference || "GBP",
         language: settings.language || "en",
-        timezone: settings.timezone || "UTC"
+        timezone: settings.timezone || "UTC",
       };
     }
   });
@@ -88,10 +88,10 @@
         <Logo />
         <nav class="nav" aria-label="Main navigation">
           <a href="/marketplace" class="nav__link">Browse</a>
-          <a href="/dashboard" class="nav__link">Dashboard</a>
+          <a href="/my-listings" class="nav__link">My Listings</a>
         </nav>
         <div class="header__actions">
-          <a href="/dashboard" class="btn btn--ghost">Back to Dashboard</a>
+          <a href="/my-listings" class="btn btn--ghost">Back to My Listings</a>
         </div>
       </div>
     </div>
@@ -176,7 +176,9 @@
           {#if activeTab === "profile"}
             <section class="settings-section">
               <h2>Profile Information</h2>
-              <p class="text-muted">Update your personal information and profile details</p>
+              <p class="text-muted">
+                Update your personal information and profile details
+              </p>
 
               <form method="POST" action="?/updateProfile" use:enhance>
                 <div class="form-group">
@@ -192,7 +194,9 @@
                   <p class="form-helper">Username cannot be changed</p>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                <div
+                  style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);"
+                >
                   <div class="form-group">
                     <label for="firstName" class="form-label">First Name</label>
                     <input
@@ -217,7 +221,9 @@
 
                 <div class="form-group">
                   <label for="email" class="form-label">Email</label>
-                  <div style="display: flex; gap: var(--space-2); align-items: center;">
+                  <div
+                    style="display: flex; gap: var(--space-2); align-items: center;"
+                  >
                     <input
                       type="email"
                       id="email"
@@ -232,7 +238,9 @@
                       <span class="badge badge--warning">Unverified</span>
                     {/if}
                   </div>
-                  <p class="form-helper">Email is managed by your account settings</p>
+                  <p class="form-helper">
+                    Email is managed by your account settings
+                  </p>
                 </div>
 
                 <div class="form-group">
@@ -247,7 +255,9 @@
                   />
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                <div
+                  style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);"
+                >
                   <div class="form-group">
                     <label for="locationCity" class="form-label">City</label>
                     <input
@@ -260,7 +270,9 @@
                     />
                   </div>
                   <div class="form-group">
-                    <label for="locationPostcode" class="form-label">Postcode</label>
+                    <label for="locationPostcode" class="form-label"
+                      >Postcode</label
+                    >
                     <input
                       type="text"
                       id="locationPostcode"
@@ -285,7 +297,9 @@
                 </div>
 
                 <div class="form-actions">
-                  <button type="submit" class="btn btn--primary">Save Changes</button>
+                  <button type="submit" class="btn btn--primary"
+                    >Save Changes</button
+                  >
                 </div>
               </form>
             </section>
@@ -295,17 +309,23 @@
           {#if activeTab === "notifications"}
             <section class="settings-section">
               <h2>Notification Preferences</h2>
-              <p class="text-muted">Choose how you want to be notified about activity</p>
+              <p class="text-muted">
+                Choose how you want to be notified about activity
+              </p>
 
               <form method="POST" action="?/updateSettings" use:enhance>
                 <div class="settings-group">
                   <div class="settings-item">
                     <div class="settings-item__content">
-                      <label for="emailNotifications" class="settings-item__label">
+                      <label
+                        for="emailNotifications"
+                        class="settings-item__label"
+                      >
                         Email Notifications
                       </label>
                       <p class="settings-item__description">
-                        Receive email notifications about messages, trades, and updates
+                        Receive email notifications about messages, trades, and
+                        updates
                       </p>
                     </div>
                     <label class="toggle">
@@ -322,7 +342,10 @@
 
                   <div class="settings-item">
                     <div class="settings-item__content">
-                      <label for="pushNotifications" class="settings-item__label">
+                      <label
+                        for="pushNotifications"
+                        class="settings-item__label"
+                      >
                         Push Notifications
                       </label>
                       <p class="settings-item__description">
@@ -343,11 +366,15 @@
 
                   <div class="settings-item">
                     <div class="settings-item__content">
-                      <label for="smsNotifications" class="settings-item__label">
+                      <label
+                        for="smsNotifications"
+                        class="settings-item__label"
+                      >
                         SMS Notifications
                       </label>
                       <p class="settings-item__description">
-                        Receive text message notifications (requires verified phone)
+                        Receive text message notifications (requires verified
+                        phone)
                       </p>
                     </div>
                     <label class="toggle">
@@ -364,7 +391,9 @@
                 </div>
 
                 <div class="form-actions">
-                  <button type="submit" class="btn btn--primary">Save Changes</button>
+                  <button type="submit" class="btn btn--primary"
+                    >Save Changes</button
+                  >
                 </div>
               </form>
             </section>
@@ -374,7 +403,9 @@
           {#if activeTab === "privacy"}
             <section class="settings-section">
               <h2>Privacy Settings</h2>
-              <p class="text-muted">Control what information is visible to other users</p>
+              <p class="text-muted">
+                Control what information is visible to other users
+              </p>
 
               <form method="POST" action="?/updateSettings" use:enhance>
                 <div class="settings-group">
@@ -384,7 +415,8 @@
                         Show Email Address
                       </label>
                       <p class="settings-item__description">
-                        Allow other users to see your email address on your profile
+                        Allow other users to see your email address on your
+                        profile
                       </p>
                     </div>
                     <label class="toggle">
@@ -405,7 +437,8 @@
                         Show Phone Number
                       </label>
                       <p class="settings-item__description">
-                        Allow other users to see your phone number on your profile
+                        Allow other users to see your phone number on your
+                        profile
                       </p>
                     </div>
                     <label class="toggle">
@@ -422,7 +455,9 @@
                 </div>
 
                 <div class="form-actions">
-                  <button type="submit" class="btn btn--primary">Save Changes</button>
+                  <button type="submit" class="btn btn--primary"
+                    >Save Changes</button
+                  >
                 </div>
               </form>
             </section>
@@ -436,7 +471,9 @@
 
               <form method="POST" action="?/updateSettings" use:enhance>
                 <div class="form-group">
-                  <label for="currencyPreference" class="form-label">Currency</label>
+                  <label for="currencyPreference" class="form-label"
+                    >Currency</label
+                  >
                   <select
                     id="currencyPreference"
                     name="currencyPreference"
@@ -477,13 +514,17 @@
                     <option value="UTC">UTC</option>
                     <option value="Europe/London">London (GMT)</option>
                     <option value="America/New_York">New York (EST)</option>
-                    <option value="America/Los_Angeles">Los Angeles (PST)</option>
+                    <option value="America/Los_Angeles"
+                      >Los Angeles (PST)</option
+                    >
                     <option value="Europe/Paris">Paris (CET)</option>
                   </select>
                 </div>
 
                 <div class="form-actions">
-                  <button type="submit" class="btn btn--primary">Save Changes</button>
+                  <button type="submit" class="btn btn--primary"
+                    >Save Changes</button
+                  >
                 </div>
               </form>
             </section>
@@ -497,7 +538,9 @@
 
               <form method="POST" action="?/changePassword" use:enhance>
                 <div class="form-group">
-                  <label for="currentPassword" class="form-label">Current Password</label>
+                  <label for="currentPassword" class="form-label"
+                    >Current Password</label
+                  >
                   <input
                     type="password"
                     id="currentPassword"
@@ -508,7 +551,9 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="newPassword" class="form-label">New Password</label>
+                  <label for="newPassword" class="form-label"
+                    >New Password</label
+                  >
                   <input
                     type="password"
                     id="newPassword"
@@ -517,11 +562,15 @@
                     required
                     minlength="8"
                   />
-                  <p class="form-helper">Password must be at least 8 characters</p>
+                  <p class="form-helper">
+                    Password must be at least 8 characters
+                  </p>
                 </div>
 
                 <div class="form-group">
-                  <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                  <label for="confirmPassword" class="form-label"
+                    >Confirm New Password</label
+                  >
                   <input
                     type="password"
                     id="confirmPassword"
@@ -533,7 +582,9 @@
                 </div>
 
                 <div class="form-actions">
-                  <button type="submit" class="btn btn--primary">Change Password</button>
+                  <button type="submit" class="btn btn--primary"
+                    >Change Password</button
+                  >
                 </div>
               </form>
             </section>
@@ -746,4 +797,3 @@
     }
   }
 </style>
-

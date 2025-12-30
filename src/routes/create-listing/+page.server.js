@@ -24,7 +24,7 @@ export async function load({ locals }) {
     .limit(1);
 
   if (marketplaceUser.length === 0) {
-    throw redirect(302, "/dashboard?error=profile_required");
+    throw redirect(302, "/marketplace?error=profile_required");
   }
 
   return {
@@ -68,7 +68,7 @@ export const actions = {
     // Collect missing fields with user-friendly names
     const missingFields = [];
     const fieldErrors = {};
-    
+
     if (!categoryId) {
       missingFields.push("Category");
       fieldErrors.categoryId = "Please select a category";
@@ -97,7 +97,7 @@ export const actions = {
       missingFields.push("Postcode");
       fieldErrors.locationPostcode = "Please enter your postcode";
     }
-    
+
     // Condition is required for products
     if (type === "product") {
       const condition = formData.get("condition");
@@ -108,10 +108,11 @@ export const actions = {
     }
 
     if (missingFields.length > 0) {
-      const errorMessage = missingFields.length === 1
-        ? `Missing required field: ${missingFields[0]}`
-        : `Missing required fields: ${missingFields.join(", ")}`;
-      
+      const errorMessage =
+        missingFields.length === 1
+          ? `Missing required field: ${missingFields[0]}`
+          : `Missing required fields: ${missingFields.join(", ")}`;
+
       return fail(400, {
         error: errorMessage,
         fieldErrors: fieldErrors,
@@ -122,7 +123,8 @@ export const actions = {
           description: !description || description.toString().trim() === "",
           price: !price || price.toString().trim() === "",
           locationCity: !locationCity || locationCity.toString().trim() === "",
-          locationPostcode: !locationPostcode || locationPostcode.toString().trim() === "",
+          locationPostcode:
+            !locationPostcode || locationPostcode.toString().trim() === "",
         },
       });
     }
@@ -135,24 +137,27 @@ export const actions = {
       .limit(1);
 
     if (category.length === 0) {
-      return fail(400, { 
+      return fail(400, {
         error: "Invalid category selected",
-        fieldErrors: { categoryId: "The selected category does not exist. Please choose a different category." }
+        fieldErrors: {
+          categoryId:
+            "The selected category does not exist. Please choose a different category.",
+        },
       });
     }
 
     // Validate price
     const priceNum = parseFloat(price.toString());
     if (isNaN(priceNum)) {
-      return fail(400, { 
+      return fail(400, {
         error: "Invalid price format",
-        fieldErrors: { price: "Please enter a valid number for the price" }
+        fieldErrors: { price: "Please enter a valid number for the price" },
       });
     }
     if (priceNum < 0) {
-      return fail(400, { 
+      return fail(400, {
         error: "Price cannot be negative",
-        fieldErrors: { price: "Price must be 0 or greater" }
+        fieldErrors: { price: "Price must be 0 or greater" },
       });
     }
 
@@ -163,19 +168,29 @@ export const actions = {
         .values({
           userId: marketplaceUser[0].id,
           categoryId: Number(categoryId),
-          subcategoryId: formData.get("subcategoryId") ? Number(formData.get("subcategoryId")) : null,
+          subcategoryId: formData.get("subcategoryId")
+            ? Number(formData.get("subcategoryId"))
+            : null,
           type: type.toString(),
           title: title.toString().trim(),
           description: description.toString().trim(),
-          condition: formData.get("condition") ? formData.get("condition").toString() : null,
-          brand: formData.get("brand") ? formData.get("brand").toString().trim() : null,
+          condition: formData.get("condition")
+            ? formData.get("condition").toString()
+            : null,
+          brand: formData.get("brand")
+            ? formData.get("brand").toString().trim()
+            : null,
           price: priceNum.toString(),
           priceType: (formData.get("priceType") || "fixed").toString(),
           acceptsOffers: formData.get("acceptsOffers") === "true",
           locationCity: locationCity.toString().trim(),
           locationPostcode: locationPostcode.toString().trim(),
-          locationLatitude: formData.get("locationLatitude") ? formData.get("locationLatitude").toString() : null,
-          locationLongitude: formData.get("locationLongitude") ? formData.get("locationLongitude").toString() : null,
+          locationLatitude: formData.get("locationLatitude")
+            ? formData.get("locationLatitude").toString()
+            : null,
+          locationLongitude: formData.get("locationLongitude")
+            ? formData.get("locationLongitude").toString()
+            : null,
           deliveryCollection: formData.get("deliveryCollection") !== "false",
           deliveryLocal: formData.get("deliveryLocal") === "true",
           deliveryShipping: formData.get("deliveryShipping") === "true",
@@ -190,7 +205,13 @@ export const actions = {
       throw redirect(303, `/marketplace?created=${newListing.id}`);
     } catch (error) {
       // Re-throw redirect errors (they're not actual errors)
-      if (error && typeof error === 'object' && 'status' in error && error.status >= 300 && error.status < 400) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "status" in error &&
+        error.status >= 300 &&
+        error.status < 400
+      ) {
         throw error;
       }
       console.error("Error creating listing:", error);

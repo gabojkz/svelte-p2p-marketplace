@@ -39,35 +39,45 @@
 
   // Filter categories by type
   const filteredCategories = $derived(
-    categories.filter((/** @type {any} */ cat) => cat.type === listingType)
+    categories.filter((/** @type {any} */ cat) => cat.type === listingType),
   );
 
   // Validation
   const step1Valid = $derived(categoryId !== "");
   const step2Valid = $derived(
-    title.trim() !== "" && description.trim() !== "" && (listingType === "service" || condition !== "")
+    title.trim() !== "" &&
+      description.trim() !== "" &&
+      (listingType === "service" || condition !== ""),
   );
   const step3Valid = $derived(true); // Photos optional for now
   const step4Valid = $derived(
-    price !== "" && parseFloat(price) >= 0 && locationCity.trim() !== "" && locationPostcode.trim() !== ""
+    price !== "" &&
+      parseFloat(price) >= 0 &&
+      locationCity.trim() !== "" &&
+      locationPostcode.trim() !== "",
   );
 
   // Form submission is handled by redirect in server action
-  
+
   // Get field-specific errors from form
   const fieldErrors = $derived.by(() => {
-    if (form && typeof form === 'object' && 'fieldErrors' in form && form.fieldErrors) {
+    if (
+      form &&
+      typeof form === "object" &&
+      "fieldErrors" in form &&
+      form.fieldErrors
+    ) {
       return /** @type {Record<string, string>} */ (form.fieldErrors);
     }
     return /** @type {Record<string, string>} */ ({});
   });
-  
+
   // Helper function to get error for a field
   /** @param {string} fieldName */
   function getFieldError(fieldName) {
     return fieldErrors[fieldName] || null;
   }
-  
+
   // Helper function to check if field has error
   /** @param {string} fieldName */
   function hasFieldError(fieldName) {
@@ -125,11 +135,11 @@
 
         <nav class="nav" aria-label="Main navigation">
           <a href="/marketplace" class="nav__link">Browse</a>
-          <a href="/dashboard" class="nav__link">My Listings</a>
+          <a href="/my-listings" class="nav__link">My Listings</a>
         </nav>
 
         <div class="header__actions">
-          <a href="/dashboard" class="btn btn--ghost">Dashboard</a>
+          <a href="/my-listings" class="btn btn--ghost">My Listings</a>
           <button class="menu-toggle" aria-label="Toggle menu">
             <span class="menu-toggle__bar"></span>
           </button>
@@ -154,7 +164,11 @@
       <!-- Progress Steps -->
       <div class="steps mb-8">
         {#each [1, 2, 3, 4] as stepNum}
-          <div class="step" class:step--active={step >= stepNum} class:step--completed={step > stepNum}>
+          <div
+            class="step"
+            class:step--active={step >= stepNum}
+            class:step--completed={step > stepNum}
+          >
             <div class="step__number">{stepNum}</div>
             <div class="step__label">
               {stepNum === 1 && "Category"}
@@ -171,7 +185,9 @@
         <div class="alert alert--error mb-6">
           <strong>⚠️ {form.error}</strong>
           {#if Object.keys(fieldErrors).length > 0}
-            <ul style="margin-top: var(--space-3); margin-left: var(--space-5); list-style: disc;">
+            <ul
+              style="margin-top: var(--space-3); margin-left: var(--space-5); list-style: disc;"
+            >
               {#each Object.entries(fieldErrors) as [field, message]}
                 <li>{message}</li>
               {/each}
@@ -207,7 +223,8 @@
                     />
                     <div
                       class="listing-type-card"
-                      class:listing-type-card--selected={listingType === "product"}
+                      class:listing-type-card--selected={listingType ===
+                        "product"}
                       style="padding: var(--space-4); border: 2px solid var(--color-gray-200); border-radius: var(--radius-lg); text-align: center; cursor: pointer; transition: all 0.2s;"
                     >
                       <span style="font-size: var(--text-2xl);">📦</span>
@@ -232,7 +249,8 @@
                     />
                     <div
                       class="listing-type-card"
-                      class:listing-type-card--selected={listingType === "service"}
+                      class:listing-type-card--selected={listingType ===
+                        "service"}
                       style="padding: var(--space-4); border: 2px solid var(--color-gray-200); border-radius: var(--radius-lg); text-align: center; cursor: pointer; transition: all 0.2s;"
                     >
                       <span style="font-size: var(--text-2xl);">🔧</span>
@@ -250,12 +268,15 @@
 
                 <!-- Category Selection -->
                 <div class="form-group mt-6">
-                  <label for="categoryId" class="form-label form-label--required">Category</label>
+                  <label
+                    for="categoryId"
+                    class="form-label form-label--required">Category</label
+                  >
                   <select
                     id="categoryId"
                     name="categoryId"
                     class="form-select"
-                    class:form-select--error={hasFieldError('categoryId')}
+                    class:form-select--error={hasFieldError("categoryId")}
                     bind:value={categoryId}
                     required
                   >
@@ -263,17 +284,20 @@
                     {#if filteredCategories.length > 0}
                       {#each filteredCategories.filter((/** @type {any} */ c) => !c.parentId) as category}
                         <option value={category.id}>
-                          {category.icon || '📦'} {category.name}
+                          {category.icon || "📦"}
+                          {category.name}
                         </option>
                       {/each}
                     {/if}
                   </select>
-                  {#if hasFieldError('categoryId')}
-                    <p class="form-error">{getFieldError('categoryId')}</p>
+                  {#if hasFieldError("categoryId")}
+                    <p class="form-error">{getFieldError("categoryId")}</p>
                   {/if}
                   {#if categoryId && filteredCategories.some((/** @type {any} */ c) => c.parentId === Number(categoryId))}
                     <div class="form-group mt-4">
-                      <label for="subcategoryId" class="form-label">Subcategory (optional)</label>
+                      <label for="subcategoryId" class="form-label"
+                        >Subcategory (optional)</label
+                      >
                       <select
                         id="subcategoryId"
                         name="subcategoryId"
@@ -283,7 +307,8 @@
                         <option value="">None</option>
                         {#each filteredCategories.filter((/** @type {any} */ c) => c.parentId === Number(categoryId)) as subcategory}
                           <option value={subcategory.id}>
-                            {subcategory.icon || '📦'} {subcategory.name}
+                            {subcategory.icon || "📦"}
+                            {subcategory.name}
                           </option>
                         {/each}
                       </select>
@@ -295,7 +320,11 @@
                 <input type="hidden" name="type" value={listingType} />
                 <input type="hidden" name="categoryId" value={categoryId} />
                 {#if subcategoryId}
-                  <input type="hidden" name="subcategoryId" value={subcategoryId} />
+                  <input
+                    type="hidden"
+                    name="subcategoryId"
+                    value={subcategoryId}
+                  />
                 {/if}
               </div>
             {/if}
@@ -306,20 +335,22 @@
                 <h3 style="margin-bottom: var(--space-6);">Item Details</h3>
 
                 <div class="form-group">
-                  <label for="title" class="form-label form-label--required">Title</label>
+                  <label for="title" class="form-label form-label--required"
+                    >Title</label
+                  >
                   <input
                     id="title"
                     name="title"
                     type="text"
                     class="form-input"
-                    class:form-input--error={hasFieldError('title')}
+                    class:form-input--error={hasFieldError("title")}
                     placeholder="e.g., 2019 BMW 3 Series 320i M Sport"
                     maxlength="200"
                     bind:value={title}
                     required
                   />
-                  {#if hasFieldError('title')}
-                    <p class="form-error">{getFieldError('title')}</p>
+                  {#if hasFieldError("title")}
+                    <p class="form-error">{getFieldError("title")}</p>
                   {:else}
                     <p class="form-helper">
                       Be specific - include brand, model, size, or colour
@@ -328,21 +359,22 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="description" class="form-label form-label--required"
-                    >Description</label
+                  <label
+                    for="description"
+                    class="form-label form-label--required">Description</label
                   >
                   <textarea
                     id="description"
                     name="description"
                     class="form-textarea"
-                    class:form-textarea--error={hasFieldError('description')}
+                    class:form-textarea--error={hasFieldError("description")}
                     rows="6"
                     placeholder="Describe your item in detail. Include condition, features, history, and any flaws..."
                     bind:value={description}
                     required
                   ></textarea>
-                  {#if hasFieldError('description')}
-                    <p class="form-error">{getFieldError('description')}</p>
+                  {#if hasFieldError("description")}
+                    <p class="form-error">{getFieldError("description")}</p>
                   {:else}
                     <p class="form-helper">
                       Detailed descriptions help buyers make decisions faster
@@ -355,15 +387,16 @@
                     style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);"
                   >
                     <div class="form-group">
-                      <label for="condition" class="form-label form-label--required"
-                        >Condition</label
+                      <label
+                        for="condition"
+                        class="form-label form-label--required">Condition</label
                       >
-                      <select 
-                        id="condition" 
-                        name="condition" 
+                      <select
+                        id="condition"
+                        name="condition"
                         class="form-select"
-                        class:form-select--error={hasFieldError('condition')}
-                        bind:value={condition} 
+                        class:form-select--error={hasFieldError("condition")}
+                        bind:value={condition}
                         required
                       >
                         <option value="">Select condition...</option>
@@ -373,13 +406,15 @@
                         <option value="fair">Fair (Visible wear)</option>
                         <option value="parts">For Parts / Not Working</option>
                       </select>
-                      {#if hasFieldError('condition')}
-                        <p class="form-error">{getFieldError('condition')}</p>
+                      {#if hasFieldError("condition")}
+                        <p class="form-error">{getFieldError("condition")}</p>
                       {/if}
                     </div>
 
                     <div class="form-group">
-                      <label for="brand" class="form-label">Brand (if applicable)</label>
+                      <label for="brand" class="form-label"
+                        >Brand (if applicable)</label
+                      >
                       <input
                         id="brand"
                         name="brand"
@@ -421,7 +456,8 @@
                 </div>
 
                 <p class="form-helper mt-4">
-                  <strong>Note:</strong> Photo upload will be implemented in a future update. You can still create your listing without photos.
+                  <strong>Note:</strong> Photo upload will be implemented in a future
+                  update. You can still create your listing without photos.
                 </p>
               </div>
             {/if}
@@ -432,7 +468,10 @@
                 <h3 style="margin-bottom: var(--space-6);">Location & Price</h3>
 
                 <!-- Location -->
-                <div class="form-section" style="margin-bottom: var(--space-8);">
+                <div
+                  class="form-section"
+                  style="margin-bottom: var(--space-8);"
+                >
                   <h4
                     style="margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2);"
                   >
@@ -443,7 +482,9 @@
                     style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-4);"
                   >
                     <div class="form-group">
-                      <label for="locationCity" class="form-label form-label--required"
+                      <label
+                        for="locationCity"
+                        class="form-label form-label--required"
                         >City or Town</label
                       >
                       <input
@@ -451,31 +492,38 @@
                         name="locationCity"
                         type="text"
                         class="form-input"
-                        class:form-input--error={hasFieldError('locationCity')}
+                        class:form-input--error={hasFieldError("locationCity")}
                         placeholder="e.g., Newcastle upon Tyne"
                         bind:value={locationCity}
                         required
                       />
-                      {#if hasFieldError('locationCity')}
-                        <p class="form-error">{getFieldError('locationCity')}</p>
+                      {#if hasFieldError("locationCity")}
+                        <p class="form-error">
+                          {getFieldError("locationCity")}
+                        </p>
                       {/if}
                     </div>
                     <div class="form-group">
-                      <label for="locationPostcode" class="form-label form-label--required"
-                        >Postcode</label
+                      <label
+                        for="locationPostcode"
+                        class="form-label form-label--required">Postcode</label
                       >
                       <input
                         id="locationPostcode"
                         name="locationPostcode"
                         type="text"
                         class="form-input"
-                        class:form-input--error={hasFieldError('locationPostcode')}
+                        class:form-input--error={hasFieldError(
+                          "locationPostcode",
+                        )}
                         placeholder="e.g., NE1 4ST"
                         bind:value={locationPostcode}
                         required
                       />
-                      {#if hasFieldError('locationPostcode')}
-                        <p class="form-error">{getFieldError('locationPostcode')}</p>
+                      {#if hasFieldError("locationPostcode")}
+                        <p class="form-error">
+                          {getFieldError("locationPostcode")}
+                        </p>
                       {/if}
                     </div>
                   </div>
@@ -493,7 +541,9 @@
                     style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);"
                   >
                     <div class="form-group">
-                      <label for="price" class="form-label form-label--required">Price</label>
+                      <label for="price" class="form-label form-label--required"
+                        >Price</label
+                      >
                       <div class="input-group">
                         <span
                           style="padding: var(--space-3) var(--space-4); background: var(--color-gray-100); border: 2px solid var(--color-gray-200); border-right: none; border-radius: var(--radius-md) 0 0 var(--radius-md);"
@@ -504,7 +554,7 @@
                           name="price"
                           type="number"
                           class="form-input"
-                          class:form-input--error={hasFieldError('price')}
+                          class:form-input--error={hasFieldError("price")}
                           placeholder="0.00"
                           min="0"
                           step="0.01"
@@ -513,13 +563,20 @@
                           required
                         />
                       </div>
-                      {#if hasFieldError('price')}
-                        <p class="form-error">{getFieldError('price')}</p>
+                      {#if hasFieldError("price")}
+                        <p class="form-error">{getFieldError("price")}</p>
                       {/if}
                     </div>
                     <div class="form-group">
-                      <label for="priceType" class="form-label">Price Type</label>
-                      <select id="priceType" name="priceType" class="form-select" bind:value={priceType}>
+                      <label for="priceType" class="form-label"
+                        >Price Type</label
+                      >
+                      <select
+                        id="priceType"
+                        name="priceType"
+                        class="form-select"
+                        bind:value={priceType}
+                      >
                         <option value="fixed">Fixed Price</option>
                         <option value="negotiable">Negotiable</option>
                         <option value="free">Free</option>
@@ -591,7 +648,9 @@
                             bind:checked={deliveryShipping}
                             value="true"
                           />
-                          <span class="form-check-label">Nationwide shipping</span>
+                          <span class="form-check-label"
+                            >Nationwide shipping</span
+                          >
                         </label>
                       </div>
                     </div>
@@ -602,7 +661,11 @@
                 <input type="hidden" name="type" value={listingType} />
                 <input type="hidden" name="categoryId" value={categoryId} />
                 {#if subcategoryId}
-                  <input type="hidden" name="subcategoryId" value={subcategoryId} />
+                  <input
+                    type="hidden"
+                    name="subcategoryId"
+                    value={subcategoryId}
+                  />
                 {/if}
                 <input type="hidden" name="status" value={status} />
               </div>
@@ -626,7 +689,9 @@
                   <button
                     type="button"
                     class="btn btn--outline"
-                    onclick={() => { status = "draft"; }}
+                    onclick={() => {
+                      status = "draft";
+                    }}
                   >
                     Save Draft
                   </button>
@@ -634,7 +699,9 @@
                     type="submit"
                     class="btn btn--primary"
                     disabled={!step4Valid}
-                    onclick={() => { status = "active"; }}
+                    onclick={() => {
+                      status = "active";
+                    }}
                   >
                     Publish Listing
                   </button>

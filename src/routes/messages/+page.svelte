@@ -25,17 +25,17 @@
   // Load conversations
   async function loadConversations() {
     if (!marketplaceUser) return;
-    
+
     loading = true;
     try {
       const response = await fetch("/api/conversations");
       if (!response.ok) throw new Error("Failed to load conversations");
       const data = await response.json();
       conversations = data.conversations || [];
-      
+
       // If conversationId is in URL, select that conversation
       if (conversationId && !selectedConversation) {
-        const conv = conversations.find(c => c.id === conversationId);
+        const conv = conversations.find((c) => c.id === conversationId);
         if (conv) {
           selectConversation(conv);
         }
@@ -51,13 +51,16 @@
   async function selectConversation(conversation) {
     selectedConversation = conversation;
     messageInput = "";
-    
+
     // Update URL
-    await goto(`/messages?conversation=${conversation.id}`, { replaceState: true, noScroll: true });
-    
+    await goto(`/messages?conversation=${conversation.id}`, {
+      replaceState: true,
+      noScroll: true,
+    });
+
     // Load messages
     await loadMessages(conversation.id);
-    
+
     // Start polling for new messages
     if (pollingInterval) {
       clearInterval(pollingInterval);
@@ -76,7 +79,7 @@
       if (!response.ok) throw new Error("Failed to load messages");
       const data = await response.json();
       messages = data.messages || [];
-      
+
       // Scroll to bottom
       setTimeout(() => {
         const messagesContainer = document.getElementById("messages-container");
@@ -95,21 +98,24 @@
 
     sending = true;
     try {
-      const response = await fetch(`/api/conversations/${selectedConversation.id}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: messageInput.trim() })
-      });
+      const response = await fetch(
+        `/api/conversations/${selectedConversation.id}/messages`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: messageInput.trim() }),
+        },
+      );
 
       if (!response.ok) throw new Error("Failed to send message");
-      
+
       const data = await response.json();
       messages = [...messages, data.message];
       messageInput = "";
-      
+
       // Reload conversations to update last message preview
       await loadConversations();
-      
+
       // Scroll to bottom
       setTimeout(() => {
         const messagesContainer = document.getElementById("messages-container");
@@ -158,7 +164,7 @@
 
   onMount(() => {
     loadConversations();
-    
+
     return () => {
       if (pollingInterval) {
         clearInterval(pollingInterval);
@@ -169,7 +175,7 @@
   // Auto-select conversation from URL
   $effect(() => {
     if (conversationId && conversations.length > 0 && !selectedConversation) {
-      const conv = conversations.find(c => c.id === conversationId);
+      const conv = conversations.find((c) => c.id === conversationId);
       if (conv) {
         selectConversation(conv);
       }
@@ -186,11 +192,11 @@
 
         <nav class="nav" aria-label="Main navigation">
           <a href="/marketplace" class="nav__link">Browse</a>
-          <a href="/dashboard" class="nav__link">My Listings</a>
+          <a href="/my-listings" class="nav__link">My Listings</a>
         </nav>
 
         <div class="header__actions">
-          <a href="/dashboard" class="btn btn--ghost">Dashboard</a>
+          <a href="/my-listings" class="btn btn--ghost">Dashboard</a>
           <button class="menu-toggle" aria-label="Toggle menu">
             <span class="menu-toggle__bar"></span>
           </button>
@@ -208,7 +214,7 @@
           <div class="chat-sidebar__header">
             <h2>Messages</h2>
           </div>
-          
+
           {#if loading && conversations.length === 0}
             <div class="chat-sidebar__loading">Loading conversations...</div>
           {:else if conversations.length === 0}
@@ -223,7 +229,8 @@
                 {@const unreadCount = getUnreadCount(conversation)}
                 <button
                   class="chat-sidebar__item"
-                  class:chat-sidebar__item--active={selectedConversation?.id === conversation.id}
+                  class:chat-sidebar__item--active={selectedConversation?.id ===
+                    conversation.id}
                   onclick={() => selectConversation(conversation)}
                   type="button"
                 >
@@ -243,7 +250,9 @@
                     </div>
                     <div class="chat-sidebar__item-preview">
                       {#if conversation.listing}
-                        <span class="chat-sidebar__item-listing">{conversation.listing.title}</span>
+                        <span class="chat-sidebar__item-listing"
+                          >{conversation.listing.title}</span
+                        >
                       {/if}
                       <span class="chat-sidebar__item-message">
                         {conversation.lastMessagePreview || "No messages yet"}
@@ -278,7 +287,9 @@
                 <div class="chat-header__info">
                   <h3>{otherUser?.username || "Unknown User"}</h3>
                   {#if selectedConversation.listing}
-                    <p class="chat-header__listing">{selectedConversation.listing.title}</p>
+                    <p class="chat-header__listing">
+                      {selectedConversation.listing.title}
+                    </p>
                   {/if}
                 </div>
               </div>
@@ -639,4 +650,3 @@
     }
   }
 </style>
-

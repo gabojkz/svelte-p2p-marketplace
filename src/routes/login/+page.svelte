@@ -20,7 +20,7 @@
       if (result.error) {
         error = result.error.message || "Invalid credentials";
       } else {
-        goto("/dashboard");
+        goto("/my-listings");
       }
     } catch (err) {
       error = "An unexpected error occurred";
@@ -100,7 +100,11 @@
               />
             </div>
 
-            <button type="submit" class="btn btn--primary btn--full" disabled={loading}>
+            <button
+              type="submit"
+              class="btn btn--primary btn--full"
+              disabled={loading}
+            >
               {#if loading}
                 <span class="spinner"></span>
                 Signing in...

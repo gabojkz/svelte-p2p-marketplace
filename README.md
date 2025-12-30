@@ -132,7 +132,6 @@ Or connect your GitHub repo to Cloudflare Pages for automatic deployments.
 │   │   ├── api/auth/[...all]/  # Auth API endpoints
 │   │   ├── login/            # Login page
 │   │   ├── register/         # Registration page
-│   │   ├── dashboard/        # Protected dashboard
 │   │   └── +page.svelte      # Landing page
 │   ├── hooks.server.js       # Session handling
 │   └── app.d.ts              # Type definitions

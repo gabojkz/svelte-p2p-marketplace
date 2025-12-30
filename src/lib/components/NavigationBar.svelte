@@ -159,7 +159,7 @@
               {/if}
             </a>
             <a href="/favorites" class="nav__link">⭐ Favorites</a>
-            <a href="/dashboard" class="nav__link">📊 Dashboard</a>
+            <a href="/my-listings" class="nav__link">📊 My Listings</a>
             <button class="nav__link nav__link--button" onclick={handleSignOut}>
               🚪 Logout
             </button>
@@ -219,12 +219,12 @@
 
                 <div class="user-dropdown__menu">
                   <a
-                    href="/dashboard"
+                    href="/my-listings"
                     class="user-dropdown__item"
                     onclick={() => (userDropdownOpen = false)}
                   >
                     <span class="user-dropdown__icon">📊</span>
-                    <span>Dashboard</span>
+                    <span>My Listings</span>
                   </a>
                   <a
                     href="/messages"

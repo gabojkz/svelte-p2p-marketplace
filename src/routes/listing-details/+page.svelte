@@ -54,7 +54,11 @@
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" });
+    return date.toLocaleDateString("en-GB", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   }
 
   // Get time ago
@@ -75,15 +79,17 @@
     try {
       const method = favoriteState ? "DELETE" : "POST";
       const response = await fetch(`/api/favorites/${listing.id}`, {
-        method
+        method,
       });
 
       if (response.ok) {
-      favoriteState = !favoriteState;
+        favoriteState = !favoriteState;
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error("Error toggling favorite:", errorData.error);
-        alert(errorData.error || "Failed to update favorite. Please try again.");
+        alert(
+          errorData.error || "Failed to update favorite. Please try again.",
+        );
       }
     } catch (err) {
       console.error("Error toggling favorite:", err);
@@ -126,7 +132,10 @@
     }
     path.push({ name: listing.category.name, slug: listing.category.slug });
     if (listing.subcategory) {
-      path.push({ name: listing.subcategory.name, slug: listing.subcategory.slug });
+      path.push({
+        name: listing.subcategory.name,
+        slug: listing.subcategory.slug,
+      });
     }
     return path;
   });
@@ -153,7 +162,7 @@
       "like-new": "Like New (Excellent)",
       good: "Good (Minor wear)",
       fair: "Fair (Visible wear)",
-      parts: "For Parts / Not Working"
+      parts: "For Parts / Not Working",
     });
     return labels[condition] || condition;
   }
@@ -162,13 +171,14 @@
   const mainGalleryStyle = $derived(
     listingImages.length > 0
       ? "background: var(--color-gray-100); border-radius: var(--radius-xl); height: 450px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3); position: relative; overflow: hidden;"
-      : "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: var(--radius-xl); height: 450px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3); position: relative; overflow: hidden;"
+      : "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: var(--radius-xl); height: 450px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3); position: relative; overflow: hidden;",
   );
 
   // Get thumbnail border style
   /** @param {number} index */
   function getThumbnailBorderStyle(index) {
-    const borderColor = selectedImageIndex === index ? "var(--color-primary)" : "transparent";
+    const borderColor =
+      selectedImageIndex === index ? "var(--color-primary)" : "transparent";
     return `background: var(--color-gray-100); border: 2px solid ${borderColor}; border-radius: var(--radius-md); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; padding: 0;`;
   }
 </script>
@@ -181,15 +191,25 @@
       {#if !listing}
         <div class="error-state">
           <h1>Listing not found</h1>
-          <p>The listing you're looking for doesn't exist or has been removed.</p>
+          <p>
+            The listing you're looking for doesn't exist or has been removed.
+          </p>
           <a href="/marketplace" class="btn btn--primary">Browse Marketplace</a>
         </div>
       {:else}
         <!-- Breadcrumb -->
-        <nav class="breadcrumb" style="margin-bottom: var(--space-6); font-size: var(--text-sm);">
-          <a href="/marketplace" style="color: var(--color-gray-500);">Marketplace</a>
+        <nav
+          class="breadcrumb"
+          style="margin-bottom: var(--space-6); font-size: var(--text-sm);"
+        >
+          <a href="/marketplace" style="color: var(--color-gray-500);"
+            >Marketplace</a
+          >
           {#each breadcrumbPath as crumb}
-            <span style="color: var(--color-gray-400); margin: 0 var(--space-2);">›</span>
+            <span
+              style="color: var(--color-gray-400); margin: 0 var(--space-2);"
+              >›</span
+            >
             <a
               href="/marketplace?category={crumb.slug}"
               style="color: var(--color-gray-500);"
@@ -197,20 +217,22 @@
               {crumb.name}
             </a>
           {/each}
-          <span style="color: var(--color-gray-400); margin: 0 var(--space-2);">›</span>
+          <span style="color: var(--color-gray-400); margin: 0 var(--space-2);"
+            >›</span
+          >
           <span style="color: var(--color-gray-700);">{listing.title}</span>
         </nav>
 
         <!-- Main Layout -->
-        <div class="listing-detail" style="display: grid; grid-template-columns: 1fr 400px; gap: var(--space-8);">
+        <div
+          class="listing-detail"
+          style="display: grid; grid-template-columns: 1fr 400px; gap: var(--space-8);"
+        >
           <!-- Left Column - Images & Details -->
           <div class="listing-detail__main">
             <!-- Image Gallery -->
             <div class="listing-gallery" style="margin-bottom: var(--space-6);">
-              <div
-                class="listing-gallery__main"
-                style={mainGalleryStyle}
-              >
+              <div class="listing-gallery__main" style={mainGalleryStyle}>
                 {#if listingImages.length > 0 && listingImages[selectedImageIndex]}
                   <img
                     src={listingImages[selectedImageIndex].imageUrl}
@@ -237,7 +259,9 @@
                 {#if listing.urgent}
                   <span
                     class="listing-card__badge listing-card__badge--urgent"
-                    style="position: absolute; top: var(--space-4); {listing.featured ? 'left: calc(var(--space-4) + 100px);' : 'left: var(--space-4);'}"
+                    style="position: absolute; top: var(--space-4); {listing.featured
+                      ? 'left: calc(var(--space-4) + 100px);'
+                      : 'left: var(--space-4);'}"
                   >
                     Urgent
                   </span>
@@ -248,7 +272,8 @@
                     onclick={toggleFavorite}
                     type="button"
                   >
-                    {favoriteState ? "❤️" : "♡"} {favoriteState ? "Saved" : "Save"}
+                    {favoriteState ? "❤️" : "♡"}
+                    {favoriteState ? "Saved" : "Save"}
                   </button>
                 {/if}
               </div>
@@ -261,7 +286,7 @@
                   {#each listingImages as image, index}
                     <button
                       type="button"
-                      onclick={() => selectedImageIndex = index}
+                      onclick={() => (selectedImageIndex = index)}
                       style={getThumbnailBorderStyle(index)}
                     >
                       <img
@@ -289,14 +314,20 @@
                   • {listing.brand}
                 {/if}
               </div>
-              <h1 style="font-size: var(--text-3xl); margin-bottom: var(--space-3);">
+              <h1
+                style="font-size: var(--text-3xl); margin-bottom: var(--space-3);"
+              >
                 {listing.title}
               </h1>
               <div
                 class="listing-meta"
                 style="display: flex; align-items: center; gap: var(--space-4); font-size: var(--text-sm); color: var(--color-gray-600); flex-wrap: wrap;"
               >
-                <span>📍 {listing.locationCity}{listing.locationPostcode ? `, ${listing.locationPostcode}` : ""}</span>
+                <span
+                  >📍 {listing.locationCity}{listing.locationPostcode
+                    ? `, ${listing.locationPostcode}`
+                    : ""}</span
+                >
                 <span>•</span>
                 <span>Listed {getTimeAgo(listing.createdAt)}</span>
                 <span>•</span>
@@ -308,7 +339,9 @@
             {#if listing.type === "product" && listing.condition}
               <div class="card" style="margin-bottom: var(--space-6);">
                 <div class="card__body">
-                  <h3 style="margin-bottom: var(--space-4);">Key Specifications</h3>
+                  <h3 style="margin-bottom: var(--space-4);">
+                    Key Specifications
+                  </h3>
                   <div
                     style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--space-4);"
                   >
@@ -316,13 +349,19 @@
                       class="spec-item"
                       style="text-align: center; padding: var(--space-4); background: var(--color-gray-50); border-radius: var(--radius-md);"
                     >
-                      <div style="font-size: var(--text-xl); margin-bottom: var(--space-2);">
+                      <div
+                        style="font-size: var(--text-xl); margin-bottom: var(--space-2);"
+                      >
                         📦
                       </div>
-                      <div style="font-size: var(--text-sm); color: var(--color-gray-500);">
+                      <div
+                        style="font-size: var(--text-sm); color: var(--color-gray-500);"
+                      >
                         Condition
                       </div>
-                      <div style="font-weight: var(--font-semibold); font-size: var(--text-sm);">
+                      <div
+                        style="font-weight: var(--font-semibold); font-size: var(--text-sm);"
+                      >
                         {getConditionLabel(listing.condition)}
                       </div>
                     </div>
@@ -331,13 +370,19 @@
                         class="spec-item"
                         style="text-align: center; padding: var(--space-4); background: var(--color-gray-50); border-radius: var(--radius-md);"
                       >
-                        <div style="font-size: var(--text-xl); margin-bottom: var(--space-2);">
+                        <div
+                          style="font-size: var(--text-xl); margin-bottom: var(--space-2);"
+                        >
                           🏷️
                         </div>
-                        <div style="font-size: var(--text-sm); color: var(--color-gray-500);">
+                        <div
+                          style="font-size: var(--text-sm); color: var(--color-gray-500);"
+                        >
                           Brand
                         </div>
-                        <div style="font-weight: var(--font-semibold); font-size: var(--text-sm);">
+                        <div
+                          style="font-weight: var(--font-semibold); font-size: var(--text-sm);"
+                        >
                           {listing.brand}
                         </div>
                       </div>
@@ -363,22 +408,32 @@
             {#if listing.deliveryCollection || listing.deliveryLocal || listing.deliveryShipping}
               <div class="card" style="margin-bottom: var(--space-6);">
                 <div class="card__body">
-                  <h3 style="margin-bottom: var(--space-4);">Delivery Options</h3>
-                  <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+                  <h3 style="margin-bottom: var(--space-4);">
+                    Delivery Options
+                  </h3>
+                  <div
+                    style="display: flex; flex-direction: column; gap: var(--space-2);"
+                  >
                     {#if listing.deliveryCollection}
-                      <div style="display: flex; align-items: center; gap: var(--space-2);">
+                      <div
+                        style="display: flex; align-items: center; gap: var(--space-2);"
+                      >
                         <span>✓</span>
                         <span>Collection available</span>
                       </div>
                     {/if}
                     {#if listing.deliveryLocal}
-                      <div style="display: flex; align-items: center; gap: var(--space-2);">
+                      <div
+                        style="display: flex; align-items: center; gap: var(--space-2);"
+                      >
                         <span>✓</span>
                         <span>Local delivery available</span>
                       </div>
                     {/if}
                     {#if listing.deliveryShipping}
-                      <div style="display: flex; align-items: center; gap: var(--space-2);">
+                      <div
+                        style="display: flex; align-items: center; gap: var(--space-2);"
+                      >
                         <span>✓</span>
                         <span>Nationwide shipping available</span>
                       </div>
@@ -395,10 +450,14 @@
                 <div
                   style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-radius: var(--radius-lg); padding: var(--space-8); text-align: center;"
                 >
-                  <div style="font-size: var(--text-4xl); margin-bottom: var(--space-2);">
+                  <div
+                    style="font-size: var(--text-4xl); margin-bottom: var(--space-2);"
+                  >
                     🗺️
                   </div>
-                  <p style="font-weight: var(--font-semibold); margin-bottom: var(--space-1);">
+                  <p
+                    style="font-weight: var(--font-semibold); margin-bottom: var(--space-1);"
+                  >
                     {listing.locationCity}
                   </p>
                   <p class="text-muted">
@@ -415,25 +474,36 @@
             <div style="position: sticky; top: 80px;">
               <div class="card" style="margin-bottom: var(--space-4);">
                 <div class="card__body">
-                  <div class="listing-price" style="margin-bottom: var(--space-4);">
+                  <div
+                    class="listing-price"
+                    style="margin-bottom: var(--space-4);"
+                  >
                     <div
                       style="font-family: var(--font-display); font-size: var(--text-4xl); font-weight: var(--font-bold); color: var(--color-primary-dark);"
                     >
                       {formatPrice(listing.price)}
                     </div>
                     {#if listing.acceptsOffers}
-                      <span class="badge badge--primary" style="margin-top: var(--space-2);">
+                      <span
+                        class="badge badge--primary"
+                        style="margin-top: var(--space-2);"
+                      >
                         Price Negotiable
                       </span>
                     {/if}
                     {#if listing.priceType === "free"}
-                      <span class="badge badge--success" style="margin-top: var(--space-2);">
+                      <span
+                        class="badge badge--success"
+                        style="margin-top: var(--space-2);"
+                      >
                         Free
                       </span>
                     {/if}
                   </div>
 
-                  <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                  <div
+                    style="display: flex; flex-direction: column; gap: var(--space-3);"
+                  >
                     {#if !isSeller}
                       <button
                         class="btn btn--primary btn--lg btn--full"
@@ -470,8 +540,11 @@
                         Escrow Protection
                       </strong>
                     </div>
-                    <p style="font-size: var(--text-sm); color: var(--color-gray-600);">
-                      Your payment is held securely until you receive and approve the item.
+                    <p
+                      style="font-size: var(--text-sm); color: var(--color-gray-600);"
+                    >
+                      Your payment is held securely until you receive and
+                      approve the item.
                     </p>
                   </div>
                 </div>
@@ -484,7 +557,9 @@
                     <div
                       style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-4);"
                     >
-                      <div class="avatar avatar--lg">{getSellerInitials(listing.seller)}</div>
+                      <div class="avatar avatar--lg">
+                        {getSellerInitials(listing.seller)}
+                      </div>
                       <div>
                         <a
                           href="/profile/{listing.seller.username || 'user'}"
@@ -498,7 +573,9 @@
                           style="display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); flex-wrap: wrap;"
                         >
                           {#if listing.seller && /** @type {any} */ (listing.seller).emailVerified}
-                            <span class="seller-badge seller-badge--verified">✓ Verified</span>
+                            <span class="seller-badge seller-badge--verified"
+                              >✓ Verified</span
+                            >
                           {/if}
                           {#if listing.seller.stats?.avgRating > 0}
                             <span style="color: var(--color-accent-orange);">
@@ -516,48 +593,65 @@
                       style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); text-align: center; margin-bottom: var(--space-4); padding: var(--space-3) 0; border-top: 1px solid var(--color-gray-100); border-bottom: 1px solid var(--color-gray-100);"
                     >
                       <div>
-                        <div style="font-weight: var(--font-bold); color: var(--color-gray-900);">
+                        <div
+                          style="font-weight: var(--font-bold); color: var(--color-gray-900);"
+                        >
                           {listing.seller.stats?.listingsCount || 0}
                         </div>
-                        <div style="font-size: var(--text-xs); color: var(--color-gray-500);">
+                        <div
+                          style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                        >
                           Listings
                         </div>
                       </div>
                       <div>
-                        <div style="font-weight: var(--font-bold); color: var(--color-gray-900);">
+                        <div
+                          style="font-weight: var(--font-bold); color: var(--color-gray-900);"
+                        >
                           {listing.seller.stats?.completedTrades || 0}
                         </div>
-                        <div style="font-size: var(--text-xs); color: var(--color-gray-500);">
+                        <div
+                          style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                        >
                           Trades
                         </div>
                       </div>
                       <div>
-                        <div style="font-weight: var(--font-bold); color: var(--color-gray-900);">
+                        <div
+                          style="font-weight: var(--font-bold); color: var(--color-gray-900);"
+                        >
                           {listing.seller.stats?.avgRating > 0
                             ? `${(listing.seller.stats.avgRating * 20).toFixed(0)}%`
                             : "N/A"}
                         </div>
-                        <div style="font-size: var(--text-xs); color: var(--color-gray-500);">
+                        <div
+                          style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                        >
                           Rating
                         </div>
                       </div>
                     </div>
 
-                    <div style="font-size: var(--text-sm); color: var(--color-gray-600);">
+                    <div
+                      style="font-size: var(--text-sm); color: var(--color-gray-600);"
+                    >
                       <div
                         style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);"
                       >
                         <span>📍</span>
-                        {listing.seller.locationCity || "Location not specified"}
+                        {listing.seller.locationCity ||
+                          "Location not specified"}
                       </div>
                       <div
                         style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);"
                       >
                         <span>📅</span>
                         Member since {listing.seller.createdAt
-                          ? new Date(listing.seller.createdAt).toLocaleDateString("en-GB", {
+                          ? new Date(
+                              listing.seller.createdAt,
+                            ).toLocaleDateString("en-GB", {
                               year: "numeric",
-                              month: "short"
+                              month: "short",
                             })
                           : "Recently"}
                       </div>
@@ -575,9 +669,14 @@
               {/if}
 
               <!-- Safety Tips -->
-              <div class="card" style="background: var(--color-gray-50); border: none;">
+              <div
+                class="card"
+                style="background: var(--color-gray-50); border: none;"
+              >
                 <div class="card__body">
-                  <h4 style="font-size: var(--text-sm); margin-bottom: var(--space-3);">
+                  <h4
+                    style="font-size: var(--text-sm); margin-bottom: var(--space-3);"
+                  >
                     🔒 Safety Tips
                   </h4>
                   <ul
@@ -614,7 +713,7 @@
               style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--space-4);"
             >
               {#each similarListings as similarListing}
-                <ListingCard listing={similarListing} marketplaceUser={marketplaceUser} />
+                <ListingCard listing={similarListing} {marketplaceUser} />
               {/each}
             </div>
           </section>
