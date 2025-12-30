@@ -1,14 +1,13 @@
 import { createDb } from '../src/lib/server/db.js';
 import { user, users, account } from '../src/lib/server/schema.js';
 import { eq } from 'drizzle-orm';
-import { randomUUID, createHash } from 'crypto';
+import { randomUUID } from 'crypto';
+import bcrypt from 'bcryptjs';
 
-// Simple password hashing for development (Better Auth compatible)
-// For production, Better Auth uses bcrypt internally
-function hashPassword(password) {
-	// Better Auth uses bcrypt, but for dev seeds we'll use a simple hash
-	// In production, passwords are hashed by Better Auth during registration
-	return createHash('sha256').update(password + 'dev-salt').digest('hex');
+// Hash password using bcrypt (Blowfish) - matches BetterAuth configuration
+async function hashPassword(password) {
+	const saltRounds = 10;
+	return await bcrypt.hash(password, saltRounds);
 }
 
 const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/marketplace_db';
@@ -188,11 +187,11 @@ async function seedUsers() {
 				.limit(1);
 
 			if (existingAuthUser.length > 0) {
-				// Check if marketplace user exists
+				// Check if marketplace user exists (by authUserId)
 				const existingMarketplaceUser = await db
 					.select()
 					.from(users)
-					.where(eq(users.email, userData.email))
+					.where(eq(users.authUserId, existingAuthUser[0].id))
 					.limit(1);
 
 				if (existingMarketplaceUser.length > 0) {
@@ -211,7 +210,7 @@ async function seedUsers() {
 				if (existingAccount.length === 0) {
 					// Create Better Auth account with password
 					const accountId = randomUUID();
-					const passwordHash = hashPassword(DEFAULT_PASSWORD);
+					const passwordHash = await hashPassword(DEFAULT_PASSWORD);
 					
 					await db.insert(account).values({
 						id: accountId,
@@ -225,21 +224,14 @@ async function seedUsers() {
 				}
 
 				// Create marketplace user for existing auth user
-				const passwordHash = existingAccount.length > 0 
-					? existingAccount[0].password 
-					: hashPassword(DEFAULT_PASSWORD);
-
 				await db.insert(users).values({
 					authUserId: existingAuthUser[0].id,
-					email: userData.email,
-					passwordHash: passwordHash,
 					username: userData.username,
 					firstName: userData.firstName,
 					lastName: userData.lastName,
 					locationCity: userData.locationCity,
 					locationPostcode: userData.locationPostcode,
 					bio: userData.bio,
-					emailVerified: true,
 					isActive: true,
 					locationLatitude: (54.9783 + (Math.random() - 0.5) * 0.1).toString(),
 					locationLongitude: (-1.6178 + (Math.random() - 0.5) * 0.1).toString()
@@ -254,8 +246,8 @@ async function seedUsers() {
 			const authUserId = randomUUID();
 			const accountId = randomUUID();
 
-			// Hash password for Better Auth (simple hash for dev, Better Auth uses bcrypt in production)
-			const passwordHash = hashPassword(DEFAULT_PASSWORD);
+			// Hash password using scrypt (Better Auth default)
+			const passwordHash = await hashPassword(DEFAULT_PASSWORD);
 
 			// Create auth user
 			await db.insert(user).values({
@@ -277,15 +269,12 @@ async function seedUsers() {
 			// Create marketplace user
 			await db.insert(users).values({
 				authUserId: authUserId,
-				email: userData.email,
-				passwordHash: passwordHash, // Store same hash for reference (not used by Better Auth)
 				username: userData.username,
 				firstName: userData.firstName,
 				lastName: userData.lastName,
 				locationCity: userData.locationCity,
 				locationPostcode: userData.locationPostcode,
 				bio: userData.bio,
-				emailVerified: true,
 				isActive: true,
 				locationLatitude: (54.9783 + (Math.random() - 0.5) * 0.1).toString(),
 				locationLongitude: (-1.6178 + (Math.random() - 0.5) * 0.1).toString()

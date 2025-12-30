@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { users, userSettings, listings, trades, reviews } from '$lib/server/schema';
+import { users, user, userSettings, listings, trades, reviews } from '$lib/server/schema';
 import { eq, and, desc, sql, or } from 'drizzle-orm';
 
 /** @type {import('./$types').PageServerLoad} */
@@ -11,16 +11,23 @@ export async function load({ params, locals, url }) {
 
 	const username = params.username;
 
-	// Get user by username
-	const [profileUser] = await db
-		.select()
+	// Get user by username with auth user data
+	const [profileData] = await db
+		.select({
+			marketplaceUser: users,
+			authUser: user
+		})
 		.from(users)
+		.leftJoin(user, eq(users.authUserId, user.id))
 		.where(eq(users.username, username))
 		.limit(1);
 
-	if (!profileUser) {
+	if (!profileData || !profileData.marketplaceUser) {
 		throw error(404, 'User not found');
 	}
+
+	const profileUser = profileData.marketplaceUser;
+	const authUser = profileData.authUser;
 
 	// Get user settings to check privacy preferences
 	const [settings] = await db
@@ -119,10 +126,10 @@ export async function load({ params, locals, url }) {
 		locationCity: profileUser.locationCity,
 		locationPostcode: profileUser.locationPostcode,
 		createdAt: profileUser.createdAt,
-		emailVerified: profileUser.emailVerified,
+		emailVerified: authUser?.emailVerified || false,
 		lastLoginAt: lastLoginAt,
 		// Only include email/phone if privacy settings allow or it's own profile
-		email: (settings?.showEmail || isOwnProfile) ? profileUser.email : null,
+		email: (settings?.showEmail || isOwnProfile) ? (authUser?.email || null) : null,
 		phone: (settings?.showPhone || isOwnProfile) ? profileUser.phone : null,
 		phoneVerified: (settings?.showPhone || isOwnProfile) ? profileUser.phoneVerified : null
 	};

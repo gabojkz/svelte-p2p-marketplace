@@ -129,7 +129,8 @@ export const notificationTypeEnum = pgEnum('notification_type', [
 	'listing_sold'
 ]);
 
-// 1. users (extended user profile)
+// 1. users (extended user profile - marketplace-specific data only)
+// Note: email, password, and emailVerified are stored in 'user' and 'account' tables (Better Auth)
 export const users = pgTable(
 	'users',
 	{
@@ -138,14 +139,11 @@ export const users = pgTable(
 			.notNull()
 			.unique()
 			.references(() => user.id, { onDelete: 'cascade' }),
-		email: varchar('email', { length: 255 }).notNull().unique(),
-		passwordHash: varchar('password_hash', { length: 255 }).notNull(),
 		username: varchar('username', { length: 100 }).notNull().unique(),
 		firstName: varchar('first_name', { length: 100 }),
 		lastName: varchar('last_name', { length: 100 }),
 		phone: varchar('phone', { length: 20 }),
 		phoneVerified: boolean('phone_verified').default(false),
-		emailVerified: boolean('email_verified').default(false),
 		avatarUrl: varchar('avatar_url', { length: 500 }),
 		bio: text('bio'),
 		locationCity: varchar('location_city', { length: 100 }),
@@ -162,7 +160,6 @@ export const users = pgTable(
 		updatedAt: timestamp('updated_at').defaultNow().notNull()
 	},
 	(table) => ({
-		emailIdx: index('idx_email').on(table.email),
 		usernameIdx: index('idx_username').on(table.username),
 		locationIdx: index('idx_location').on(table.locationLatitude, table.locationLongitude)
 	})

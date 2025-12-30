@@ -1,5 +1,5 @@
 import { categories, listings, users } from '$lib/server/schema.js';
-import { eq, and, or, like, sql, desc, asc } from 'drizzle-orm';
+import { eq, and, or, like, sql, desc, asc, gte, lte } from 'drizzle-orm';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ locals, url }) {
@@ -25,10 +25,23 @@ export async function load({ locals, url }) {
 		const searchQuery = url.searchParams.get('q') || '';
 		const categorySlug = url.searchParams.get('category') || '';
 		const location = url.searchParams.get('location') || '';
+		const radius = url.searchParams.get('radius') || '';
 		const sortBy = url.searchParams.get('sort') || 'newest';
+		const type = url.searchParams.get('type') || '';
+		const minPrice = url.searchParams.get('minPrice') || '';
+		const maxPrice = url.searchParams.get('maxPrice') || '';
+		const condition = url.searchParams.get('condition') || '';
 		const page = parseInt(url.searchParams.get('page') || '1', 10);
 		const limit = 20;
 		const offset = (page - 1) * limit;
+
+		// Get user's location coordinates if available (for radius filtering)
+		let userLat = null;
+		let userLon = null;
+		if (marketplaceUser && marketplaceUser.locationLatitude && marketplaceUser.locationLongitude) {
+			userLat = parseFloat(marketplaceUser.locationLatitude);
+			userLon = parseFloat(marketplaceUser.locationLongitude);
+		}
 
 		// Build where conditions
 		const conditions = [eq(listings.status, 'active')];
@@ -42,6 +55,11 @@ export async function load({ locals, url }) {
 			if (searchCondition) {
 				conditions.push(searchCondition);
 			}
+		}
+
+		// Type filter
+		if (type && type !== 'all') {
+			conditions.push(eq(listings.type, type));
 		}
 
 		// Category filter
@@ -59,9 +77,58 @@ export async function load({ locals, url }) {
 			}
 		}
 
-		// Location filter (if needed)
+		// Price range filter
+		if (minPrice) {
+			const minPriceNum = parseFloat(minPrice);
+			if (!isNaN(minPriceNum)) {
+				conditions.push(gte(listings.price, minPriceNum.toString()));
+			}
+		}
+		if (maxPrice) {
+			const maxPriceNum = parseFloat(maxPrice);
+			if (!isNaN(maxPriceNum)) {
+				conditions.push(lte(listings.price, maxPriceNum.toString()));
+			}
+		}
+
+		// Location filter
 		if (location) {
 			conditions.push(like(listings.locationCity, `%${location}%`));
+		}
+
+		// Radius/Proximity filter (if user has coordinates and radius is specified)
+		if (userLat && userLon && radius && radius !== 'any') {
+			const radiusKm = parseFloat(radius);
+			if (!isNaN(radiusKm) && radiusKm > 0) {
+				// Use Haversine formula to calculate distance
+				// Distance in kilometers = 6371 * acos(cos(radians(lat1)) * cos(radians(lat2)) * cos(radians(lon2) - radians(lon1)) + sin(radians(lat1)) * sin(radians(lat2)))
+				// We'll filter listings within the radius
+				const latRad = userLat * Math.PI / 180;
+				const lonRad = userLon * Math.PI / 180;
+				
+				// Add condition to filter by distance
+				// Only apply if listing has coordinates
+				conditions.push(
+					and(
+						sql`${listings.locationLatitude} IS NOT NULL`,
+						sql`${listings.locationLongitude} IS NOT NULL`,
+						sql`(
+							6371 * acos(
+								cos(radians(${userLat})) * 
+								cos(radians(${listings.locationLatitude}::numeric)) * 
+								cos(radians(${listings.locationLongitude}::numeric) - radians(${userLon})) + 
+								sin(radians(${userLat})) * 
+								sin(radians(${listings.locationLatitude}::numeric))
+							)
+						) <= ${radiusKm}`
+					)
+				);
+			}
+		}
+
+		// Condition filter (only for products)
+		if (condition) {
+			conditions.push(eq(listings.condition, condition));
 		}
 
 		// Build order by
@@ -73,6 +140,22 @@ export async function load({ locals, url }) {
 			case 'price-high':
 				orderBy = desc(listings.price);
 				break;
+			case 'distance':
+				// Sort by distance if radius filtering is active
+				if (userLat && userLon && radius && radius !== 'any') {
+					orderBy = sql`(
+						6371 * acos(
+							cos(radians(${userLat})) * 
+							cos(radians(${listings.locationLatitude}::numeric)) * 
+							cos(radians(${listings.locationLongitude}::numeric) - radians(${userLon})) + 
+							sin(radians(${userLat})) * 
+							sin(radians(${listings.locationLatitude}::numeric))
+						)
+					) ASC`;
+				} else {
+					orderBy = desc(listings.createdAt);
+				}
+				break;
 			case 'oldest':
 				orderBy = asc(listings.createdAt);
 				break;
@@ -82,22 +165,43 @@ export async function load({ locals, url }) {
 				break;
 		}
 
+		// Build select fields
+		const selectFields = {
+			id: listings.id,
+			title: listings.title,
+			description: listings.description,
+			price: listings.price,
+			locationCity: listings.locationCity,
+			locationPostcode: listings.locationPostcode,
+			locationLatitude: listings.locationLatitude,
+			locationLongitude: listings.locationLongitude,
+			categoryId: listings.categoryId,
+			userId: listings.userId,
+			featured: listings.featured,
+			urgent: listings.urgent,
+			viewCount: listings.viewCount,
+			createdAt: listings.createdAt
+		};
+
+		// Add distance calculation if radius filtering is active
+		if (userLat && userLon && radius && radius !== 'any') {
+			const radiusKm = parseFloat(radius);
+			if (!isNaN(radiusKm) && radiusKm > 0) {
+				selectFields.distance = sql`(
+					6371 * acos(
+						cos(radians(${userLat})) * 
+						cos(radians(${listings.locationLatitude}::numeric)) * 
+						cos(radians(${listings.locationLongitude}::numeric) - radians(${userLon})) + 
+						sin(radians(${userLat})) * 
+						sin(radians(${listings.locationLatitude}::numeric))
+					)
+				)`.as('distance');
+			}
+		}
+
 		// Fetch listings
 		const listingsData = await db
-			.select({
-				id: listings.id,
-				title: listings.title,
-				description: listings.description,
-				price: listings.price,
-				locationCity: listings.locationCity,
-				locationPostcode: listings.locationPostcode,
-				categoryId: listings.categoryId,
-				userId: listings.userId,
-				featured: listings.featured,
-				urgent: listings.urgent,
-				viewCount: listings.viewCount,
-				createdAt: listings.createdAt
-			})
+			.select(selectFields)
 			.from(listings)
 			.where(and(...conditions))
 			.orderBy(orderBy)
@@ -135,8 +239,6 @@ export async function load({ locals, url }) {
 			.where(eq(categories.isActive, true))
 			.orderBy(categories.displayOrder, categories.name);
 
-		console.log(allCategories)
-
 		return {
 			listings: listingsWithCategories,
 			categories: allCategories,
@@ -148,7 +250,12 @@ export async function load({ locals, url }) {
 				searchQuery,
 				categorySlug,
 				location,
-				sortBy
+				radius,
+				sortBy,
+				type,
+				minPrice,
+				maxPrice,
+				condition
 			}
 		};
 	} catch (error) {
@@ -159,13 +266,18 @@ export async function load({ locals, url }) {
 			totalCount: 0,
 			currentPage: 1,
 			totalPages: 0,
+			marketplaceUser,
 			filters: {
 				searchQuery: '',
 				categorySlug: '',
 				location: '',
-				sortBy: 'newest'
+				radius: '',
+				sortBy: 'newest',
+				type: '',
+				minPrice: '',
+				maxPrice: '',
+				condition: ''
 			}
 		};
 	}
 }
-

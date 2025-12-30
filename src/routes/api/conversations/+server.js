@@ -103,34 +103,80 @@ export async function POST({ request, locals }) {
 	}
 
 	const buyerId = marketplaceUser[0].id;
+	const listingIdNum = Number(listingId);
+	const sellerIdNum = Number(sellerId);
 
-	// Check if conversation already exists
-	const existing = await db
-		.select()
-		.from(conversations)
-		.where(
-			and(
-				eq(conversations.listingId, Number(listingId)),
-				eq(conversations.buyerId, buyerId),
-				eq(conversations.sellerId, Number(sellerId))
-			)
-		)
-		.limit(1);
-
-	if (existing.length > 0) {
-		return json({ conversation: existing[0] });
+	// Validate IDs
+	if (isNaN(listingIdNum) || isNaN(sellerIdNum) || isNaN(buyerId)) {
+		throw error(400, 'Invalid ID format');
 	}
 
-	// Create new conversation
-	const [newConversation] = await db
-		.insert(conversations)
-		.values({
-			listingId: Number(listingId),
-			buyerId: buyerId,
-			sellerId: Number(sellerId)
-		})
-		.returning();
+	// Prevent users from messaging themselves
+	if (buyerId === sellerIdNum) {
+		throw error(400, 'Cannot create conversation with yourself');
+	}
 
-	return json({ conversation: newConversation });
+	try {
+		// Verify listing exists and belongs to seller
+		const [listing] = await db
+			.select()
+			.from(listings)
+			.where(eq(listings.id, listingIdNum))
+			.limit(1);
+
+		if (!listing) {
+			throw error(404, 'Listing not found');
+		}
+
+		if (listing.userId !== sellerIdNum) {
+			throw error(400, 'Seller ID does not match listing owner');
+		}
+
+		// Check if conversation already exists
+		const existing = await db
+			.select()
+			.from(conversations)
+			.where(
+				and(
+					eq(conversations.listingId, listingIdNum),
+					eq(conversations.buyerId, buyerId),
+					eq(conversations.sellerId, sellerIdNum)
+				)
+			)
+			.limit(1);
+
+		if (existing.length > 0) {
+			return json({ conversation: existing[0] });
+		}
+
+		// Create new conversation
+		const [newConversation] = await db
+			.insert(conversations)
+			.values({
+				listingId: listingIdNum,
+				buyerId: buyerId,
+				sellerId: sellerIdNum
+			})
+			.returning();
+
+		if (!newConversation) {
+			throw error(500, 'Failed to create conversation');
+		}
+
+		return json({ conversation: newConversation });
+	} catch (err) {
+		console.error('Error in POST /api/conversations:', err);
+		console.error('Request body:', { listingId, sellerId, buyerId });
+		
+		// Re-throw SvelteKit errors
+		if (err && typeof err === 'object' && 'status' in err) {
+			throw err;
+		}
+		
+		// Wrap other errors with more details
+		const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+		console.error('Database error details:', errorMessage);
+		throw error(500, `Database error: ${errorMessage}`);
+	}
 }
 

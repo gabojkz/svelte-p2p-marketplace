@@ -1,5 +1,6 @@
 <script>
   import CategorySelect from "$lib/components/CategorySelect.svelte";
+  import ImageUpload from "$lib/components/ImageUpload.svelte";
   import { onMount } from "svelte";
 
   // Props
@@ -10,6 +11,12 @@
     marketplaceUser = null,
     onSave = null
   } = $props();
+
+  // Debug: Track open prop changes
+  $effect(() => {
+    console.log("🎯 ListingModal - open prop changed to:", open);
+    console.log("🎯 ListingModal - listingId prop:", listingId);
+  });
 
   // Form state
   let loading = $state(false);
@@ -35,6 +42,7 @@
   let status = $state("draft");
   let featured = $state(false);
   let urgent = $state(false);
+  let images = $state([]);
 
   // Filter categories by type
   const filteredCategories = $derived(
@@ -46,11 +54,14 @@
 
   // Load listing data when editing
   async function loadListing() {
+    console.log("📋 loadListing called with listingId:", listingId);
     if (!listingId) {
+      console.log("📋 No listingId, resetting form");
       resetForm();
       return;
     }
 
+    console.log("📋 Loading listing data...");
     loading = true;
     error = null;
     fieldErrors = {};
@@ -64,6 +75,7 @@
 
       const data = await response.json();
       const listing = data.listing;
+      console.log("📋 Listing loaded:", listing);
 
       // Populate form with listing data
       listingType = listing.type || "product";
@@ -84,6 +96,19 @@
       status = listing.status || "draft";
       featured = listing.featured || false;
       urgent = listing.urgent || false;
+
+      // Load existing images if available
+      if (listing.images && Array.isArray(listing.images)) {
+        images = listing.images.map(img => ({
+          id: img.id,
+          imageUrl: img.imageUrl,
+          thumbnailUrl: img.thumbnailUrl || img.imageUrl,
+          displayOrder: img.displayOrder || 0,
+          isPrimary: img.isPrimary || false
+        }));
+      } else {
+        images = [];
+      }
     } catch (err) {
       error = err.message || "Failed to load listing";
       console.error("Error loading listing:", err);
@@ -112,15 +137,18 @@
     status = "draft";
     featured = false;
     urgent = false;
+    images = [];
     error = null;
     fieldErrors = {};
   }
 
   // Close modal
   function closeModal() {
+    console.log("🔴 closeModal called");
     open = false;
     listingId = null;
     resetForm();
+    console.log("🔴 Modal closed, open =", open);
   }
 
   // Handle form submission
@@ -181,10 +209,37 @@
         throw new Error(result.error || "Failed to save listing");
       }
 
+      const savedListing = result.listing || result;
+      const newListingId = savedListing.id || listingId;
+
+      // Upload images if any
+      if (images.length > 0 && newListingId) {
+        try {
+          const imageData = images.map(img => ({
+            imageUrl: img.imageUrl,
+            thumbnailUrl: img.thumbnailUrl || img.imageUrl,
+            isPrimary: img.isPrimary || false
+          }));
+
+          const imageResponse = await fetch(`/api/listings/${newListingId}/images`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ images: imageData })
+          });
+
+          if (!imageResponse.ok) {
+            console.warn("Failed to upload images, but listing was saved");
+          }
+        } catch (imgErr) {
+          console.error("Error uploading images:", imgErr);
+          // Don't fail the whole operation if images fail
+        }
+      }
+
       // Success - close modal and call callback
       closeModal();
       if (onSave) {
-        onSave(result.listing || result);
+        onSave(savedListing);
       }
     } catch (err) {
       error = err.message || "Failed to save listing";
@@ -205,12 +260,17 @@
 
   // Load listing when modal opens with ID
   $effect(() => {
+    console.log("⚡ Modal effect triggered - open:", open, "listingId:", listingId);
     if (open) {
+      console.log("⚡ Modal is open, loading data...");
       if (listingId) {
         loadListing();
       } else {
+        console.log("⚡ No listingId, resetting form");
         resetForm();
       }
+    } else {
+      console.log("⚡ Modal is closed");
     }
   });
 
@@ -225,10 +285,25 @@
 
 {#if open}
   <!-- Modal Backdrop -->
-  <div class="modal-backdrop" onclick={closeModal} onkeydown={(e) => e.key === "Escape" && closeModal()} role="button" tabindex="0" aria-label="Close modal"></div>
+  <div 
+    class="modal-backdrop is-active" 
+    onclick={closeModal} 
+    onkeydown={(e) => e.key === "Escape" && closeModal()} 
+    role="button" 
+    tabindex="0" 
+    aria-label="Close modal"
+    style="display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 1000 !important;"
+  ></div>
 
   <!-- Modal -->
-  <div class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+  <div 
+    class="modal is-active" 
+    role="dialog" 
+    aria-labelledby="modal-title" 
+    aria-modal="true" 
+    onclick={(e) => e.stopPropagation()}
+    style="display: flex !important; visibility: visible !important; opacity: 1 !important; z-index: 1001 !important;"
+  >
     <div class="modal__header">
       <h2 id="modal-title">{isEditing ? "Edit Listing" : "Create New Listing"}</h2>
       <button class="modal__close" onclick={closeModal} type="button" aria-label="Close">
@@ -370,6 +445,13 @@
             {#if hasFieldError('description')}
               <p class="form-error">{getFieldError('description')}</p>
             {/if}
+          </div>
+
+          <!-- Images -->
+          <div class="form-group">
+            <label class="form-label">Images</label>
+            <ImageUpload bind:images={images} maxImages={10} maxSizeMB={5} />
+            <p style="font-size: var(--text-sm); color: var(--color-gray-600); margin-top: var(--space-2);">Add up to 10 images. The first image will be set as the primary image.</p>
           </div>
 
           <!-- Condition (for products) -->
@@ -544,10 +626,7 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    z-index: var(--z-modal-backdrop, 1000);
   }
 
   .modal {
@@ -558,7 +637,7 @@
     background: white;
     border-radius: var(--radius-lg);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    z-index: 1001;
+    z-index: var(--z-modal, 1001);
     max-width: 700px;
     width: 90%;
     max-height: 90vh;

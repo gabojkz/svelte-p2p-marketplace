@@ -18,6 +18,10 @@
 		"db:seed:users": "node scripts/seed-users.js",
 		"db:seed:listings": "node scripts/seed-listings.js",
 		"db:seed:all": "npm run db:seed && npm run db:seed:users && npm run db:seed:listings",
+		"db:update-passwords": "node scripts/update-passwords.js",
+		"db:reset": "node scripts/reset-db.js",
+		"db:check-columns": "node scripts/check-duplicate-columns.js",
+		"db:verify-password": "node scripts/verify-password.js",
 		"podman:up": "podman compose -f podman-compose.yaml up -d",
 		"podman:down": "podman compose -f podman-compose.yaml down",
 		"podman:logs": "podman compose -f podman-compose.yaml logs -f",
@@ -38,6 +42,7 @@
 	"dependencies": {
 		"@neondatabase/serverless": "^1.0.2",
 		"@sveltejs/adapter-cloudflare": "^7.2.4",
+		"bcryptjs": "^3.0.3",
 		"better-auth": "^1.4.9",
 		"drizzle-orm": "^0.45.1",
 		"postgres": "^3.4.7"

@@ -1,9 +1,7 @@
 <script>
-  import Logo from "$lib/components/Logo.svelte";
-  import ListingModal from "$lib/components/ListingModal.svelte";
+  import NavigationBar from "$lib/components/NavigationBar.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
-  import { enhance } from "$app/forms";
 
   const session = useSession();
   const user = $derived($session.data?.user);
@@ -12,18 +10,11 @@
   const { data } = $props();
 
   const marketplaceUser = $derived(data?.marketplaceUser);
-  const listings = $derived(data?.listings || []);
-  const categories = $derived(data?.categories || []);
-  const stats = $derived(data?.stats || {});
+  const favorites = $derived(data?.favorites || []);
   const filters = $derived(data?.filters || {});
-
-  // Modal state
-  let modalOpen = $state(false);
-  let editingListingId = $state(null);
 
   // Local state for search and filters - initialize from URL params
   let searchQuery = $state("");
-  let statusFilter = $state("all");
   let sortBy = $state("newest");
   let sortOrder = $state("desc");
 
@@ -31,28 +22,24 @@
   $effect(() => {
     if (data?.filters) {
       searchQuery = data.filters.searchQuery || "";
-      statusFilter = data.filters.statusFilter || "all";
       sortBy = data.filters.sortBy || "newest";
       sortOrder = data.filters.sortOrder || "desc";
     }
   });
 
-  // Filtered and sorted listings
-  const filteredListings = $derived.by(() => {
-    let result = [...listings];
+  // Filtered and sorted favorites
+  const filteredFavorites = $derived.by(() => {
+    let result = [...favorites];
 
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(listing => 
-        listing.title.toLowerCase().includes(query) ||
-        listing.description?.toLowerCase().includes(query)
+      result = result.filter(fav => 
+        fav.listing.title.toLowerCase().includes(query) ||
+        fav.listing.description?.toLowerCase().includes(query) ||
+        fav.listing.category?.name.toLowerCase().includes(query) ||
+        fav.listing.locationCity?.toLowerCase().includes(query)
       );
-    }
-
-    // Apply status filter
-    if (statusFilter !== "all") {
-      result = result.filter(listing => listing.status === statusFilter);
     }
 
     // Apply sorting
@@ -61,24 +48,20 @@
       
       switch (sortBy) {
         case "title":
-          aVal = a.title.toLowerCase();
-          bVal = b.title.toLowerCase();
+          aVal = a.listing.title.toLowerCase();
+          bVal = b.listing.title.toLowerCase();
           break;
         case "price":
-          aVal = parseFloat(a.price || "0");
-          bVal = parseFloat(b.price || "0");
+          aVal = parseFloat(a.listing.price || "0");
+          bVal = parseFloat(b.listing.price || "0");
           break;
-        case "status":
-          aVal = a.status;
-          bVal = b.status;
+        case "category":
+          aVal = a.listing.category?.name || "";
+          bVal = b.listing.category?.name || "";
           break;
-        case "views":
-          aVal = a.viewCount || 0;
-          bVal = b.viewCount || 0;
-          break;
-        case "trades":
-          aVal = a.tradeCount || 0;
-          bVal = b.tradeCount || 0;
+        case "location":
+          aVal = a.listing.locationCity || "";
+          bVal = b.listing.locationCity || "";
           break;
         case "newest":
         default:
@@ -101,21 +84,14 @@
   function updateFilters() {
     const params = new URLSearchParams();
     if (searchQuery) params.set("search", searchQuery);
-    if (statusFilter !== "all") params.set("status", statusFilter);
     if (sortBy !== "newest") params.set("sort", sortBy);
     if (sortOrder !== "desc") params.set("order", sortOrder);
     
-    goto(`/my-listings?${params.toString()}`, { replaceState: true, noScroll: true });
+    goto(`/favorites?${params.toString()}`, { replaceState: true, noScroll: true });
   }
 
   // Handle search
   function handleSearch() {
-    updateFilters();
-  }
-
-  // Handle status filter change
-  function handleStatusFilter(newStatus) {
-    statusFilter = newStatus;
     updateFilters();
   }
 
@@ -131,70 +107,25 @@
     updateFilters();
   }
 
-  // Toggle listing status
-  async function toggleListingStatus(listingId, currentStatus) {
-    const newStatus = currentStatus === "active" ? "paused" : "active";
-    
-    try {
-      const response = await fetch(`/api/listings/${listingId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (!response.ok) throw new Error("Failed to update status");
-      
-      // Reload page to refresh data
-      window.location.reload();
-    } catch (error) {
-      console.error("Error updating listing status:", error);
-      alert("Failed to update listing status. Please try again.");
-    }
-  }
-
-  // Delete listing
-  async function deleteListing(listingId) {
-    if (!confirm("Are you sure you want to delete this listing? This action cannot be undone.")) {
+  // Remove favorite
+  async function removeFavorite(listingId) {
+    if (!confirm("Are you sure you want to remove this listing from your favorites?")) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/listings/${listingId}`, {
+      const response = await fetch(`/api/favorites/${listingId}`, {
         method: "DELETE"
       });
 
-      if (!response.ok) throw new Error("Failed to delete listing");
+      if (!response.ok) throw new Error("Failed to remove favorite");
       
       // Reload page to refresh data
       window.location.reload();
     } catch (error) {
-      console.error("Error deleting listing:", error);
-      alert("Failed to delete listing. Please try again.");
+      console.error("Error removing favorite:", error);
+      alert("Failed to remove favorite. Please try again.");
     }
-  }
-
-  // Open modal for editing
-  function openEditModal(listingId) {
-    console.log("🔵 openEditModal called with listingId:", listingId);
-    editingListingId = listingId;
-    modalOpen = true;
-    console.log("🔵 modalOpen set to:", modalOpen);
-    console.log("🔵 editingListingId set to:", editingListingId);
-  }
-
-  // Open modal for creating
-  function openCreateModal() {
-    console.log("🟢 openCreateModal called");
-    editingListingId = null;
-    modalOpen = true;
-    console.log("🟢 modalOpen set to:", modalOpen);
-    console.log("🟢 editingListingId set to:", editingListingId);
-  }
-
-  // Handle modal save
-  function handleModalSave() {
-    // Reload page to refresh data
-    window.location.reload();
   }
 
   // Format date
@@ -213,35 +144,11 @@
     if (!price) return "£0";
     return `£${Number(price).toLocaleString("en-GB")}`;
   }
-
-  // Get status badge class
-  function getStatusClass(status) {
-    switch (status) {
-      case "active": return "badge--success";
-      case "paused": return "badge--warning";
-      case "draft": return "badge--neutral";
-      case "sold": return "badge--info";
-      default: return "badge--neutral";
-    }
-  }
 </script>
 
 <div class="page-wrapper">
   <!-- Header -->
-  <header class="header">
-    <div class="container">
-      <div class="header__inner">
-        <Logo />
-        <nav class="nav" aria-label="Main navigation">
-          <a href="/marketplace" class="nav__link">Browse</a>
-          <a href="/dashboard" class="nav__link">Dashboard</a>
-        </nav>
-        <div class="header__actions">
-          <button class="btn btn--primary" onclick={openCreateModal} type="button">+ Create Listing</button>
-        </div>
-      </div>
-    </div>
-  </header>
+  <NavigationBar />
 
   <!-- Main Content -->
   <main class="main-content">
@@ -249,35 +156,20 @@
       <!-- Page Header -->
       <div class="page-header">
         <div>
-          <h1>My Listings</h1>
-          <p class="text-muted">Manage your listings</p>
+          <h1>My Favorites</h1>
+          <p class="text-muted">All your saved listings in one place</p>
         </div>
-        <button class="btn btn--primary" onclick={openCreateModal} type="button">
-          + Create New Listing
-        </button>
       </div>
 
       <!-- Stats Summary -->
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-card__value">{stats.active || 0}</div>
-          <div class="stat-card__label">Active</div>
+          <div class="stat-card__value">{favorites.length}</div>
+          <div class="stat-card__label">Total Favorites</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card__value">{stats.paused || 0}</div>
-          <div class="stat-card__label">Paused</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card__value">{stats.draft || 0}</div>
-          <div class="stat-card__label">Draft</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card__value">{stats.sold || 0}</div>
-          <div class="stat-card__label">Sold</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card__value">{stats.totalTrades || 0}</div>
-          <div class="stat-card__label">Total Trades</div>
+          <div class="stat-card__value">{filteredFavorites.length}</div>
+          <div class="stat-card__label">Showing</div>
         </div>
       </div>
 
@@ -286,38 +178,21 @@
         <div class="filters-row">
           <!-- Search -->
           <div class="search-box">
-                  <input
+            <input
               type="text"
               class="search-input"
-              placeholder="Search listings..."
+              placeholder="Search favorites by title, description, category, or location..."
               bind:value={searchQuery}
               onkeydown={(e) => e.key === "Enter" && handleSearch()}
             />
             <button class="search-button" onclick={handleSearch} type="button">
               🔍
             </button>
-              </div>
-
-          <!-- Status Filter -->
-          <div class="filter-group">
-            <label for="status-filter" class="filter-label">Status:</label>
-            <select
-              id="status-filter"
-              class="filter-select"
-              bind:value={statusFilter}
-              onchange={() => handleStatusFilter(statusFilter)}
-            >
-              <option value="all">All ({stats.total || 0})</option>
-              <option value="active">Active ({stats.active || 0})</option>
-              <option value="paused">Paused ({stats.paused || 0})</option>
-              <option value="draft">Draft ({stats.draft || 0})</option>
-              <option value="sold">Sold ({stats.sold || 0})</option>
-            </select>
-              </div>
-            </div>
           </div>
+        </div>
+      </div>
 
-      <!-- Listings Table -->
+      <!-- Favorites Table -->
       <div class="table-container">
         <table class="listings-table">
           <thead>
@@ -346,16 +221,14 @@
                   {/if}
                 </button>
               </th>
-              <th>Category</th>
-              <th>Location</th>
               <th>
                 <button
                   class="table-header-button"
-                  onclick={() => handleSort("status")}
+                  onclick={() => handleSort("category")}
                   type="button"
                 >
-                  Status
-                  {#if sortBy === "status"}
+                  Category
+                  {#if sortBy === "category"}
                     <span class="sort-indicator">{sortOrder === "asc" ? "↑" : "↓"}</span>
                   {/if}
                 </button>
@@ -363,23 +236,11 @@
               <th>
                 <button
                   class="table-header-button"
-                  onclick={() => handleSort("views")}
+                  onclick={() => handleSort("location")}
                   type="button"
                 >
-                  Views
-                  {#if sortBy === "views"}
-                    <span class="sort-indicator">{sortOrder === "asc" ? "↑" : "↓"}</span>
-                  {/if}
-                </button>
-              </th>
-              <th>
-                <button
-                  class="table-header-button"
-                  onclick={() => handleSort("trades")}
-                  type="button"
-                >
-                  Trades
-                  {#if sortBy === "trades"}
+                  Location
+                  {#if sortBy === "location"}
                     <span class="sort-indicator">{sortOrder === "asc" ? "↑" : "↓"}</span>
                   {/if}
                 </button>
@@ -390,7 +251,7 @@
                   onclick={() => handleSort("newest")}
                   type="button"
                 >
-                  Created
+                  Saved On
                   {#if sortBy === "newest"}
                     <span class="sort-indicator">{sortOrder === "asc" ? "↑" : "↓"}</span>
                   {/if}
@@ -400,92 +261,68 @@
             </tr>
           </thead>
           <tbody>
-            {#if filteredListings.length === 0}
+            {#if filteredFavorites.length === 0}
               <tr>
-                <td colspan="9" class="table-empty">
-                  {searchQuery || statusFilter !== "all"
-                    ? "No listings match your filters"
-                    : "No listings yet. Create your first listing!"}
+                <td colspan="6" class="table-empty">
+                  {searchQuery
+                    ? "No favorites match your search"
+                    : favorites.length === 0
+                    ? "You haven't saved any listings yet. Start browsing and save your favorites!"
+                    : "No favorites match your filters"}
                 </td>
               </tr>
             {:else}
-              {#each filteredListings as listing}
-                <tr class="table-row" class:table-row--paused={listing.status === "paused"}>
+              {#each filteredFavorites as favorite}
+                <tr class="table-row">
                   <td>
                     <div class="table-cell-title">
-                      <a href="/marketplace?id={listing.id}" class="table-link">
-                        {listing.title}
+                      <a href="/listing-details?id={favorite.listingId}" class="table-link">
+                        {favorite.listing.title}
                       </a>
-                      {#if listing.featured}
+                      {#if favorite.listing.featured}
                         <span class="badge badge--primary badge--sm">Featured</span>
                       {/if}
-                      {#if listing.urgent}
+                      {#if favorite.listing.urgent}
                         <span class="badge badge--error badge--sm">Urgent</span>
                       {/if}
-                </div>
-                  </td>
-                  <td>
-                    <div class="table-cell-price">{formatPrice(listing.price)}</div>
-                    <div class="table-cell-meta">{listing.type}</div>
-                  </td>
-                  <td>
-                    <div class="table-cell-category">
-                      {listing.category?.name || "N/A"}
-              </div>
-                  </td>
-                  <td>
-                    <div class="table-cell-location">
-                      {listing.locationCity || "N/A"}
-              </div>
-                  </td>
-                  <td>
-                    <div class="table-cell-status">
-                      <label class="status-toggle">
-                  <input
-                    type="checkbox"
-                          checked={listing.status === "active"}
-                          onchange={() => toggleListingStatus(listing.id, listing.status)}
-                        />
-                        <span class="status-toggle__slider"></span>
-                      </label>
-                      <span class="badge badge--{getStatusClass(listing.status)}">
-                        {listing.status}
-                  </span>
                     </div>
                   </td>
                   <td>
-                    <div class="table-cell-number">{listing.viewCount || 0}</div>
+                    <div class="table-cell-price">{formatPrice(favorite.listing.price)}</div>
+                    <div class="table-cell-meta">{favorite.listing.type}</div>
                   </td>
                   <td>
-                    <div class="table-cell-number">{listing.tradeCount || 0}</div>
+                    <div class="table-cell-category">
+                      {favorite.listing.category?.name || "N/A"}
+                    </div>
                   </td>
                   <td>
-                    <div class="table-cell-date">{formatDate(listing.createdAt)}</div>
+                    <div class="table-cell-location">
+                      {favorite.listing.locationCity || "N/A"}
+                      {#if favorite.listing.locationPostcode}
+                        <span class="table-cell-meta"> • {favorite.listing.locationPostcode}</span>
+                      {/if}
+                    </div>
+                  </td>
+                  <td>
+                    <div class="table-cell-date">{formatDate(favorite.createdAt)}</div>
                   </td>
                   <td>
                     <div class="table-actions">
-                      <button
-                        class="table-action-button"
-                        onclick={() => openEditModal(listing.id)}
-                        title="Edit"
-                        type="button"
-                      >
-                        ✏️
-                      </button>
                       <a
-                        href="/marketplace?id={listing.id}"
+                        href="/listing-details?id={favorite.listingId}"
                         class="table-action-button"
-                        title="View"
+                        title="View Listing"
                       >
                         👁️
                       </a>
                       <button
                         class="table-action-button table-action-button--danger"
-                        onclick={() => deleteListing(listing.id)}
+                        onclick={() => removeFavorite(favorite.listingId)}
                         type="button"
-                        title="Delete"
+                        title="Remove from Favorites"
                       >
-                        🗑️
+                        ❌
                       </button>
                     </div>
                   </td>
@@ -498,15 +335,6 @@
     </div>
   </main>
 </div>
-
-<!-- Listing Modal - Outside page-wrapper for proper z-index -->
-<ListingModal
-  bind:open={modalOpen}
-  bind:listingId={editingListingId}
-  {categories}
-  marketplaceUser={marketplaceUser}
-  onSave={handleModalSave}
-/>
 
 <style>
   .page-header {
@@ -599,32 +427,6 @@
     background: var(--color-primary-dark);
   }
 
-  .filter-group {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-
-  .filter-label {
-    font-size: var(--text-sm);
-    font-weight: var(--font-medium);
-    color: var(--color-gray-700);
-  }
-
-  .filter-select {
-    padding: var(--space-3) var(--space-4);
-    border: 2px solid var(--color-gray-200);
-    border-radius: var(--radius-md);
-    font-size: var(--text-sm);
-    background: white;
-    cursor: pointer;
-  }
-
-  .filter-select:focus {
-    outline: none;
-    border-color: var(--color-primary);
-  }
-
   .table-container {
     background: white;
     border: 1px solid var(--color-gray-200);
@@ -683,10 +485,6 @@
     background: var(--color-gray-50);
   }
 
-  .table-row--paused {
-    opacity: 0.7;
-  }
-
   .listings-table td {
     padding: var(--space-4);
     font-size: var(--text-sm);
@@ -723,63 +521,6 @@
 
   .table-cell-category,
   .table-cell-location {
-    color: var(--color-gray-700);
-  }
-
-  .table-cell-status {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-
-  .status-toggle {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-    cursor: pointer;
-  }
-
-  .status-toggle input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .status-toggle__slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--color-gray-300);
-    transition: 0.3s;
-    border-radius: 24px;
-  }
-
-  .status-toggle__slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.3s;
-    border-radius: 50%;
-  }
-
-  .status-toggle input:checked + .status-toggle__slider {
-    background-color: var(--color-primary);
-  }
-
-  .status-toggle input:checked + .status-toggle__slider:before {
-    transform: translateX(20px);
-  }
-
-  .table-cell-number {
-    font-weight: var(--font-medium);
     color: var(--color-gray-700);
   }
 
@@ -842,3 +583,4 @@
     }
   }
 </style>
+

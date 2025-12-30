@@ -1,6 +1,7 @@
 <script>
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
 
   const { listing, marketplaceUser } = $props();
   
@@ -10,6 +11,57 @@
   // Check if current user is the seller
   const isSeller = $derived(marketplaceUser?.id === listing?.userId);
   const canChat = $derived(user && listing?.userId && !isSeller);
+
+  // Favorite state
+  let isFavorite = $state(false);
+  let isLoadingFavorite = $state(false);
+
+  // Check favorite status on mount
+  onMount(async () => {
+    if (user && listing?.id) {
+      try {
+        const response = await fetch(`/api/favorites/${listing.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          isFavorite = data.isFavorite || false;
+        }
+      } catch (error) {
+        console.error("Error checking favorite status:", error);
+      }
+    }
+  });
+
+  /** @param {Event} e */
+  async function handleFavoriteClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      await goto("/login");
+      return;
+    }
+
+    if (!listing?.id || isLoadingFavorite) return;
+
+    isLoadingFavorite = true;
+    try {
+      const method = isFavorite ? "DELETE" : "POST";
+      const response = await fetch(`/api/favorites/${listing.id}`, {
+        method
+      });
+
+      if (response.ok) {
+        isFavorite = !isFavorite;
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Error toggling favorite:", errorData.error);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    } finally {
+      isLoadingFavorite = false;
+    }
+  }
 
   /** @param {Event} e */
   async function handleChatClick(e) {
@@ -43,14 +95,21 @@
       
       const data = await response.json();
       await goto(`/messages?conversation=${data.conversation.id}`);
-    } catch (error) {
-      console.error("Error starting conversation:", error);
-      alert(error.message || "Failed to start conversation. Please try again.");
+    } catch (err) {
+      console.error("Error starting conversation:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to start conversation. Please try again.";
+      alert(errorMessage);
     }
   }
 </script>
 
-<a href="/marketplace?id={listing?.id || '#'}" class="listing-card listing-card--list">
+<div 
+  class="listing-card listing-card--list"
+  role="button"
+  tabindex="0"
+  onclick={() => listing?.id && goto(`/listing-details?id=${listing.id}`)}
+  onkeydown={(e) => e.key === "Enter" && listing?.id && goto(`/listing-details?id=${listing.id}`)}
+>
   <div class="listing-card__image">
     <div
       class="listing-card__placeholder"
@@ -61,7 +120,15 @@
     <span class="listing-card__badge listing-card__badge--featured"
       >Featured</span
     >
-    <button class="listing-card__favorite" aria-label="Save listing">♡</button>
+    <button 
+      class="listing-card__favorite" 
+      class:listing-card__favorite--saved={isFavorite}
+      aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+      onclick={handleFavoriteClick}
+      disabled={isLoadingFavorite}
+    >
+      {isFavorite ? "❤️" : "♡"}
+    </button>
   </div>
   <div class="listing-card__body">
     <div class="listing-card__header">
@@ -95,20 +162,24 @@
             💬 Message Seller
           </button>
         {:else if !user}
-          <a
-            href="/login"
+          <button
             class="btn btn--primary btn--sm chat-button"
-            onclick={(e) => e.stopPropagation()}
+            onclick={(e) => { e.stopPropagation(); goto("/login"); }}
+            type="button"
           >
             💬 Message Seller
-          </a>
+          </button>
         {/if}
       </div>
     </div>
   </div>
-</a>
+</div>
 
 <style>
+  .listing-card {
+    cursor: pointer;
+  }
+
   .chat-button {
     white-space: nowrap;
     font-weight: 600;
