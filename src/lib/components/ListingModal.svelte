@@ -4,12 +4,12 @@
   import { onMount } from "svelte";
 
   // Props
-  let { 
+  let {
     open = $bindable(false),
     listingId = $bindable(null),
     categories = [],
     marketplaceUser = null,
-    onSave = null
+    onSave = null,
   } = $props();
 
   // Debug: Track open prop changes
@@ -46,7 +46,7 @@
 
   // Filter categories by type
   const filteredCategories = $derived(
-    categories.filter((/** @type {any} */ cat) => cat.type === listingType)
+    categories.filter((/** @type {any} */ cat) => cat.type === listingType),
   );
 
   // Check if editing
@@ -99,12 +99,12 @@
 
       // Load existing images if available
       if (listing.images && Array.isArray(listing.images)) {
-        images = listing.images.map(img => ({
+        images = listing.images.map((img) => ({
           id: img.id,
           imageUrl: img.imageUrl,
           thumbnailUrl: img.thumbnailUrl || img.imageUrl,
           displayOrder: img.displayOrder || 0,
-          isPrimary: img.isPrimary || false
+          isPrimary: img.isPrimary || false,
         }));
       } else {
         images = [];
@@ -176,7 +176,7 @@
         deliveryShipping: deliveryShipping,
         status: status,
         featured: featured,
-        urgent: urgent
+        urgent: urgent,
       };
 
       let response;
@@ -184,13 +184,13 @@
         response = await fetch(`/api/listings/${listingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(listingData)
+          body: JSON.stringify(listingData),
         });
       } else {
         response = await fetch("/api/listings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(listingData)
+          body: JSON.stringify(listingData),
         });
       }
 
@@ -217,23 +217,27 @@
         try {
           // Create FormData for file uploads
           const formData = new FormData();
-          
+
           // Add files to FormData
-          images.forEach(img => {
+          images.forEach((img) => {
             if (img.file instanceof File) {
-              formData.append('images', img.file);
+              formData.append("images", img.file);
             }
           });
 
-          if (formData.has('images')) {
-            const imageResponse = await fetch(`/api/listings/${newListingId}/images`, {
-              method: "POST",
-              // Don't set Content-Type header - browser will set it with boundary for FormData
-              body: formData
-            });
+          if (formData.has("images")) {
+            const imageResponse = await fetch(
+              `/api/listings/${newListingId}/images`,
+              {
+                method: "POST",
+                // Don't set Content-Type header - browser will set it with boundary for FormData
+                body: formData,
+              },
+            );
 
-          if (!imageResponse.ok) {
-            console.warn("Failed to upload images, but listing was saved");
+            if (!imageResponse.ok) {
+              console.warn("Failed to upload images, but listing was saved");
+            }
           }
         } catch (imgErr) {
           console.error("Error uploading images:", imgErr);
@@ -265,7 +269,12 @@
 
   // Load listing when modal opens with ID
   $effect(() => {
-    console.log("⚡ Modal effect triggered - open:", open, "listingId:", listingId);
+    console.log(
+      "⚡ Modal effect triggered - open:",
+      open,
+      "listingId:",
+      listingId,
+    );
     if (open) {
       console.log("⚡ Modal is open, loading data...");
       if (listingId) {
@@ -290,28 +299,35 @@
 
 {#if open}
   <!-- Modal Backdrop -->
-  <div 
-    class="modal-backdrop is-active" 
-    onclick={closeModal} 
-    onkeydown={(e) => e.key === "Escape" && closeModal()} 
-    role="button" 
-    tabindex="0" 
+  <div
+    class="modal-backdrop is-active"
+    onclick={closeModal}
+    onkeydown={(e) => e.key === "Escape" && closeModal()}
+    role="button"
+    tabindex="0"
     aria-label="Close modal"
     style="display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 1000 !important;"
   ></div>
 
   <!-- Modal -->
-  <div 
-    class="modal is-active" 
-    role="dialog" 
-    aria-labelledby="modal-title" 
-    aria-modal="true" 
+  <div
+    class="modal is-active"
+    role="dialog"
+    aria-labelledby="modal-title"
+    aria-modal="true"
     onclick={(e) => e.stopPropagation()}
     style="display: flex !important; visibility: visible !important; opacity: 1 !important; z-index: 1001 !important;"
   >
     <div class="modal__header">
-      <h2 id="modal-title">{isEditing ? "Edit Listing" : "Create New Listing"}</h2>
-      <button class="modal__close" onclick={closeModal} type="button" aria-label="Close">
+      <h2 id="modal-title">
+        {isEditing ? "Edit Listing" : "Create New Listing"}
+      </h2>
+      <button
+        class="modal__close"
+        onclick={closeModal}
+        type="button"
+        aria-label="Close"
+      >
         ×
       </button>
     </div>
@@ -327,7 +343,9 @@
           <div class="alert alert--error mb-4">
             <strong>⚠️ {error}</strong>
             {#if Object.keys(fieldErrors).length > 0}
-              <ul style="margin-top: var(--space-2); margin-left: var(--space-5); list-style: disc;">
+              <ul
+                style="margin-top: var(--space-2); margin-left: var(--space-5); list-style: disc;"
+              >
                 {#each Object.entries(fieldErrors) as [field, message]}
                   <li>{message}</li>
                 {/each}
@@ -337,7 +355,12 @@
         {/if}
 
         <!-- Form -->
-        <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+        <form
+          onsubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
           <!-- Listing Type -->
           <div class="form-group">
             <label class="form-label form-label--required">Listing Type</label>
@@ -349,7 +372,10 @@
                   value="product"
                   bind:group={listingType}
                 />
-                <div class="listing-type-card" class:listing-type-card--selected={listingType === "product"}>
+                <div
+                  class="listing-type-card"
+                  class:listing-type-card--selected={listingType === "product"}
+                >
                   <span class="listing-type-icon">📦</span>
                   <span>Product</span>
                 </div>
@@ -361,25 +387,30 @@
                   value="service"
                   bind:group={listingType}
                 />
-                <div class="listing-type-card" class:listing-type-card--selected={listingType === "service"}>
+                <div
+                  class="listing-type-card"
+                  class:listing-type-card--selected={listingType === "service"}
+                >
                   <span class="listing-type-icon">🔧</span>
                   <span>Service</span>
                 </div>
               </label>
             </div>
-            {#if hasFieldError('type')}
-              <p class="form-error">{getFieldError('type')}</p>
+            {#if hasFieldError("type")}
+              <p class="form-error">{getFieldError("type")}</p>
             {/if}
           </div>
 
           <!-- Category -->
           <div class="form-group">
-            <label for="categoryId" class="form-label form-label--required">Category</label>
+            <label for="categoryId" class="form-label form-label--required"
+              >Category</label
+            >
             <select
               id="categoryId"
               name="categoryId"
               class="form-select"
-              class:form-select--error={hasFieldError('categoryId')}
+              class:form-select--error={hasFieldError("categoryId")}
               bind:value={categoryId}
               required
             >
@@ -387,17 +418,20 @@
               {#if filteredCategories.length > 0}
                 {#each filteredCategories.filter((/** @type {any} */ c) => !c.parentId) as category}
                   <option value={category.id}>
-                    {category.icon || '📦'} {category.name}
+                    {category.icon || "📦"}
+                    {category.name}
                   </option>
                 {/each}
               {/if}
             </select>
-            {#if hasFieldError('categoryId')}
-              <p class="form-error">{getFieldError('categoryId')}</p>
+            {#if hasFieldError("categoryId")}
+              <p class="form-error">{getFieldError("categoryId")}</p>
             {/if}
             {#if categoryId && filteredCategories.some((/** @type {any} */ c) => c.parentId === Number(categoryId))}
               <div class="form-group mt-3">
-                <label for="subcategoryId" class="form-label">Subcategory (optional)</label>
+                <label for="subcategoryId" class="form-label"
+                  >Subcategory (optional)</label
+                >
                 <select
                   id="subcategoryId"
                   name="subcategoryId"
@@ -407,7 +441,8 @@
                   <option value="">None</option>
                   {#each filteredCategories.filter((/** @type {any} */ c) => c.parentId === Number(categoryId)) as subcategory}
                     <option value={subcategory.id}>
-                      {subcategory.icon || '📦'} {subcategory.name}
+                      {subcategory.icon || "📦"}
+                      {subcategory.name}
                     </option>
                   {/each}
                 </select>
@@ -417,57 +452,68 @@
 
           <!-- Title -->
           <div class="form-group">
-            <label for="title" class="form-label form-label--required">Title</label>
+            <label for="title" class="form-label form-label--required"
+              >Title</label
+            >
             <input
               type="text"
               id="title"
               name="title"
               class="form-input"
-              class:form-input--error={hasFieldError('title')}
+              class:form-input--error={hasFieldError("title")}
               placeholder="e.g., 2019 BMW 3 Series 320i M Sport"
               maxlength="200"
               bind:value={title}
               required
             />
-            {#if hasFieldError('title')}
-              <p class="form-error">{getFieldError('title')}</p>
+            {#if hasFieldError("title")}
+              <p class="form-error">{getFieldError("title")}</p>
             {/if}
           </div>
 
           <!-- Description -->
           <div class="form-group">
-            <label for="description" class="form-label form-label--required">Description</label>
+            <label for="description" class="form-label form-label--required"
+              >Description</label
+            >
             <textarea
               id="description"
               name="description"
               class="form-textarea"
-              class:form-textarea--error={hasFieldError('description')}
+              class:form-textarea--error={hasFieldError("description")}
               rows="4"
               placeholder="Describe your item in detail..."
               bind:value={description}
               required
             ></textarea>
-            {#if hasFieldError('description')}
-              <p class="form-error">{getFieldError('description')}</p>
+            {#if hasFieldError("description")}
+              <p class="form-error">{getFieldError("description")}</p>
             {/if}
           </div>
 
           <!-- Images -->
           <div class="form-group">
             <label class="form-label">Images</label>
-            <ImageUpload bind:images={images} maxImages={10} maxSizeMB={5} />
-            <p style="font-size: var(--text-sm); color: var(--color-gray-600); margin-top: var(--space-2);">Add up to 10 images. The first image will be set as the primary image.</p>
+            <ImageUpload bind:images maxImages={10} maxSizeMB={5} />
+            <p
+              style="font-size: var(--text-sm); color: var(--color-gray-600); margin-top: var(--space-2);"
+            >
+              Add up to 10 images. The first image will be set as the primary
+              image.
+            </p>
           </div>
 
           <!-- Condition (for products) -->
           {#if listingType === "product"}
             <div class="form-group">
-              <label for="condition" class="form-label form-label--required">Condition</label>
+              <label for="condition" class="form-label form-label--required"
+                >Condition</label
+              >
               <select
                 id="condition"
                 name="condition"
                 class="form-select"
-                class:form-select--error={hasFieldError('condition')}
+                class:form-select--error={hasFieldError("condition")}
                 bind:value={condition}
                 required
               >
@@ -478,8 +524,8 @@
                 <option value="fair">Fair (Visible wear)</option>
                 <option value="parts">For Parts / Not Working</option>
               </select>
-              {#if hasFieldError('condition')}
-                <p class="form-error">{getFieldError('condition')}</p>
+              {#if hasFieldError("condition")}
+                <p class="form-error">{getFieldError("condition")}</p>
               {/if}
             </div>
           {/if}
@@ -499,7 +545,9 @@
 
           <!-- Price -->
           <div class="form-group">
-            <label for="price" class="form-label form-label--required">Price</label>
+            <label for="price" class="form-label form-label--required"
+              >Price</label
+            >
             <div class="input-group">
               <span class="input-group__prefix">£</span>
               <input
@@ -507,7 +555,7 @@
                 id="price"
                 name="price"
                 class="form-input"
-                class:form-input--error={hasFieldError('price')}
+                class:form-input--error={hasFieldError("price")}
                 placeholder="0.00"
                 min="0"
                 step="0.01"
@@ -515,43 +563,50 @@
                 required
               />
             </div>
-            {#if hasFieldError('price')}
-              <p class="form-error">{getFieldError('price')}</p>
+            {#if hasFieldError("price")}
+              <p class="form-error">{getFieldError("price")}</p>
             {/if}
           </div>
 
           <!-- Location -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+          <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);"
+          >
             <div class="form-group">
-              <label for="locationCity" class="form-label form-label--required">City</label>
+              <label for="locationCity" class="form-label form-label--required"
+                >City</label
+              >
               <input
                 type="text"
                 id="locationCity"
                 name="locationCity"
                 class="form-input"
-                class:form-input--error={hasFieldError('locationCity')}
+                class:form-input--error={hasFieldError("locationCity")}
                 placeholder="e.g., Newcastle upon Tyne"
                 bind:value={locationCity}
                 required
               />
-              {#if hasFieldError('locationCity')}
-                <p class="form-error">{getFieldError('locationCity')}</p>
+              {#if hasFieldError("locationCity")}
+                <p class="form-error">{getFieldError("locationCity")}</p>
               {/if}
             </div>
             <div class="form-group">
-              <label for="locationPostcode" class="form-label form-label--required">Postcode</label>
+              <label
+                for="locationPostcode"
+                class="form-label form-label--required">Postcode</label
+              >
               <input
                 type="text"
                 id="locationPostcode"
                 name="locationPostcode"
                 class="form-input"
-                class:form-input--error={hasFieldError('locationPostcode')}
+                class:form-input--error={hasFieldError("locationPostcode")}
                 placeholder="e.g., NE1 4ST"
                 bind:value={locationPostcode}
                 required
               />
-              {#if hasFieldError('locationPostcode')}
-                <p class="form-error">{getFieldError('locationPostcode')}</p>
+              {#if hasFieldError("locationPostcode")}
+                <p class="form-error">{getFieldError("locationPostcode")}</p>
               {/if}
             </div>
           </div>
@@ -559,7 +614,12 @@
           <!-- Status -->
           <div class="form-group">
             <label for="status" class="form-label">Status</label>
-            <select id="status" name="status" class="form-select" bind:value={status}>
+            <select
+              id="status"
+              name="status"
+              class="form-select"
+              bind:value={status}
+            >
               <option value="draft">Draft</option>
               <option value="active">Active</option>
               <option value="paused">Paused</option>
@@ -608,7 +668,12 @@
     </div>
 
     <div class="modal__footer">
-      <button class="btn btn--ghost" onclick={closeModal} type="button" disabled={saving}>
+      <button
+        class="btn btn--ghost"
+        onclick={closeModal}
+        type="button"
+        disabled={saving}
+      >
         Cancel
       </button>
       <button
@@ -802,4 +867,3 @@
     }
   }
 </style>
-

@@ -12,7 +12,7 @@ This guide explains how to set up Cloudflare R2 for storing listing images.
 1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/)
 2. Navigate to **R2** in the sidebar
 3. Click **Create bucket**
-4. Name your bucket (e.g., `marketplace-images`)
+4. Name your bucket (e.g., `svelte-p2p-market`)
 5. Choose a location (optional)
 6. Click **Create bucket**
 
@@ -42,7 +42,7 @@ Update `wrangler.toml` with your bucket name:
 ```toml
 [[r2_buckets]]
 binding = "R2_BUCKET"
-bucket_name = "marketplace-images"
+bucket_name = "svelte-p2p-market"
 preview_bucket_name = "marketplace-images-preview"
 ```
 
@@ -146,4 +146,3 @@ Cloudflare R2 pricing:
 - **Egress**: Free (unlike S3)
 
 See [Cloudflare R2 Pricing](https://developers.cloudflare.com/r2/pricing/) for details.
-

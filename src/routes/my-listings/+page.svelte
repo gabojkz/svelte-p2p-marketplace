@@ -1,5 +1,5 @@
 <script>
-  import Logo from "$lib/components/Logo.svelte";
+  import NavigationBar from "$lib/components/NavigationBar.svelte";
   import ListingModal from "$lib/components/ListingModal.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
@@ -44,21 +44,22 @@
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(listing => 
-        listing.title.toLowerCase().includes(query) ||
-        listing.description?.toLowerCase().includes(query)
+      result = result.filter(
+        (listing) =>
+          listing.title.toLowerCase().includes(query) ||
+          listing.description?.toLowerCase().includes(query),
       );
     }
 
     // Apply status filter
     if (statusFilter !== "all") {
-      result = result.filter(listing => listing.status === statusFilter);
+      result = result.filter((listing) => listing.status === statusFilter);
     }
 
     // Apply sorting
     result.sort((a, b) => {
       let aVal, bVal;
-      
+
       switch (sortBy) {
         case "title":
           aVal = a.title.toLowerCase();
@@ -104,8 +105,11 @@
     if (statusFilter !== "all") params.set("status", statusFilter);
     if (sortBy !== "newest") params.set("sort", sortBy);
     if (sortOrder !== "desc") params.set("order", sortOrder);
-    
-    goto(`/my-listings?${params.toString()}`, { replaceState: true, noScroll: true });
+
+    goto(`/my-listings?${params.toString()}`, {
+      replaceState: true,
+      noScroll: true,
+    });
   }
 
   // Handle search
@@ -134,16 +138,16 @@
   // Toggle listing status
   async function toggleListingStatus(listingId, currentStatus) {
     const newStatus = currentStatus === "active" ? "paused" : "active";
-    
+
     try {
       const response = await fetch(`/api/listings/${listingId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) throw new Error("Failed to update status");
-      
+
       // Reload page to refresh data
       window.location.reload();
     } catch (error) {
@@ -154,17 +158,21 @@
 
   // Delete listing
   async function deleteListing(listingId) {
-    if (!confirm("Are you sure you want to delete this listing? This action cannot be undone.")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this listing? This action cannot be undone.",
+      )
+    ) {
       return;
     }
 
     try {
       const response = await fetch(`/api/listings/${listingId}`, {
-        method: "DELETE"
+        method: "DELETE",
       });
 
       if (!response.ok) throw new Error("Failed to delete listing");
-      
+
       // Reload page to refresh data
       window.location.reload();
     } catch (error) {
@@ -204,7 +212,7 @@
     return date.toLocaleDateString("en-GB", {
       year: "numeric",
       month: "short",
-      day: "numeric"
+      day: "numeric",
     });
   }
 
@@ -217,31 +225,23 @@
   // Get status badge class
   function getStatusClass(status) {
     switch (status) {
-      case "active": return "badge--success";
-      case "paused": return "badge--warning";
-      case "draft": return "badge--neutral";
-      case "sold": return "badge--info";
-      default: return "badge--neutral";
+      case "active":
+        return "badge--success";
+      case "paused":
+        return "badge--warning";
+      case "draft":
+        return "badge--neutral";
+      case "sold":
+        return "badge--info";
+      default:
+        return "badge--neutral";
     }
   }
 </script>
 
 <div class="page-wrapper">
   <!-- Header -->
-  <header class="header">
-    <div class="container">
-      <div class="header__inner">
-        <Logo />
-        <nav class="nav" aria-label="Main navigation">
-          <a href="/marketplace" class="nav__link">Browse</a>
-          <a href="/dashboard" class="nav__link">Dashboard</a>
-        </nav>
-        <div class="header__actions">
-          <button class="btn btn--primary" onclick={openCreateModal} type="button">+ Create Listing</button>
-        </div>
-      </div>
-    </div>
-  </header>
+  <NavigationBar />
 
   <!-- Main Content -->
   <main class="main-content">
@@ -252,7 +252,11 @@
           <h1>My Listings</h1>
           <p class="text-muted">Manage your listings</p>
         </div>
-        <button class="btn btn--primary" onclick={openCreateModal} type="button">
+        <button
+          class="btn btn--primary"
+          onclick={openCreateModal}
+          type="button"
+        >
           + Create New Listing
         </button>
       </div>
@@ -286,7 +290,7 @@
         <div class="filters-row">
           <!-- Search -->
           <div class="search-box">
-                  <input
+            <input
               type="text"
               class="search-input"
               placeholder="Search listings..."
@@ -296,7 +300,7 @@
             <button class="search-button" onclick={handleSearch} type="button">
               🔍
             </button>
-              </div>
+          </div>
 
           <!-- Status Filter -->
           <div class="filter-group">
@@ -313,9 +317,9 @@
               <option value="draft">Draft ({stats.draft || 0})</option>
               <option value="sold">Sold ({stats.sold || 0})</option>
             </select>
-              </div>
-            </div>
           </div>
+        </div>
+      </div>
 
       <!-- Listings Table -->
       <div class="table-container">
@@ -330,7 +334,9 @@
                 >
                   Title
                   {#if sortBy === "title"}
-                    <span class="sort-indicator">{sortOrder === "asc" ? "↑" : "↓"}</span>
+                    <span class="sort-indicator"
+                      >{sortOrder === "asc" ? "↑" : "↓"}</span
+                    >
                   {/if}
                 </button>
               </th>
@@ -342,7 +348,9 @@
                 >
                   Price
                   {#if sortBy === "price"}
-                    <span class="sort-indicator">{sortOrder === "asc" ? "↑" : "↓"}</span>
+                    <span class="sort-indicator"
+                      >{sortOrder === "asc" ? "↑" : "↓"}</span
+                    >
                   {/if}
                 </button>
               </th>
@@ -356,7 +364,9 @@
                 >
                   Status
                   {#if sortBy === "status"}
-                    <span class="sort-indicator">{sortOrder === "asc" ? "↑" : "↓"}</span>
+                    <span class="sort-indicator"
+                      >{sortOrder === "asc" ? "↑" : "↓"}</span
+                    >
                   {/if}
                 </button>
               </th>
@@ -368,7 +378,9 @@
                 >
                   Views
                   {#if sortBy === "views"}
-                    <span class="sort-indicator">{sortOrder === "asc" ? "↑" : "↓"}</span>
+                    <span class="sort-indicator"
+                      >{sortOrder === "asc" ? "↑" : "↓"}</span
+                    >
                   {/if}
                 </button>
               </th>
@@ -380,7 +392,9 @@
                 >
                   Trades
                   {#if sortBy === "trades"}
-                    <span class="sort-indicator">{sortOrder === "asc" ? "↑" : "↓"}</span>
+                    <span class="sort-indicator"
+                      >{sortOrder === "asc" ? "↑" : "↓"}</span
+                    >
                   {/if}
                 </button>
               </th>
@@ -392,7 +406,9 @@
                 >
                   Created
                   {#if sortBy === "newest"}
-                    <span class="sort-indicator">{sortOrder === "asc" ? "↑" : "↓"}</span>
+                    <span class="sort-indicator"
+                      >{sortOrder === "asc" ? "↑" : "↓"}</span
+                    >
                   {/if}
                 </button>
               </th>
@@ -410,57 +426,73 @@
               </tr>
             {:else}
               {#each filteredListings as listing}
-                <tr class="table-row" class:table-row--paused={listing.status === "paused"}>
+                <tr
+                  class="table-row"
+                  class:table-row--paused={listing.status === "paused"}
+                >
                   <td>
                     <div class="table-cell-title">
                       <a href="/marketplace?id={listing.id}" class="table-link">
                         {listing.title}
                       </a>
                       {#if listing.featured}
-                        <span class="badge badge--primary badge--sm">Featured</span>
+                        <span class="badge badge--primary badge--sm"
+                          >Featured</span
+                        >
                       {/if}
                       {#if listing.urgent}
                         <span class="badge badge--error badge--sm">Urgent</span>
                       {/if}
-                </div>
+                    </div>
                   </td>
                   <td>
-                    <div class="table-cell-price">{formatPrice(listing.price)}</div>
+                    <div class="table-cell-price">
+                      {formatPrice(listing.price)}
+                    </div>
                     <div class="table-cell-meta">{listing.type}</div>
                   </td>
                   <td>
                     <div class="table-cell-category">
                       {listing.category?.name || "N/A"}
-              </div>
+                    </div>
                   </td>
                   <td>
                     <div class="table-cell-location">
                       {listing.locationCity || "N/A"}
-              </div>
+                    </div>
                   </td>
                   <td>
                     <div class="table-cell-status">
                       <label class="status-toggle">
-                  <input
-                    type="checkbox"
+                        <input
+                          type="checkbox"
                           checked={listing.status === "active"}
-                          onchange={() => toggleListingStatus(listing.id, listing.status)}
+                          onchange={() =>
+                            toggleListingStatus(listing.id, listing.status)}
                         />
                         <span class="status-toggle__slider"></span>
                       </label>
-                      <span class="badge badge--{getStatusClass(listing.status)}">
+                      <span
+                        class="badge badge--{getStatusClass(listing.status)}"
+                      >
                         {listing.status}
-                  </span>
+                      </span>
                     </div>
                   </td>
                   <td>
-                    <div class="table-cell-number">{listing.viewCount || 0}</div>
+                    <div class="table-cell-number">
+                      {listing.viewCount || 0}
+                    </div>
                   </td>
                   <td>
-                    <div class="table-cell-number">{listing.tradeCount || 0}</div>
+                    <div class="table-cell-number">
+                      {listing.tradeCount || 0}
+                    </div>
                   </td>
                   <td>
-                    <div class="table-cell-date">{formatDate(listing.createdAt)}</div>
+                    <div class="table-cell-date">
+                      {formatDate(listing.createdAt)}
+                    </div>
                   </td>
                   <td>
                     <div class="table-actions">
@@ -504,7 +536,7 @@
   bind:open={modalOpen}
   bind:listingId={editingListingId}
   {categories}
-  marketplaceUser={marketplaceUser}
+  {marketplaceUser}
   onSave={handleModalSave}
 />
 

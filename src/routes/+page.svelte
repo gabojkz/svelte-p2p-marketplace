@@ -483,7 +483,7 @@
             paid securely through our escrow system.
           </p>
           <div class="flex justify-center gap-4">
-            <a href="/marketplace" class="btn btn--secondary btn--xl">
+            <a href="/login" class="btn btn--secondary btn--xl">
               Create Free Listing
             </a>
             <a

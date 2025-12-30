@@ -10,7 +10,7 @@
 
   // Mobile menu state
   let mobileMenuOpen = $state(false);
- 
+
   // User dropdown state
   let userDropdownOpen = $state(false);
   let unreadMessagesCount = $state(0);
@@ -19,7 +19,7 @@
   // Load marketplace username
   async function loadMarketplaceUser() {
     if (!user) return;
-    
+
     try {
       const response = await fetch("/api/user/profile");
       if (response.ok) {
@@ -54,7 +54,7 @@
   function handleClickOutside(event) {
     const target = /** @type {HTMLElement | null} */ (event.target);
     if (!target) return;
-    
+
     if (
       !target.closest(".user-dropdown") &&
       !target.closest(".user-dropdown-toggle")
@@ -79,9 +79,12 @@
           unreadMessagesCount = data.totalUnread;
         } else {
           const conversations = data.conversations || [];
-          unreadMessagesCount = conversations.reduce((/** @type {number} */ sum, /** @type {any} */ conv) => {
-            return sum + (conv.userUnreadCount || 0);
-          }, 0);
+          unreadMessagesCount = conversations.reduce(
+            (/** @type {number} */ sum, /** @type {any} */ conv) => {
+              return sum + (conv.userUnreadCount || 0);
+            },
+            0,
+          );
         }
       }
     } catch (error) {
@@ -283,9 +286,6 @@
           <!-- Not logged in -->
           <a href="/login" class="btn btn--ghost">
             <span>Log In</span>
-          </a>
-          <a href="/create-listing" class="btn btn--primary">
-            <span>Sell Now</span>
           </a>
         {/if}
 
