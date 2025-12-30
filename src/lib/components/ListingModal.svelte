@@ -315,7 +315,9 @@
     role="dialog"
     aria-labelledby="modal-title"
     aria-modal="true"
+    tabindex="-1"
     onclick={(e) => e.stopPropagation()}
+    onkeydown={(e) => e.stopPropagation()}
     style="display: flex !important; visibility: visible !important; opacity: 1 !important; z-index: 1001 !important;"
   >
     <div class="modal__header">
