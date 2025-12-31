@@ -15,7 +15,7 @@
   });
 
   // Get status-specific content
-  const errorContent = $derived.by(() => {
+  const content = $derived.by(() => {
     switch (status) {
       case 404:
         return {
@@ -73,8 +73,6 @@
         };
     }
   });
-
-  const content = errorContent();
 </script>
 
 <svelte:head>
