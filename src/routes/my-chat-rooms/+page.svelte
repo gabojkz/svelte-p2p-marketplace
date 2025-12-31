@@ -68,6 +68,12 @@
 
   // Navigate to chat room
   function goToChatRoom(conversationId) {
+    if (!conversationId) {
+      console.error("No conversation ID provided");
+      alert("Unable to open conversation. Missing conversation ID.");
+      return;
+    }
+    console.log("Navigating to conversation:", conversationId);
     goto(`/trade-room?conversationId=${conversationId}`);
   }
 
@@ -139,8 +145,19 @@
               class="chat-room-card"
               role="button"
               tabindex="0"
-              onclick={() => goToChatRoom(conversation.id)}
-              onkeydown={(e) => e.key === "Enter" && goToChatRoom(conversation.id)}
+              onclick={() => {
+                if (conversation?.id) {
+                  goToChatRoom(conversation.id);
+                } else {
+                  console.error("Conversation ID is missing:", conversation);
+                  alert("Unable to open conversation. Missing conversation ID.");
+                }
+              }}
+              onkeydown={(e) => {
+                if (e.key === "Enter" && conversation?.id) {
+                  goToChatRoom(conversation.id);
+                }
+              }}
             >
               <div class="chat-room-card__avatar">
                 <div class="avatar">

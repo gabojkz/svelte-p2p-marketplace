@@ -30,10 +30,11 @@ export async function load({ locals, url }) {
 
   if (conversationIdParam) {
     // Use conversationId if provided
-    conversationId = Number(conversationIdParam);
-    if (!conversationId || isNaN(conversationId)) {
-      throw error(400, "Invalid conversation ID");
+    const parsedId = Number(conversationIdParam);
+    if (isNaN(parsedId) || parsedId <= 0 || !isFinite(parsedId)) {
+      throw error(400, `Invalid conversation ID: "${conversationIdParam}" (parsed as: ${parsedId})`);
     }
+    conversationId = parsedId;
   } else if (listingIdParam) {
     // Fallback to listingId for backwards compatibility
     listingId = Number(listingIdParam);
@@ -71,10 +72,12 @@ export async function load({ locals, url }) {
     }
 
     // Verify the current user is part of this conversation
-    if (
-      foundConversation.buyerId !== marketplaceUser.id &&
-      foundConversation.sellerId !== marketplaceUser.id
-    ) {
+    // Convert to numbers for comparison (bigint comparison)
+    const buyerIdNum = Number(foundConversation.buyerId);
+    const sellerIdNum = Number(foundConversation.sellerId);
+    const userIdNum = Number(marketplaceUser.id);
+    
+    if (buyerIdNum !== userIdNum && sellerIdNum !== userIdNum) {
       throw error(403, "You are not authorized to view this conversation");
     }
 

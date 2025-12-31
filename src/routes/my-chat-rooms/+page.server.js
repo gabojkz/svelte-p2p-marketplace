@@ -84,11 +84,17 @@ export async function load({ locals, url }) {
         return null;
       }
 
+      // Ensure conversation ID exists
+      if (!conv.id) {
+        console.error("Conversation missing ID:", conv);
+        return null;
+      }
+
       return {
-        id: conv.id,
-        listingId: conv.listingId,
-        buyerId: conv.buyerId,
-        sellerId: conv.sellerId,
+        id: Number(conv.id), // Ensure it's a number
+        listingId: conv.listingId ? Number(conv.listingId) : null,
+        buyerId: conv.buyerId ? Number(conv.buyerId) : null,
+        sellerId: conv.sellerId ? Number(conv.sellerId) : null,
         lastMessageAt: conv.lastMessageAt,
         lastMessagePreview: conv.lastMessagePreview,
         userUnreadCount,
