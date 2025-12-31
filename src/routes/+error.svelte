@@ -5,6 +5,9 @@
 
   const { error: errorObj, status } = $props();
 
+  // In development, show minimal error page to allow SvelteKit's default error handling
+  const isDev = import.meta.env.DEV;
+
   // Get error message - handle both Error objects and strings
   const errorMessage = $derived.by(() => {
     if (!errorObj) return null;
@@ -100,6 +103,20 @@
   <title>{content.title} — Marketto</title>
 </svelte:head>
 
+{#if isDev}
+  <!-- In development, show minimal error for debugging -->
+  <div style="padding: 2rem; font-family: monospace; background: #1e1e1e; color: #d4d4d4; min-height: 100vh;">
+    <h1 style="color: #f48771; margin-bottom: 1rem;">Error {status || 'Unknown'}</h1>
+    <pre style="background: #252526; padding: 1rem; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; word-break: break-word;">
+      {JSON.stringify(errorObj, null, 2)}
+    </pre>
+    <div style="margin-top: 1rem;">
+      <button onclick={() => window.location.reload()} style="padding: 0.5rem 1rem; background: #007acc; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Reload Page
+      </button>
+    </div>
+  </div>
+{:else}
 <NavigationBar />
 
 <div class="page-wrapper">
@@ -159,6 +176,7 @@
     </div>
   </main>
 </div>
+{/if}
 
 <style>
   .error-page {
