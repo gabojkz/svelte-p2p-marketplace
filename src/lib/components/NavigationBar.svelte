@@ -121,6 +121,7 @@
             <a href="/favorites" class="nav__link">⭐ Favorites</a>
             <a href="/my-listings" class="nav__link">📊 My Listings</a>
             <a href="/my-trades" class="nav__link">🤝 My Trades</a>
+            <a href="/my-chat-rooms" class="nav__link">💬 Chat Rooms</a>
             <button class="nav__link nav__link--button" onclick={handleSignOut}>
               🚪 Logout
             </button>
@@ -194,6 +195,14 @@
                   >
                     <span class="user-dropdown__icon">🤝</span>
                     <span>My Trades</span>
+                  </a>
+                  <a
+                    href="/my-chat-rooms"
+                    class="user-dropdown__item"
+                    onclick={() => (userDropdownOpen = false)}
+                  >
+                    <span class="user-dropdown__icon">💬</span>
+                    <span>Chat Rooms</span>
                   </a>
                   <a
                     href="/favorites"
