@@ -109,16 +109,20 @@
         >
           <!-- Hero Text -->
           <h1 class="hero__title mb-6">
-            Buy & Sell <span style="color: var(--color-primary);">Anything</span
-            > Locally
+            Local <span style="color: var(--color-primary);">P2P Trading</span> & Barter
           </h1>
           <p
             class="hero__description text-muted"
-            style="font-size: var(--text-lg); margin-bottom: var(--space-8); max-width: 600px; margin-left: auto; margin-right: auto;"
+            style="font-size: var(--text-lg); margin-bottom: var(--space-4); max-width: 600px; margin-left: auto; margin-right: auto;"
           >
-            Discover amazing deals near you. Cars, electronics, clothing, and
-            more — all from local sellers in your area.
+            Connect with your city community for safe, local peer-to-peer trades and barter. 
+            Trade with any currency, gold, silver, products, or services — all payment methods welcome. 
+            Trade directly with neighbors in your area — reputation matters here.
           </p>
+          <div style="display: flex; align-items: center; justify-content: center; gap: var(--space-2); margin-bottom: var(--space-8); flex-wrap: wrap;">
+            <span class="badge badge--success" style="font-size: var(--text-sm);">100% Free to Use</span>
+            <span class="badge badge--info" style="font-size: var(--text-sm);">No Hidden Fees</span>
+          </div>
 
           <!-- Hero Search Box -->
           <div class="hero-search">
@@ -301,8 +305,8 @@
               </div>
               <h4 class="card__title">Complete Payment</h4>
               <p class="card__content">
-                Arrange payment with the seller and complete your purchase
-                securely.
+                Pay with any currency, gold, silver, products, or services. 
+                All payment methods are welcome and encouraged.
               </p>
             </div>
           </div>
@@ -393,18 +397,39 @@
           <!-- Text -->
           <div>
             <span class="badge badge--info">Trust & Safety</span>
-            <h2 class="section__title mt-4">Trade with Complete Confidence</h2>
+            <h2 class="section__title mt-4">Safe Local P2P Trading & Barter</h2>
             <p
               class="text-muted"
               style="font-size: var(--text-lg); margin-bottom: var(--space-6);"
             >
-              {appName} connects you with trusted local sellers in your community.
-              Buy and sell with confidence knowing you're dealing with verified members.
+              {appName} is a local peer-to-peer marketplace for city barter and trades. 
+              We track meetings to keep everyone safe, and <strong>reputation matters</strong> — 
+              users who abuse or scam will lose access forever.
             </p>
             <ul style="list-style: none; padding: 0;">
               <li class="flex items-center gap-3 mb-4">
                 <span style="color: var(--color-primary);">✓</span>
-                <span>Verified seller badges for trusted traders</span>
+                <span><strong>100% Free</strong> - No fees, no commissions, no hidden costs</span>
+              </li>
+              <li class="flex items-center gap-3 mb-4">
+                <span style="color: var(--color-primary);">✓</span>
+                <span><strong>Flexible Payment Methods</strong> - Trade with any currency, gold, silver, products, or services — all methods welcome and encouraged</span>
+              </li>
+              <li class="flex items-center gap-3 mb-4">
+                <span style="color: var(--color-primary);">✓</span>
+                <span><strong>Meeting Tracking</strong> - We track all meetings to keep you safe during local trades</span>
+              </li>
+              <li class="flex items-center gap-3 mb-4">
+                <span style="color: var(--color-primary);">✓</span>
+                <span><strong>Zero Tolerance Policy</strong> - Users caught abusing or scamming lose access forever</span>
+              </li>
+              <li class="flex items-center gap-3 mb-4">
+                <span style="color: var(--color-primary);">✓</span>
+                <span><strong>Reputation Matters</strong> - Your trading history and reviews build your reputation in the community</span>
+              </li>
+              <li class="flex items-center gap-3 mb-4">
+                <span style="color: var(--color-primary);">✓</span>
+                <span><strong>Prohibited Items</strong> - No drugs, weapons, or illegal products allowed</span>
               </li>
               <li class="flex items-center gap-3 mb-4">
                 <span style="color: var(--color-primary);">✓</span>
@@ -446,8 +471,8 @@
           <p
             style="color: rgba(255,255,255,0.9); font-size: var(--text-lg); margin-bottom: var(--space-8);"
           >
-            List your items for free and reach thousands of local buyers. Connect
-            directly with buyers in your area.
+            Join your local P2P trading community. List items for barter or sale <strong>completely free</strong>. 
+            Build your reputation through honest trades. No fees, no commissions, ever.
           </p>
           <div class="flex justify-center gap-4">
             <a href="/login" class="btn btn--secondary btn--xl">
