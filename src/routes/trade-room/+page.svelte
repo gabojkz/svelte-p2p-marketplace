@@ -2,6 +2,7 @@
   import NavigationBar from "$lib/components/NavigationBar.svelte";
   import TradeStatusCard from "$lib/components/TradeStatusCard.svelte";
   import ReviewForm from "$lib/components/ReviewForm.svelte";
+  import ReportUser from "$lib/components/ReportUser.svelte";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import { useSession, signOut } from "$lib/auth-client.js";
@@ -25,6 +26,7 @@
   let messageInput = $state("");
   let sending = $state(false);
   let showReviewForm = $state(false);
+  let showReportForm = $state(false);
   /** @type {HTMLElement | null} */
   let messagesContainer = $state(null);
 
@@ -211,6 +213,50 @@
     }
   }
 
+  // Handle user report submission
+  /** @param {any} reportData */
+  async function handleReportSubmit(reportData) {
+    if (!trade?.id) {
+      alert("Unable to submit report. Trade not found.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/disputes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...reportData,
+          tradeId: trade.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to submit report");
+      }
+
+      alert("Report submitted successfully. Our team will review it shortly.");
+      showReportForm = false;
+
+      // Reload the page to refresh the UI
+      window.location.reload();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to submit report";
+      alert(message);
+      console.error("Error submitting report:", err);
+    }
+  }
+
+  // Get the other party for reporting
+  const reportedUserId = $derived(
+    trade ? (isBuyer ? trade.sellerId : trade.buyerId) : seller?.id || null,
+  );
+  const reportedUserName = $derived(
+    isBuyer ? seller?.firstName || seller?.username || "Seller" : "Buyer",
+  );
+
   console.log({ seller, marketplaceUser });
 </script>
 
@@ -261,6 +307,17 @@
       <!-- Chat Header -->
       {#if seller}
         <div class="chat-header">
+          {#if trade && reportedUserId}
+            <button
+              class="btn btn--ghost btn--sm"
+              onclick={() => showReportForm = true}
+              type="button"
+              style="margin-left: auto;"
+              title="Report User"
+            >
+              🚨 Report
+            </button>
+          {/if}
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="avatar avatar--sm">{getSellerInitials()}</div>
@@ -281,13 +338,16 @@
             </div>
             <div class="flex gap-2 desktop-actions">
               <button class="btn btn--ghost btn--sm" type="button">📎</button>
-              <button
-                class="btn btn--ghost btn--sm"
-                onclick={() => alert("Report feature coming soon")}
-                type="button"
-              >
-                ⚠️
-              </button>
+              {#if trade && reportedUserId}
+                <button
+                  class="btn btn--ghost btn--sm"
+                  onclick={() => showReportForm = true}
+                  type="button"
+                  title="Report User"
+                >
+                  🚨
+                </button>
+              {/if}
             </div>
           </div>
         </div>
@@ -372,11 +432,15 @@
       </button>
 
       <!-- Trade Status Card -->
-      <TradeStatusCard
-        listingId={listing.id}
-        buyerId={marketplaceUser.id}
-        sellerId={seller.id}
-      ></TradeStatusCard>
+      {#if listing && seller && marketplaceUser && conversation}
+        <TradeStatusCard
+          listingId={listing.id}
+          buyerId={conversation.buyerId}
+          sellerId={seller.id}
+          currentUserId={marketplaceUser.id}
+          onReviewClick={() => showReviewForm = true}
+        ></TradeStatusCard>
+      {/if}
 
       <!-- Trade Details Card -->
       {#if listing}
@@ -474,6 +538,36 @@
       aria-label="Close sidebar"
     ></div>
   </div>
+
+  <!-- Report User Modal -->
+  {#if showReportForm && trade && marketplaceUser && reportedUserId}
+    <div
+      class="modal-overlay"
+      onclick={() => (showReportForm = false)}
+      onkeydown={(e) => e.key === "Escape" && (showReportForm = false)}
+      role="button"
+      tabindex="-1"
+      aria-label="Close report form"
+    >
+      <div
+        class="modal-content"
+        onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="report-form-title"
+        tabindex="-1"
+      >
+        <ReportUser
+          tradeId={trade.id}
+          reportedUserId={reportedUserId}
+          reportedUserName={reportedUserName}
+          onSubmit={handleReportSubmit}
+          onCancel={() => (showReportForm = false)}
+        />
+      </div>
+    </div>
+  {/if}
 
   <!-- Review Form Modal -->
   {#if showReviewForm && trade && marketplaceUser && revieweeId}

@@ -94,7 +94,8 @@
       }
       
       const data = await response.json();
-      await goto(`/messages?conversation=${data.conversation.id}`);
+      // Navigate to trade room with the listing ID
+      await goto(`/trade-room?listingId=${listing.id}`);
     } catch (err) {
       console.error("Error starting conversation:", err);
       const errorMessage = err instanceof Error ? err.message : "Failed to start conversation. Please try again.";

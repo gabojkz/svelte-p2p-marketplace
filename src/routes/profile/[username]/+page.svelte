@@ -97,8 +97,8 @@
       return;
     }
 
-    // For now, redirect to messages - in a real app, you'd create a conversation
-    await goto("/messages");
+    // Navigate to marketplace to find their listings
+    await goto("/marketplace");
   }
 </script>
 

@@ -12,7 +12,6 @@
 
   // User dropdown state
   let userDropdownOpen = $state(false);
-  let unreadMessagesCount = $state(0);
   let marketplaceUsername = $state(null);
 
   // Load marketplace username
@@ -65,31 +64,6 @@
     }
   }
 
-  // Load unread messages count
-  async function loadUnreadCount() {
-    if (!user) return;
-
-    try {
-      const response = await fetch("/api/conversations");
-      if (response.ok) {
-        const data = await response.json();
-        // Use totalUnread from API if available, otherwise calculate from conversations
-        if (data.totalUnread !== undefined) {
-          unreadMessagesCount = data.totalUnread;
-        } else {
-          const conversations = data.conversations || [];
-          unreadMessagesCount = conversations.reduce(
-            (/** @type {number} */ sum, /** @type {any} */ conv) => {
-              return sum + (conv.userUnreadCount || 0);
-            },
-            0,
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Error loading unread count:", error);
-    }
-  }
 
   async function handleSignOut() {
     await signOut();
@@ -110,14 +84,7 @@
   onMount(() => {
     document.addEventListener("click", handleClickOutside);
     if (user) {
-      loadUnreadCount();
       loadMarketplaceUser();
-      // Refresh unread count every 30 seconds
-      const interval = setInterval(loadUnreadCount, 30000);
-      return () => {
-        document.removeEventListener("click", handleClickOutside);
-        clearInterval(interval);
-      };
     }
     return () => {
       document.removeEventListener("click", handleClickOutside);
@@ -151,14 +118,9 @@
         <!-- Mobile-only user actions -->
         {#if user}
           <div class="nav__mobile-user">
-            <a href="/messages" class="nav__link nav__link--badge">
-              💬 Messages
-              {#if unreadMessagesCount > 0}
-                <span class="nav__badge">{unreadMessagesCount}</span>
-              {/if}
-            </a>
             <a href="/favorites" class="nav__link">⭐ Favorites</a>
             <a href="/my-listings" class="nav__link">📊 My Listings</a>
+            <a href="/my-trades" class="nav__link">🤝 My Trades</a>
             <button class="nav__link nav__link--button" onclick={handleSignOut}>
               🚪 Logout
             </button>
@@ -226,17 +188,12 @@
                     <span>My Listings</span>
                   </a>
                   <a
-                    href="/messages"
+                    href="/my-trades"
                     class="user-dropdown__item"
                     onclick={() => (userDropdownOpen = false)}
                   >
-                    <span class="user-dropdown__icon">💬</span>
-                    <span>Messages</span>
-                    {#if unreadMessagesCount > 0}
-                      <span class="user-dropdown__badge"
-                        >{unreadMessagesCount}</span
-                      >
-                    {/if}
+                    <span class="user-dropdown__icon">🤝</span>
+                    <span>My Trades</span>
                   </a>
                   <a
                     href="/favorites"
@@ -461,17 +418,6 @@
     text-align: center;
   }
 
-  .user-dropdown__badge {
-    margin-left: auto;
-    background: var(--color-primary);
-    color: white;
-    border-radius: var(--radius-full);
-    padding: 2px 6px;
-    font-size: var(--text-xs);
-    font-weight: 600;
-    min-width: 20px;
-    text-align: center;
-  }
 
   /* Mobile Navigation */
   .nav__mobile-user {

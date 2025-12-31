@@ -1,6 +1,6 @@
 import { json, error } from "@sveltejs/kit";
 import { listings, users, trades } from "$lib/server/schema";
-import { eq, and, or, inArray, ConsoleLogWriter } from "drizzle-orm";
+import { eq, and, or, inArray, desc } from "drizzle-orm";
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request, locals }) {
@@ -205,22 +205,25 @@ export async function GET({ url, request, locals }) {
     throw error(403, "You can only start trades as the buyer");
   }
 
-  // Check if there's already an active trade for this listing
+  // Check if there's a trade for this listing (including cancelled to show rejection state)
   const foundTrade = await db
     .select()
     .from(trades)
     .where(
       and(
-        eq(trades.listingId, listingId),
-        or(eq(trades.buyerId, buyerId), eq(trades.sellerId, sellerId)),
+        eq(trades.listingId, Number(listingId)),
+        or(eq(trades.buyerId, Number(buyerId)), eq(trades.sellerId, Number(sellerId))),
         inArray(trades.status, [
           "initiated",
           "payment_pending",
           "paid",
           "in_progress",
+          "cancelled",
+          "completed",
         ]),
       ),
     )
+    .orderBy(desc(trades.createdAt))
     .limit(1);
 
   return json({ success: true, trade: foundTrade });

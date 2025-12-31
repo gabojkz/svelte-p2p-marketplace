@@ -475,7 +475,7 @@
             Build your reputation through honest trades. No fees, no commissions, ever.
           </p>
           <div class="flex justify-center gap-4">
-            <a href="/login" class="btn btn--secondary btn--xl">
+            <a href="/my-listings" class="btn btn--secondary btn--xl">
               Create Free Listing
             </a>
             <a

@@ -1,29 +1,37 @@
 <script>
-  import { signIn } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import Logo from "$lib/components/Logo.svelte";
 
   let email = $state("");
-  let password = $state("");
   let error = $state("");
+  let success = $state(false);
   let loading = $state(false);
 
   /** @param {SubmitEvent} e */
   async function handleSubmit(e) {
     e.preventDefault();
     error = "";
+    success = false;
     loading = true;
 
     try {
-      const result = await signIn.email({ email, password });
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
 
-      if (result.error) {
-        error = result.error.message || "Invalid credentials";
+      const data = await response.json();
+
+      if (!response.ok) {
+        error = data.error || "Failed to send reset email";
       } else {
-        goto("/my-listings");
+        success = true;
       }
     } catch (err) {
-      error = "An unexpected error occurred";
+      error = "An unexpected error occurred. Please try again.";
     } finally {
       loading = false;
     }
@@ -31,7 +39,7 @@
 </script>
 
 <svelte:head>
-  <title>Sign In — Marketto</title>
+  <title>Forgot Password — Marketto</title>
 </svelte:head>
 
 <div class="page-wrapper">
@@ -55,70 +63,71 @@
   <main class="main-content">
     <div class="container container--narrow">
       <div class="auth-page">
-        <a href="/" class="back-link">
-          <span>←</span> Back to home
+        <a href="/login" class="back-link">
+          <span>←</span> Back to login
         </a>
 
         <div class="auth-container">
           <div class="auth-header">
-            <h1>Welcome back</h1>
-            <p class="text-muted">Sign in to your account to continue</p>
+            <h1>Forgot Password</h1>
+            <p class="text-muted">
+              Enter your email address and we'll send you a link to reset your
+              password.
+            </p>
           </div>
 
-          <form class="auth-form" onsubmit={handleSubmit}>
-            {#if error}
-              <div class="alert alert--error">
-                <span class="error-icon">⚠️</span>
-                {error}
+          {#if success}
+            <div class="alert alert--success">
+              <span class="success-icon">✓</span>
+              <div>
+                <strong>Check your email</strong>
+                <p style="margin: 0; margin-top: var(--space-2);">
+                  If an account with that email exists, we've sent you a
+                  password reset link.
+                </p>
               </div>
-            {/if}
-
-            <div class="form-group">
-              <label for="email" class="form-label">Email</label>
-              <input
-                id="email"
-                type="email"
-                bind:value={email}
-                class="form-input"
-                placeholder="you@example.com"
-                required
-                disabled={loading}
-              />
             </div>
-
-            <div class="form-group">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
-                <label for="password" class="form-label">Password</label>
-                <a href="/forgot-password" class="forgot-password-link">Forgot password?</a>
-              </div>
-              <input
-                id="password"
-                type="password"
-                bind:value={password}
-                class="form-input"
-                placeholder="••••••••"
-                required
-                disabled={loading}
-                minlength="8"
-              />
-            </div>
-
-            <button
-              type="submit"
-              class="btn btn--primary btn--full"
-              disabled={loading}
-            >
-              {#if loading}
-                <span class="spinner"></span>
-                Signing in...
-              {:else}
-                Sign In
+          {:else}
+            <form class="auth-form" onsubmit={handleSubmit}>
+              {#if error}
+                <div class="alert alert--error">
+                  <span class="error-icon">⚠️</span>
+                  {error}
+                </div>
               {/if}
-            </button>
-          </form>
+
+              <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  bind:value={email}
+                  class="form-input"
+                  placeholder="you@example.com"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <button
+                type="submit"
+                class="btn btn--primary btn--full"
+                disabled={loading}
+              >
+                {#if loading}
+                  <span class="spinner"></span>
+                  Sending...
+                {:else}
+                  Send Reset Link
+                {/if}
+              </button>
+            </form>
+          {/if}
 
           <div class="auth-footer">
-            <p>Don't have an account? <a href="/register">Create one</a></p>
+            <p>
+              Remember your password? <a href="/login">Sign in</a>
+            </p>
           </div>
         </div>
       </div>
@@ -204,7 +213,7 @@
 
   .alert {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-3);
     padding: var(--space-4);
     border-radius: var(--radius-md);
@@ -217,8 +226,21 @@
     color: var(--color-error);
   }
 
-  .error-icon {
+  .alert--success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #16a34a;
+  }
+
+  .error-icon,
+  .success-icon {
     font-size: var(--text-lg);
+    flex-shrink: 0;
+  }
+
+  .success-icon {
+    color: #16a34a;
+    font-weight: bold;
   }
 
   .auth-footer {
@@ -235,19 +257,6 @@
   }
 
   .auth-footer a:hover {
-    text-decoration: underline;
-  }
-
-  .forgot-password-link {
-    color: var(--color-primary);
-    font-size: var(--text-sm);
-    font-weight: var(--font-medium);
-    text-decoration: none;
-    transition: color var(--transition-fast);
-  }
-
-  .forgot-password-link:hover {
-    color: var(--color-primary-dark);
     text-decoration: underline;
   }
 
@@ -278,3 +287,4 @@
     }
   }
 </style>
+

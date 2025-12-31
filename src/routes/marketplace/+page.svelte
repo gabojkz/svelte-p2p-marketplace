@@ -237,7 +237,7 @@
           <div class="filter-panel">
             <!-- Sell Button -->
             <a
-              href="/create-listing"
+              href="/my-listings"
               class="btn btn--outline btn--block sell-btn"
             >
               <span>+</span>Sell Something
