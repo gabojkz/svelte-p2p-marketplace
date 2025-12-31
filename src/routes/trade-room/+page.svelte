@@ -1,5 +1,6 @@
 <script>
   import NavigationBar from "$lib/components/NavigationBar.svelte";
+  import ReviewForm from "$lib/components/ReviewForm.svelte";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import { useSession, signOut } from "$lib/auth-client.js";
@@ -19,12 +20,20 @@
   let sidebarOpen = $state(false);
   let messageInput = $state("");
   let sending = $state(false);
+  let showReviewForm = $state(false);
   /** @type {HTMLElement | null} */
   let messagesContainer = $state(null);
 
   // Check if current user is buyer
   const isBuyer = $derived(marketplaceUser?.id === conversation?.buyerId);
   const otherUser = $derived(isBuyer ? seller : null); // For now, only handle buyer case
+  
+  // Check trade status
+  const tradeCompleted = $derived(trade && trade.status === "completed");
+  
+  // Get the other party for review (reviewee)
+  const revieweeId = $derived(trade ? (isBuyer ? trade.sellerId : trade.buyerId) : null);
+  const revieweeName = $derived(isBuyer ? (seller?.firstName || seller?.username || "Seller") : "Buyer");
 
   // Get seller initials
   function getSellerInitials() {
@@ -128,24 +137,123 @@
     }
   });
 
-  console.log("User:", user);
-  console.log("Listing:", listing);
   async function startTrade() {
-    const confirmStart = confirm("Do you wanna start this trade?");
-    if (confirmStart) {
-      // create a new trade
+    if (!listing || !marketplaceUser) {
+      alert("Unable to start trade. Missing required information.");
+      return;
+    }
+
+    // Get seller ID from listing (listing.userId is the seller's marketplace user ID)
+    const sellerId = listing.userId;
+    const buyerId = marketplaceUser.id;
+
+    // Don't allow users to trade with themselves
+    if (sellerId === buyerId) {
+      alert("You cannot start a trade for your own listing.");
+      return;
+    }
+
+    const confirmStart = confirm("Do you want to start this trade?");
+    if (!confirmStart) {
+      return;
+    }
+
+    try {
+      // Create a new trade
       const newTrade = {
-        status: "pending",
         listingId: listing.id,
-        buyerId: user.id,
-        sellerId: listing.sellerId,
+        buyerId: buyerId,
+        sellerId: sellerId,
+        amount: listing.price,
+        status: "initiated",
       };
 
-      await fetch("/api/trades", {
+      const response = await fetch("/api/trades", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTrade),
       });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to start trade");
+      }
+
+      const data = await response.json();
+      alert("Trade started successfully!");
+      
+      // Reload the page to show the new trade
+      window.location.reload();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to start trade";
+      alert(message);
+      console.error("Error starting trade:", err);
+    }
+  }
+
+  // Handle mark trade as complete
+  async function handleMarkComplete() {
+    if (!trade?.id) {
+      alert("Unable to complete trade. Trade not found.");
+      return;
+    }
+
+    const confirmComplete = confirm("Are you sure you want to mark this trade as complete?");
+    if (!confirmComplete) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/trades/${trade.id}/complete`, {
+        method: "PATCH",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to complete trade");
+      }
+
+      const data = await response.json();
+      alert("Trade marked as complete! You can now leave a review.");
+      
+      // Reload the page to show the updated trade status
+      window.location.reload();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to complete trade";
+      alert(message);
+      console.error("Error completing trade:", err);
+    }
+  }
+
+  // Handle review submission
+  /** @param {any} reviewData */
+  async function handleReviewSubmit(reviewData) {
+    if (!trade?.id) {
+      alert("Unable to submit review. Trade not found.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/trades/${trade.id}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reviewData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to submit review");
+      }
+
+      alert("Review submitted successfully! Thank you for your feedback.");
+      showReviewForm = false;
+      
+      // Reload the page to refresh the UI
+      window.location.reload();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to submit review";
+      alert(message);
+      console.error("Error submitting review:", err);
     }
   }
 </script>
@@ -316,82 +424,98 @@
             Trade Status
           </h4>
 
-          <!-- Progress Steps -->
-          <div
-            style="display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4);"
-          >
-            <div class="flex items-center gap-2">
-              <div
-                style="width: 24px; height: 24px; background: var(--color-primary); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;"
-              >
-                ✓
-              </div>
-              <div style="flex: 1;">
-                <div
-                  style="font-size: var(--text-xs); font-weight: var(--font-medium);"
-                >
-                  Trade Started
-                </div>
-              </div>
-            </div>
+          {#if trade}
+            <!-- Progress Steps - Only show when trade exists -->
             <div
-              style="width: 2px; height: 16px; background: var(--color-accent-yellow); margin-left: 11px;"
-            ></div>
-            <div class="flex items-center gap-2">
-              <div
-                style="width: 24px; height: 24px; background: var(--color-accent-yellow); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 10px;"
-              >
-                3
-              </div>
-              <div style="flex: 1;">
+              style="display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4);"
+            >
+              <div class="flex items-center gap-2">
                 <div
-                  style="font-size: var(--text-xs); font-weight: var(--font-medium); color: var(--color-accent-yellow);"
+                  style="width: 24px; height: 24px; background: var(--color-primary); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;"
                 >
-                  Confirm Trade
+                  ✓
+                </div>
+                <div style="flex: 1;">
+                  <div
+                    style="font-size: var(--text-xs); font-weight: var(--font-medium);"
+                  >
+                    Trade Started
+                  </div>
                 </div>
               </div>
-            </div>
+              <div
+                style="width: 2px; height: 16px; background: var(--color-accent-yellow); margin-left: 11px;"
+              ></div>
+              <div class="flex items-center gap-2">
+                <div
+                  style="width: 24px; height: 24px; background: var(--color-accent-yellow); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 10px;"
+                >
+                  3
+                </div>
+                <div style="flex: 1;">
+                  <div
+                    style="font-size: var(--text-xs); font-weight: var(--font-medium); color: var(--color-accent-yellow);"
+                  >
+                    Confirm Trade
+                  </div>
+                </div>
+              </div>
             <div
-              style="width: 2px; height: 16px; background: var(--color-gray-200); margin-left: 11px;"
+              style="width: 2px; height: 16px; background: {tradeCompleted ? 'var(--color-primary)' : 'var(--color-gray-200)'}; margin-left: 11px;"
             ></div>
-            <div class="flex items-center gap-2">
-              <div
-                style="width: 24px; height: 24px; background: var(--color-gray-200); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--color-gray-500); font-size: 10px;"
-              >
-                4
-              </div>
-              <div style="flex: 1;">
+              <div class="flex items-center gap-2">
                 <div
-                  style="font-size: var(--text-xs); color: var(--color-gray-500);"
+                  style="width: 24px; height: 24px; background: {tradeCompleted ? 'var(--color-primary)' : 'var(--color-gray-200)'}; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: {tradeCompleted ? 'white' : 'var(--color-gray-500)'}; font-size: 10px;"
                 >
-                  Complete Trade
+                  {tradeCompleted ? '✓' : '4'}
+                </div>
+                <div style="flex: 1;">
+                  <div
+                    style="font-size: var(--text-xs); {tradeCompleted ? 'font-weight: var(--font-medium); color: var(--color-primary);' : 'color: var(--color-gray-500);'}"
+                  >
+                    {tradeCompleted ? 'Trade Completed' : 'Complete Trade'}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Buttons -->
-          <button
-            class="btn btn--primary btn--full btn--sm mb-2"
-            onclick={startTrade}
-            type="button"
-          >
-            Start Trade
-          </button>
-          <button
-            class="btn btn--primary btn--full btn--sm mb-2"
-            onclick={() => alert("Complete trade feature coming soon")}
-            type="button"
-          >
-            ✓ Mark as Complete
-          </button>
-          <button
-            class="btn btn--outline btn--full btn--sm"
-            onclick={() => alert("Cancel trade feature coming soon")}
-            type="button"
-          >
-            Cancel Trade
-          </button>
+            <!-- Trade Action Buttons - Only show when trade exists -->
+            {#if tradeCompleted}
+              <!-- Show Add Review button when trade is completed -->
+              <button
+                class="btn btn--primary btn--full btn--sm mb-2"
+                onclick={() => showReviewForm = true}
+                type="button"
+              >
+                ⭐ Add Review
+              </button>
+            {:else}
+              <!-- Show Mark as Complete and Cancel buttons when trade is active -->
+              <button
+                class="btn btn--primary btn--full btn--sm mb-2"
+                onclick={handleMarkComplete}
+                type="button"
+              >
+                ✓ Mark as Complete
+              </button>
+              <button
+                class="btn btn--outline btn--full btn--sm"
+                onclick={() => alert("Cancel trade feature coming soon")}
+                type="button"
+              >
+                Cancel Trade
+              </button>
+            {/if}
+          {:else}
+            <!-- Start Trade Button - Only show when no trade exists -->
+            <button
+              class="btn btn--primary btn--full btn--sm"
+              onclick={startTrade}
+              type="button"
+            >
+              Start Trade
+            </button>
+          {/if}
         </div>
       </div>
 
@@ -501,6 +625,37 @@
       aria-label="Close sidebar"
     ></div>
   </div>
+
+  <!-- Review Form Modal -->
+  {#if showReviewForm && trade && marketplaceUser && revieweeId}
+    <div 
+      class="modal-overlay" 
+      onclick={() => showReviewForm = false}
+      onkeydown={(e) => e.key === 'Escape' && (showReviewForm = false)}
+      role="button"
+      tabindex="-1"
+      aria-label="Close review form"
+    >
+      <div 
+        class="modal-content" 
+        onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="review-form-title"
+        tabindex="-1"
+      >
+        <ReviewForm
+          tradeId={trade.id}
+          reviewerId={marketplaceUser.id}
+          revieweeId={revieweeId}
+          revieweeName={revieweeName}
+          onSubmit={handleReviewSubmit}
+          onCancel={() => showReviewForm = false}
+        />
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -731,5 +886,30 @@
     .chat-input {
       padding: var(--space-2) var(--space-3);
     }
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--space-4);
+  }
+
+  .modal-content {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
 </style>
