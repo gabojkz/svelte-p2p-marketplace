@@ -172,8 +172,14 @@
   // Navigate to trade room
   /** @param {number} tradeId */
   /** @param {number} listingId */
-  function goToTradeRoom(tradeId, listingId) {
-    goto(`/trade-room?listingId=${listingId}`);
+  /** @param {number | null} conversationId */
+  function goToTradeRoom(tradeId, listingId, conversationId) {
+    if (conversationId) {
+      goto(`/trade-room?conversationId=${conversationId}`);
+    } else {
+      // Fallback to listingId if conversationId is not available
+      goto(`/trade-room?listingId=${listingId}`);
+    }
   }
 </script>
 
@@ -426,7 +432,7 @@
                     <td style="padding: var(--space-3); text-align: center;">
                       <button
                         class="btn btn--ghost btn--sm"
-                        onclick={() => goToTradeRoom(trade.id, trade.listingId)}
+                        onclick={() => goToTradeRoom(trade.id, trade.listingId, trade.conversationId)}
                         type="button"
                       >
                         View

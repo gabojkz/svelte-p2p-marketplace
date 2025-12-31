@@ -1,5 +1,5 @@
 import { redirect } from "@sveltejs/kit";
-import { users, trades, listings, categories } from "$lib/server/schema";
+import { users, trades, listings, categories, conversations } from "$lib/server/schema";
 import { eq, and, or, like, desc, asc, sql, inArray } from "drizzle-orm";
 
 /** @type {import('./$types').PageServerLoad} */
@@ -108,6 +108,19 @@ export async function load({ locals, url }) {
         return null;
       }
 
+      // Get conversation for this trade (buyer + seller + listing)
+      const [conversation] = await db
+        .select()
+        .from(conversations)
+        .where(
+          and(
+            eq(conversations.listingId, row.trade.listingId),
+            eq(conversations.buyerId, row.trade.buyerId),
+            eq(conversations.sellerId, row.trade.sellerId)
+          )
+        )
+        .limit(1);
+
       return {
         ...row.trade,
         listing: row.listing,
@@ -116,6 +129,7 @@ export async function load({ locals, url }) {
         seller: seller || null,
         userRole: isBuyer ? "buyer" : "seller",
         otherParty: otherParty || null,
+        conversationId: conversation?.id || null,
       };
     })
   );

@@ -98,7 +98,7 @@
   }
 
   // Navigate to trade room
-  function startConversation() {
+  async function startConversation() {
     if (!user) {
       goto("/login");
       return;
@@ -115,8 +115,34 @@
       return;
     }
 
-    // Navigate to trade room page with listing ID
-    goto(`/trade-room?listingId=${listing.id}`);
+    try {
+      // Create or get conversation
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listingId: listing.id,
+          sellerId: listing.userId
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to create conversation");
+      }
+      
+      const data = await response.json();
+      // Navigate to trade room with the conversation ID
+      if (data.conversation?.id) {
+        await goto(`/trade-room?conversationId=${data.conversation.id}`);
+      } else {
+        alert("Failed to create conversation. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error starting conversation:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to start conversation. Please try again.";
+      alert(errorMessage);
+    }
   }
 
   // Check if current user is the seller

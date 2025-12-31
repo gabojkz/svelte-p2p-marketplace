@@ -200,9 +200,13 @@ export async function GET({ url, request, locals }) {
     throw error(400, "Seller ID is required");
   }
 
-  // Verify the user is the buyer
-  if (buyerId === sellerId) {
-    throw error(403, "You can only start trades as the buyer");
+  // Verify the current user is either the buyer or seller
+  const currentUserId = marketplaceUser.id;
+  const buyerIdNum = Number(buyerId);
+  const sellerIdNum = Number(sellerId);
+
+  if (currentUserId !== buyerIdNum && currentUserId !== sellerIdNum) {
+    throw error(403, "You can only view trades you are part of");
   }
 
   // Check if there's a trade for this listing (including cancelled to show rejection state)
@@ -212,7 +216,8 @@ export async function GET({ url, request, locals }) {
     .where(
       and(
         eq(trades.listingId, Number(listingId)),
-        or(eq(trades.buyerId, Number(buyerId)), eq(trades.sellerId, Number(sellerId))),
+        eq(trades.buyerId, buyerIdNum),
+        eq(trades.sellerId, sellerIdNum),
         inArray(trades.status, [
           "initiated",
           "payment_pending",

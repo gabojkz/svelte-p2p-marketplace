@@ -25,11 +25,12 @@ export async function fetchTrade(listingId, buyerId, sellerId) {
 
     const { trade } = data;
     if (trade && trade.length > 0) {
-      console.log("Trade found:", trade);
+      console.log("Trade found:", trade[0]);
+      return trade[0];
     } else {
       console.log("No trade found");
+      return null;
     }
-    return trade[0];
   } catch (error) {
     console.error("Error fetching trade:", error);
     throw error;

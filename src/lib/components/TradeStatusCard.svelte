@@ -32,18 +32,19 @@
 
   async function loadTrade() {
     try {
-      trade = await fetchTrade(listingId, buyerId, sellerId);
-      console.log(trade);
+      const fetchedTrade = await fetchTrade(listingId, buyerId, sellerId);
+      console.log("Fetched trade:", fetchedTrade);
       // check if object exists
-      if (trade && trade.id) {
-        console.log("Trade exists");
-        tradeExists = true;
+      if (fetchedTrade && /** @type {any} */ (fetchedTrade).id) {
+        console.log("Trade exists:", fetchedTrade);
+        trade = fetchedTrade;
       } else {
-        tradeExists = false;
+        console.log("No trade found");
+        trade = null;
       }
     } catch (error) {
       console.error("Error loading trade:", error);
-      tradeExists = false;
+      trade = null;
     }
   }
 

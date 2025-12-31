@@ -18,6 +18,10 @@
   const conversation = $derived(data?.conversation);
   const messages = $derived(data?.messages || []);
   const trade = $derived(data?.trade);
+  // @ts-ignore - TypeScript doesn't know about these fields yet
+  const otherParty = $derived(data?.otherParty);
+  // @ts-ignore - TypeScript doesn't know about these fields yet
+  const isCurrentUserBuyer = $derived(data?.isCurrentUserBuyer ?? true);
   const session = useSession();
   const user = $derived($session.data?.user);
 
@@ -38,8 +42,28 @@
     trade ? (isBuyer ? trade.sellerId : trade.buyerId) : null,
   );
   const revieweeName = $derived(
-    isBuyer ? seller?.firstName || seller?.username || "Seller" : "Buyer",
+    otherParty?.firstName || otherParty?.username || (isBuyer ? "Seller" : "Buyer"),
   );
+
+  // Get other party's initials
+  function getOtherPartyInitials() {
+    if (!otherParty) return "?";
+    const firstName = otherParty.firstName || "";
+    const lastName = otherParty.lastName || "";
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    }
+    return (otherParty.username || "?").substring(0, 2).toUpperCase();
+  }
+
+  // Check if other party is online (last login within last 5 minutes)
+  const isOtherPartyOnline = $derived.by(() => {
+    if (!otherParty?.lastLoginAt) return false;
+    const lastLogin = new Date(otherParty.lastLoginAt);
+    const now = new Date();
+    const diffMinutes = (now.getTime() - lastLogin.getTime()) / (1000 * 60);
+    return diffMinutes < 5; // Consider online if last login was within 5 minutes
+  });
 
   // Get seller initials
   function getSellerInitials() {
@@ -305,7 +329,7 @@
     <!-- Chat Panel -->
     <div class="chat-panel">
       <!-- Chat Header -->
-      {#if seller}
+      {#if otherParty}
         <div class="chat-header">
           {#if trade && reportedUserId}
             <button
@@ -320,19 +344,19 @@
           {/if}
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="avatar avatar--sm">{getSellerInitials()}</div>
+              <div class="avatar avatar--sm">{getOtherPartyInitials()}</div>
               <div>
                 <div
                   style="font-weight: var(--font-semibold); font-size: var(--text-sm);"
                 >
-                  {seller.firstName || seller.username}
+                  {otherParty.firstName || otherParty.username}
                 </div>
                 <div
                   class="flex items-center gap-1"
                   style="font-size: var(--text-xs); color: var(--color-gray-500);"
                 >
-                  <span class="status-dot status-dot--online"></span>
-                  <span>Online</span>
+                  <span class="status-dot status-dot--{isOtherPartyOnline ? 'online' : 'offline'}"></span>
+                  <span>{isOtherPartyOnline ? 'Online' : 'Offline'}</span>
                 </div>
               </div>
             </div>
@@ -483,6 +507,16 @@
                   {#if listing.locationPostcode}, {listing.locationPostcode}{/if}
                 </span>
               </div>
+            </div>
+
+            <div style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-gray-200);">
+              <a
+                href="/listing-details?id={listing.id}"
+                class="btn btn--outline btn--full btn--sm"
+                style="text-decoration: none; display: block; text-align: center;"
+              >
+                View Listing
+              </a>
             </div>
           </div>
         </div>
@@ -655,6 +689,22 @@
     padding: var(--space-3) var(--space-4);
     border-bottom: 1px solid var(--color-gray-200);
     background: var(--color-white);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .status-dot--online {
+    background: #22c55e;
+  }
+
+  .status-dot--offline {
+    background: var(--color-gray-400);
   }
 
   .chat-messages {

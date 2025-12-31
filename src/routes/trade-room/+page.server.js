@@ -21,10 +21,27 @@ export async function load({ locals, url }) {
     throw error(500, "Database not available");
   }
 
-  const listingId = Number(url.searchParams.get("listingId"));
+  // Get conversationId from URL (preferred) or listingId (fallback for backwards compatibility)
+  const conversationIdParam = url.searchParams.get("conversationId");
+  const listingIdParam = url.searchParams.get("listingId");
 
-  if (!listingId || isNaN(listingId)) {
-    throw error(400, "Invalid listing ID");
+  let conversationId = null;
+  let listingId = null;
+
+  if (conversationIdParam) {
+    // Use conversationId if provided
+    conversationId = Number(conversationIdParam);
+    if (!conversationId || isNaN(conversationId)) {
+      throw error(400, "Invalid conversation ID");
+    }
+  } else if (listingIdParam) {
+    // Fallback to listingId for backwards compatibility
+    listingId = Number(listingIdParam);
+    if (!listingId || isNaN(listingId)) {
+      throw error(400, "Invalid listing ID");
+    }
+  } else {
+    throw error(400, "Either conversationId or listingId is required");
   }
 
   // Get marketplace user
@@ -38,62 +55,124 @@ export async function load({ locals, url }) {
     throw redirect(302, "/marketplace?error=profile_required");
   }
 
+  let conversation = null;
+  let listing = null;
+
+  if (conversationId) {
+    // Fetch conversation by ID
+    const [foundConversation] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, conversationId))
+      .limit(1);
+
+    if (!foundConversation) {
+      throw error(404, "Conversation not found");
+    }
+
+    // Verify the current user is part of this conversation
+    if (
+      foundConversation.buyerId !== marketplaceUser.id &&
+      foundConversation.sellerId !== marketplaceUser.id
+    ) {
+      throw error(403, "You are not authorized to view this conversation");
+    }
+
+    conversation = foundConversation;
+    listingId = foundConversation.listingId;
+  }
+
   // Get listing with seller info (including auth user for emailVerified)
-  const [listing] = await db
+  if (listingId) {
+    const [listingData] = await db
+      .select({
+        listing: listings,
+        category: categories,
+        seller: users,
+        authUser: user,
+      })
+      .from(listings)
+      .leftJoin(categories, eq(listings.categoryId, categories.id))
+      .leftJoin(users, eq(listings.userId, users.id))
+      .leftJoin(user, eq(users.authUserId, user.id))
+      .where(eq(listings.id, listingId))
+      .limit(1);
+
+    if (!listingData || !listingData.listing) {
+      throw error(404, "Listing not found");
+    }
+
+    listing = listingData;
+
+    // Check if listing is active
+    if (listing.listing.status !== "active") {
+      throw error(400, "Listing is not available");
+    }
+
+    // Don't allow sellers to message themselves
+    if (listing.listing.userId === marketplaceUser.id) {
+      throw error(400, "You cannot trade with yourself");
+    }
+  }
+
+  // If conversationId was not provided, get or create conversation using listingId
+  if (!conversation && listingId) {
+    // Get or create conversation
+    let existingConversation = await db
+      .select()
+      .from(conversations)
+      .where(
+        and(
+          eq(conversations.listingId, listingId),
+          eq(conversations.buyerId, marketplaceUser.id),
+          eq(conversations.sellerId, listing.listing.userId),
+        ),
+      )
+      .limit(1);
+
+    if (existingConversation.length === 0) {
+      // Create new conversation
+      const [newConversation] = await db
+        .insert(conversations)
+        .values({
+          listingId: listingId,
+          buyerId: marketplaceUser.id,
+          sellerId: listing.listing.userId,
+        })
+        .returning();
+      existingConversation = [newConversation];
+    }
+
+    conversation = existingConversation[0];
+    conversationId = conversation.id;
+  }
+
+  if (!conversation) {
+    throw error(404, "Conversation not found");
+  }
+
+  // Get the other party (buyer if current user is seller, seller if current user is buyer)
+  const isCurrentUserBuyer = conversation.buyerId === marketplaceUser.id;
+  const otherPartyId = isCurrentUserBuyer 
+    ? conversation.sellerId 
+    : conversation.buyerId;
+
+  // Fetch the other party's user data
+  const [otherParty] = await db
     .select({
-      listing: listings,
-      category: categories,
-      seller: users,
+      user: users,
       authUser: user,
     })
-    .from(listings)
-    .leftJoin(categories, eq(listings.categoryId, categories.id))
-    .leftJoin(users, eq(listings.userId, users.id))
+    .from(users)
     .leftJoin(user, eq(users.authUserId, user.id))
-    .where(eq(listings.id, listingId))
+    .where(eq(users.id, otherPartyId))
     .limit(1);
 
-  if (!listing || !listing.listing) {
-    throw error(404, "Listing not found");
-  }
-
-  // Check if listing is active
-  if (listing.listing.status !== "active") {
-    throw error(400, "Listing is not available");
-  }
-
-  // Don't allow sellers to message themselves
-  if (listing.listing.userId === marketplaceUser.id) {
-    throw error(400, "You cannot trade with yourself");
-  }
-
-  // Get or create conversation
-  let conversation = await db
-    .select()
-    .from(conversations)
-    .where(
-      and(
-        eq(conversations.listingId, listingId),
-        eq(conversations.buyerId, marketplaceUser.id),
-        eq(conversations.sellerId, listing.listing.userId),
-      ),
-    )
-    .limit(1);
-
-  if (conversation.length === 0) {
-    // Create new conversation
-    const [newConversation] = await db
-      .insert(conversations)
-      .values({
-        listingId: listingId,
-        buyerId: marketplaceUser.id,
-        sellerId: listing.listing.userId,
-      })
-      .returning();
-    conversation = [newConversation];
-  }
-
-  const conversationId = conversation[0].id;
+  const otherPartyData = otherParty?.user ? {
+    ...otherParty.user,
+    emailVerified: otherParty.authUser?.emailVerified || false,
+    lastLoginAt: otherParty.user.lastLoginAt,
+  } : null;
 
   // Get messages for this conversation
   const conversationMessages = await db
@@ -156,8 +235,10 @@ export async function load({ locals, url }) {
           }
         : null,
     },
-    conversation: conversation[0],
+    conversation: conversation,
     messages: conversationMessages,
     trade: activeTrade,
+    otherParty: otherPartyData,
+    isCurrentUserBuyer,
   };
 }
