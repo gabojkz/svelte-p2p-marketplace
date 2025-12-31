@@ -7,11 +7,32 @@
 
   // Get error message - handle both Error objects and strings
   const errorMessage = $derived.by(() => {
-    if (!errorObj) return 'An unexpected error occurred';
+    if (!errorObj) return null;
+    
+    // If it's a string, use it directly
     if (typeof errorObj === 'string') return errorObj;
+    
+    // If it's an Error instance, get the message
     if (errorObj instanceof Error) return errorObj.message;
+    
+    // If it has a message property
     if (errorObj?.message) return errorObj.message;
-    return 'An unexpected error occurred';
+    
+    // If it has a toString method, try that
+    if (typeof errorObj?.toString === 'function') {
+      const str = errorObj.toString();
+      if (str !== '[object Object]') return str;
+    }
+    
+    // Try JSON stringify for debugging
+    try {
+      const json = JSON.stringify(errorObj);
+      if (json !== '{}') return json;
+    } catch (e) {
+      // Ignore JSON errors
+    }
+    
+    return null;
   });
 
   // Get status-specific content
@@ -30,7 +51,7 @@
         return {
           icon: '⚠️',
           title: 'Server Error',
-          message: 'Something went wrong on our end.',
+          message: errorMessage || 'Something went wrong on our end.',
           suggestion: 'We\'re working to fix this issue. Please try again in a few moments.',
           buttonText: 'Go to Homepage',
           buttonAction: () => goto('/')
@@ -57,7 +78,7 @@
         return {
           icon: '❌',
           title: 'Bad Request',
-          message: 'The request was invalid or malformed.',
+          message: errorMessage || 'The request was invalid or malformed.',
           suggestion: 'Please check your input and try again.',
           buttonText: 'Go Back',
           buttonAction: () => window.history.back()
@@ -66,7 +87,7 @@
         return {
           icon: '⚠️',
           title: `Error ${status || 'Unknown'}`,
-          message: errorMessage,
+          message: errorMessage || 'An unexpected error occurred',
           suggestion: 'Please try again or contact support if the problem persists.',
           buttonText: 'Go to Homepage',
           buttonAction: () => goto('/')
@@ -92,7 +113,20 @@
         <div class="error-status">Error {status}</div>
       {/if}
       
-      <p class="error-message">{content.message}</p>
+      {#if errorMessage && (errorMessage !== content.message || status === 500 || status === 400)}
+        <p class="error-message error-message--actual">{errorMessage}</p>
+      {:else}
+        <p class="error-message">{content.message}</p>
+      {/if}
+      
+      {#if errorMessage && errorMessage !== content.message && status !== 500 && status !== 400}
+        <div class="error-details">
+          <details>
+            <summary>Technical Details</summary>
+            <pre class="error-details__content">{errorMessage}</pre>
+          </details>
+        </div>
+      {/if}
       
       {#if content.suggestion}
         <p class="error-suggestion">{content.suggestion}</p>
@@ -187,11 +221,56 @@
     line-height: var(--leading-relaxed);
   }
 
+  .error-message--actual {
+    font-weight: var(--font-semibold);
+    color: var(--color-gray-900);
+    background: var(--color-gray-50);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--color-primary);
+  }
+
   .error-suggestion {
     font-size: var(--text-base);
     color: var(--color-gray-600);
     margin-bottom: var(--space-8);
     line-height: var(--leading-relaxed);
+  }
+
+  .error-details {
+    margin: var(--space-4) 0;
+    text-align: left;
+  }
+
+  .error-details summary {
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-gray-700);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    background: var(--color-gray-50);
+    user-select: none;
+  }
+
+  .error-details summary:hover {
+    background: var(--color-gray-100);
+  }
+
+  .error-details__content {
+    margin-top: var(--space-2);
+    padding: var(--space-4);
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    font-family: var(--font-mono);
+    color: var(--color-gray-800);
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 300px;
+    overflow-y: auto;
   }
 
   .error-actions {
