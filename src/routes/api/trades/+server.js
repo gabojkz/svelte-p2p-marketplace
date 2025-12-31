@@ -1,12 +1,13 @@
 import { json, error } from "@sveltejs/kit";
 import { listings, users, trades } from "$lib/server/schema";
-import { eq, and, or, inArray } from "drizzle-orm";
+import { eq, and, or, inArray, ConsoleLogWriter } from "drizzle-orm";
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request, locals }) {
   if (!locals.session || !locals.user) {
     throw error(401, "Unauthorized");
   }
+  console.log("post method");
 
   const db = locals.db;
   if (!db) {
@@ -36,14 +37,10 @@ export async function POST({ request, locals }) {
   if (!body.sellerId) {
     throw error(400, "Seller ID is required");
   }
-  if (!body.amount) {
-    throw error(400, "Amount is required");
-  }
 
   const listingId = Number(body.listingId);
   const buyerId = Number(body.buyerId);
   const sellerId = Number(body.sellerId);
-  const amount = parseFloat(body.amount);
 
   // Verify the user is the buyer
   if (buyerId !== marketplaceUser.id) {
@@ -60,6 +57,8 @@ export async function POST({ request, locals }) {
   if (!listing) {
     throw error(404, "Listing not found");
   }
+
+  const amount = parseFloat(listing.price);
 
   // Verify listing is active
   if (listing.status !== "active") {
@@ -83,17 +82,14 @@ export async function POST({ request, locals }) {
     .where(
       and(
         eq(trades.listingId, listingId),
-        or(
-          eq(trades.buyerId, buyerId),
-          eq(trades.sellerId, sellerId)
-        ),
+        or(eq(trades.buyerId, buyerId), eq(trades.sellerId, sellerId)),
         inArray(trades.status, [
           "initiated",
           "payment_pending",
           "paid",
           "in_progress",
-        ])
-      )
+        ]),
+      ),
     )
     .limit(1);
 
@@ -105,7 +101,9 @@ export async function POST({ request, locals }) {
   const now = new Date();
   const dateStr = now.toISOString().slice(2, 10).replace(/-/g, ""); // YYMMDD (6 chars)
   const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, ""); // HHMMSS (6 chars)
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, "0"); // XXX (3 chars)
+  const random = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0"); // XXX (3 chars)
   const tradeNumber = `${dateStr}-${timeStr}-${random}`; // Total: 6 + 1 + 6 + 1 + 3 = 17 chars
 
   try {
@@ -126,13 +124,20 @@ export async function POST({ request, locals }) {
     return json({ success: true, trade: newTrade });
   } catch (err) {
     console.error("Error creating trade:", err);
-    
+
     // Check for unique constraint violation (trade number)
-    if (err && typeof err === 'object' && 'code' in err && err.code === "23505") {
+    if (
+      err &&
+      typeof err === "object" &&
+      "code" in err &&
+      err.code === "23505"
+    ) {
       // Retry with a new trade number
-      const retryRandom = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+      const retryRandom = Math.floor(Math.random() * 1000)
+        .toString()
+        .padStart(3, "0");
       const retryTradeNumber = `${dateStr}-${timeStr}-${retryRandom}`;
-      
+
       try {
         const [newTrade] = await db
           .insert(trades)
@@ -142,7 +147,7 @@ export async function POST({ request, locals }) {
             buyerId: buyerId,
             sellerId: sellerId,
             amount: amount.toString(),
-            currency: body.currency || "GBP",
+            currency: body.currency || "USD",
             status: body.status || "initiated",
           })
           .returning();
@@ -153,7 +158,70 @@ export async function POST({ request, locals }) {
         throw error(500, "Failed to create trade");
       }
     }
-    
+
     throw error(500, "Failed to create trade");
   }
+}
+
+/** @type {import('./$types').RequestHandler} */
+export async function GET({ url, request, locals }) {
+  if (!locals.session || !locals.user) {
+    throw error(401, "Unauthorized");
+  }
+
+  const db = locals.db;
+  if (!db) {
+    throw error(500, "Database not available");
+  }
+
+  // Get marketplace user
+  const [marketplaceUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.authUserId, locals.user.id))
+    .limit(1);
+
+  if (!marketplaceUser) {
+    throw error(400, "User profile not found");
+  }
+
+  const listingId = url.searchParams.get("listingId");
+  const buyerId = url.searchParams.get("buyerId");
+  const sellerId = url.searchParams.get("sellerId");
+
+  // Validate required fields
+  if (!listingId) {
+    throw error(400, "Listing ID is required");
+  }
+  if (!buyerId) {
+    throw error(400, "Buyer ID is required");
+  }
+  if (!sellerId) {
+    throw error(400, "Seller ID is required");
+  }
+
+  // Verify the user is the buyer
+  if (buyerId === sellerId) {
+    throw error(403, "You can only start trades as the buyer");
+  }
+
+  // Check if there's already an active trade for this listing
+  const foundTrade = await db
+    .select()
+    .from(trades)
+    .where(
+      and(
+        eq(trades.listingId, listingId),
+        or(eq(trades.buyerId, buyerId), eq(trades.sellerId, sellerId)),
+        inArray(trades.status, [
+          "initiated",
+          "payment_pending",
+          "paid",
+          "in_progress",
+        ]),
+      ),
+    )
+    .limit(1);
+
+  return json({ success: true, trade: foundTrade });
 }
