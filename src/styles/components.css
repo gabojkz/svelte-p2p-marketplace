@@ -1856,6 +1856,7 @@
   transition: all var(--transition-base);
   text-decoration: none;
   color: inherit;
+  max-width: 810px;
 }
 
 .listing-card:hover {

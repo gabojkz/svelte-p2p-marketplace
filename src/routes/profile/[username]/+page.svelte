@@ -17,6 +17,7 @@
   const completedTrades = $derived(data?.completedTrades || 0);
   const averageRating = $derived(data?.averageRating || 0);
   const totalReviews = $derived(data?.totalReviews || 0);
+  const reviews = $derived(data?.reviews || []);
 
   // Get user initials for avatar
   function getUserInitials() {
@@ -40,6 +41,39 @@
       year: "numeric", 
       month: "long" 
     });
+  }
+
+  // Format review date (more detailed)
+  function formatReviewDate(dateString) {
+    if (!dateString) return "Recently";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+    
+    return date.toLocaleDateString("en-GB", { 
+      year: "numeric", 
+      month: "long",
+      day: "numeric"
+    });
+  }
+
+  // Get reviewer initials
+  function getReviewerInitials(reviewer) {
+    if (!reviewer) return "?";
+    if (reviewer.firstName && reviewer.lastName) {
+      return (reviewer.firstName[0] + reviewer.lastName[0]).toUpperCase();
+    }
+    if (reviewer.username) {
+      return reviewer.username[0].toUpperCase();
+    }
+    return "?";
   }
 
   // Format last login time
@@ -311,6 +345,76 @@
           </div>
         </section>
       {/if}
+
+      <!-- Reviews Section -->
+      <section class="profile-section">
+        <div class="profile-section__header">
+          <h2>Reviews</h2>
+          {#if totalReviews > 0}
+            <div class="reviews-summary">
+              <span class="reviews-summary__rating">{averageRating.toFixed(1)}</span>
+              <span class="reviews-summary__stars">{renderStars(averageRating)}</span>
+              <span class="reviews-summary__count">({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})</span>
+            </div>
+          {/if}
+        </div>
+
+        {#if reviews.length > 0}
+          <div class="reviews-list">
+            {#each reviews as review}
+              <div class="review-card">
+                <div class="review-card__header">
+                  <div class="review-card__reviewer">
+                    {#if review.reviewer?.avatarUrl}
+                      <img 
+                        src={review.reviewer.avatarUrl} 
+                        alt={review.reviewer.username || "Reviewer"}
+                        class="review-card__avatar"
+                      />
+                    {:else}
+                      <div class="review-card__avatar review-card__avatar--initials">
+                        {getReviewerInitials(review.reviewer)}
+                      </div>
+                    {/if}
+                    <div class="review-card__reviewer-info">
+                      <div class="review-card__reviewer-name">
+                        {review.reviewer?.firstName && review.reviewer?.lastName
+                          ? `${review.reviewer.firstName} ${review.reviewer.lastName}`
+                          : review.reviewer?.username || "Anonymous"}
+                      </div>
+                      <div class="review-card__date">{formatReviewDate(review.createdAt)}</div>
+                    </div>
+                  </div>
+                  <div class="review-card__rating">
+                    <div class="review-stars">
+                      {#each [1, 2, 3, 4, 5] as star}
+                        <span class="review-star {review.rating >= star ? 'review-star--filled' : ''}">
+                          {review.rating >= star ? '★' : '☆'}
+                        </span>
+                      {/each}
+                    </div>
+                  </div>
+                </div>
+                
+                {#if review.title}
+                  <h3 class="review-card__title">{review.title}</h3>
+                {/if}
+                
+                {#if review.comment}
+                  <p class="review-card__comment">{review.comment}</p>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        {:else}
+          <div class="profile-section__empty">
+            <p>No reviews yet</p>
+            <p style="font-size: var(--text-sm); color: var(--color-gray-500); margin-top: var(--space-2);">
+              Be the first to leave a review after completing a trade with this user.
+            </p>
+          </div>
+        {/if}
+      </section>
     </div>
   </main>
 </div>
@@ -645,6 +749,134 @@
     color: var(--color-gray-600);
   }
 
+  /* Reviews Section */
+  .reviews-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+  }
+
+  .reviews-summary__rating {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--color-primary);
+  }
+
+  .reviews-summary__stars {
+    color: var(--color-accent-yellow);
+    font-size: var(--text-base);
+  }
+
+  .reviews-summary__count {
+    color: var(--color-gray-600);
+  }
+
+  .reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .review-card {
+    background: white;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+
+  .review-card:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: var(--color-gray-300);
+  }
+
+  .review-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-3);
+    gap: var(--space-4);
+  }
+
+  .review-card__reviewer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex: 1;
+  }
+
+  .review-card__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .review-card__avatar--initials {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-tertiary) 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+  }
+
+  .review-card__reviewer-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .review-card__reviewer-name {
+    font-weight: var(--font-semibold);
+    font-size: var(--text-base);
+    color: var(--color-gray-900);
+    margin-bottom: var(--space-1);
+  }
+
+  .review-card__date {
+    font-size: var(--text-sm);
+    color: var(--color-gray-500);
+  }
+
+  .review-card__rating {
+    flex-shrink: 0;
+  }
+
+  .review-stars {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
+
+  .review-star {
+    font-size: var(--text-lg);
+    color: var(--color-gray-300);
+    line-height: 1;
+  }
+
+  .review-star--filled {
+    color: var(--color-accent-yellow);
+  }
+
+  .review-card__title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--color-gray-900);
+    margin: 0 0 var(--space-2) 0;
+  }
+
+  .review-card__comment {
+    font-size: var(--text-base);
+    color: var(--color-gray-700);
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
   @media (max-width: 768px) {
     .profile-header__content {
       flex-direction: column;
@@ -668,6 +900,25 @@
 
     .listings-grid {
       grid-template-columns: 1fr;
+    }
+
+    .review-card__header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .review-card__rating {
+      align-self: flex-start;
+    }
+
+    .profile-section__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-2);
+    }
+
+    .reviews-summary {
+      width: 100%;
     }
   }
 </style>

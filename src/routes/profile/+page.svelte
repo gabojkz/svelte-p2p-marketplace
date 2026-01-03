@@ -507,8 +507,9 @@
       <div class="footer__bottom" style="padding-top: 0; border-top: none;">
         <p>&copy; 2025 CryptoTrade. All rights reserved.</p>
         <nav class="footer__legal-links">
-          <a href="#" class="footer__link">Privacy</a>
-          <a href="#" class="footer__link">Terms</a>
+          <a href="/privacy" class="footer__link">Privacy</a>
+          <a href="/terms" class="footer__link">Terms</a>
+          <a href="/cookie-policy" class="footer__link">Cookies</a>
         </nav>
       </div>
     </div>

@@ -288,7 +288,7 @@ export const trades = pgTable(
 			.notNull()
 			.references(() => users.id),
 		amount: decimal('amount', { precision: 12, scale: 2 }).notNull(),
-		currency: varchar('currency', { length: 10 }).default('GBP'),
+		currency: varchar('currency', { length: 10 }).default('USDT'),
 		status: tradeStatusEnum('status').default('initiated'),
 		escrowStatus: escrowStatusEnum('escrow_status').default('reserved'),
 		meetingScheduledAt: timestamp('meeting_scheduled_at'),
@@ -655,9 +655,13 @@ export const userSettings = pgTable(
 		smsNotifications: boolean('sms_notifications').default(false),
 		showEmail: boolean('show_email').default(false),
 		showPhone: boolean('show_phone').default(false),
-		currencyPreference: varchar('currency_preference', { length: 10 }).default('GBP'),
+		currencyPreference: varchar('currency_preference', { length: 10 }).default('USDT'),
 		language: varchar('language', { length: 10 }).default('en'),
 		timezone: varchar('timezone', { length: 50 }).default('UTC'),
+		tiktok: varchar('tiktok', { length: 100 }),
+		instagram: varchar('instagram', { length: 100 }),
+		whatsapp: varchar('whatsapp', { length: 20 }),
+		telegram: varchar('telegram', { length: 100 }),
 		createdAt: timestamp('created_at').defaultNow().notNull(),
 		updatedAt: timestamp('updated_at').defaultNow().notNull()
 	},

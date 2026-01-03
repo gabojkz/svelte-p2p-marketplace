@@ -1,6 +1,8 @@
 <script>
   import NavigationBar from "$lib/components/NavigationBar.svelte";
   import ListingCard from "$lib/components/ListingCard.svelte";
+  import ListingMap from "$lib/components/ListingMap.svelte";
+  import ListingImageGallery from "$lib/components/ListingImageGallery.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
@@ -23,14 +25,6 @@
   // Initialize favorite state
   $effect(() => {
     favoriteState = initialIsFavorite;
-  });
-  let selectedImageIndex = $state(0);
-
-  // Reset selected image index when images change
-  $effect(() => {
-    if (listingImages.length > 0) {
-      selectedImageIndex = 0;
-    }
   });
 
   // Format price
@@ -148,6 +142,81 @@
   // Check if current user is the seller
   const isSeller = $derived(marketplaceUser?.id === listing?.userId);
 
+  // Report issue types for listing reports
+  const reportIssueTypes = [
+    { value: "scam", label: "Scam / Fraud", description: "Suspicious or fraudulent listing" },
+    { value: "spam", label: "Spam Listing", description: "Duplicate or spam listing" },
+    { value: "prohibited", label: "Prohibited Item", description: "Item violates platform rules" },
+    { value: "misleading", label: "Misleading Information", description: "Listing contains false or misleading information" },
+    { value: "other", label: "Other", description: "Other issue not listed above" }
+  ];
+
+  // Handle report submission
+  async function handleReportSubmit() {
+    if (!reportIssueType) {
+      alert("Please select a reason for reporting this seller");
+      return;
+    }
+
+    if (!reportTitle.trim()) {
+      alert("Please provide a title for your report");
+      return;
+    }
+
+    if (!reportDescription.trim() || reportDescription.trim().length < 20) {
+      alert("Please provide a detailed description (at least 20 characters)");
+      return;
+    }
+
+    if (!listing?.seller?.id) {
+      alert("Unable to submit report. Seller information not available.");
+      return;
+    }
+
+    submittingReport = true;
+
+    try {
+      // For listing reports, we'll send to a general report endpoint
+      // Since disputes require a trade, we'll create a simpler report mechanism
+      const response = await fetch("/api/user/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reportedUserId: listing.seller.id,
+          listingId: listing.id,
+          issueType: reportIssueType,
+          title: reportTitle.trim(),
+          description: reportDescription.trim(),
+          context: "listing"
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to submit report");
+      }
+
+      alert("Report submitted successfully. Our team will review it shortly.");
+      showReportModal = false;
+      reportIssueType = "";
+      reportTitle = "";
+      reportDescription = "";
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to submit report. Please try again.";
+      alert(message);
+      console.error("Error submitting report:", err);
+    } finally {
+      submittingReport = false;
+    }
+  }
+
+  function closeReportModal() {
+    showReportModal = false;
+    reportIssueType = "";
+    reportTitle = "";
+    reportDescription = "";
+  }
+
   // Get breadcrumb path
   const breadcrumbPath = $derived.by(() => {
     if (!listing?.category) return [];
@@ -193,20 +262,6 @@
     return labels[condition] || condition;
   }
 
-  // Get main gallery background style
-  const mainGalleryStyle = $derived(
-    listingImages.length > 0
-      ? "background: var(--color-gray-100); border-radius: var(--radius-xl); height: 450px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3); position: relative; overflow: hidden;"
-      : "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: var(--radius-xl); height: 450px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3); position: relative; overflow: hidden;",
-  );
-
-  // Get thumbnail border style
-  /** @param {number} index */
-  function getThumbnailBorderStyle(index) {
-    const borderColor =
-      selectedImageIndex === index ? "var(--color-primary)" : "transparent";
-    return `background: var(--color-gray-100); border: 2px solid ${borderColor}; border-radius: var(--radius-md); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; padding: 0;`;
-  }
 </script>
 
 <div class="page-wrapper">
@@ -257,74 +312,16 @@
           <!-- Left Column - Images & Details -->
           <div class="listing-detail__main">
             <!-- Image Gallery -->
-            <div class="listing-gallery" style="margin-bottom: var(--space-6);">
-              <div class="listing-gallery__main" style={mainGalleryStyle}>
-                {#if listingImages.length > 0 && listingImages[selectedImageIndex]}
-                  <img
-                    src={listingImages[selectedImageIndex].imageUrl}
-                    alt={listing.title}
-                    style="width: 100%; height: 100%; object-fit: contain; background: var(--color-gray-50);"
-                  />
-                {:else}
-                  <div style="font-size: 6rem;">
-                    {#if listing.type === "product"}
-                      📦
-                    {:else}
-                      🔧
-                    {/if}
-                  </div>
-                {/if}
-                {#if listing.featured}
-                  <span
-                    class="listing-card__badge listing-card__badge--featured"
-                    style="position: absolute; top: var(--space-4); left: var(--space-4);"
-                  >
-                    Featured
-                  </span>
-                {/if}
-                {#if listing.urgent}
-                  <span
-                    class="listing-card__badge listing-card__badge--urgent"
-                    style="position: absolute; top: var(--space-4); {listing.featured
-                      ? 'left: calc(var(--space-4) + 100px);'
-                      : 'left: var(--space-4);'}"
-                  >
-                    Urgent
-                  </span>
-                {/if}
-                {#if user && !isSeller}
-                  <button
-                    style="position: absolute; top: var(--space-4); right: var(--space-4); background: rgba(255,255,255,0.9); border: none; padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); cursor: pointer; font-size: var(--text-lg); z-index: 10;"
-                    onclick={toggleFavorite}
-                    type="button"
-                  >
-                    {favoriteState ? "❤️" : "♡"}
-                    {favoriteState ? "Saved" : "Save"}
-                  </button>
-                {/if}
-              </div>
-              <!-- Thumbnail gallery -->
-              {#if listingImages.length > 1}
-                <div
-                  class="listing-gallery__thumbs"
-                  style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: var(--space-2); max-width: 100%;"
-                >
-                  {#each listingImages as image, index}
-                    <button
-                      type="button"
-                      onclick={() => (selectedImageIndex = index)}
-                      style={getThumbnailBorderStyle(index)}
-                    >
-                      <img
-                        src={image.thumbnailUrl || image.imageUrl}
-                        alt="Thumbnail {index + 1}"
-                        style="width: 100%; height: 100%; object-fit: cover;"
-                      />
-                    </button>
-                  {/each}
-                </div>
-              {/if}
-            </div>
+            <ListingImageGallery
+              images={listingImages}
+              title={listing.title}
+              listingType={listing.type}
+              featured={listing.featured}
+              urgent={listing.urgent}
+              isFavorite={favoriteState}
+              showFavoriteButton={user && !isSeller}
+              onFavoriteToggle={toggleFavorite}
+            />
 
             <!-- Title & Quick Info -->
             <div class="listing-header" style="margin-bottom: var(--space-6);">
@@ -473,23 +470,23 @@
             <div class="card">
               <div class="card__body">
                 <h3 style="margin-bottom: var(--space-4);">Location</h3>
-                <div
-                  style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-radius: var(--radius-lg); padding: var(--space-8); text-align: center;"
-                >
-                  <div
-                    style="font-size: var(--text-4xl); margin-bottom: var(--space-2);"
-                  >
-                    🗺️
-                  </div>
+                <div style="margin-bottom: var(--space-3);">
                   <p
                     style="font-weight: var(--font-semibold); margin-bottom: var(--space-1);"
                   >
                     {listing.locationCity}
+                    {listing.locationPostcode ? `, ${listing.locationPostcode}` : ""}
                   </p>
-                  <p class="text-muted">
-                    {listing.locationPostcode || "Location information"}
+                  <p class="text-muted" style="font-size: var(--text-sm);">
+                    Approximate location shown on map
                   </p>
                 </div>
+                <ListingMap
+                  city={listing.locationCity}
+                  postcode={listing.locationPostcode}
+                  latitude={listing.locationLatitude}
+                  longitude={listing.locationLongitude}
+                />
               </div>
             </div>
           </div>
@@ -664,6 +661,17 @@
                     >
                       View Profile →
                     </a>
+
+                    {#if user && !isSeller}
+                      <button
+                        class="btn btn--outline btn--full"
+                        style="margin-top: var(--space-2); color: var(--color-error); border-color: var(--color-error);"
+                        onclick={() => showReportModal = true}
+                        type="button"
+                      >
+                        🚨 Report Seller
+                      </button>
+                    {/if}
                   </div>
                 </div>
               {/if}
@@ -721,6 +729,112 @@
       {/if}
     </div>
   </main>
+
+  <!-- Report Modal -->
+  {#if showReportModal}
+    <div class="modal-overlay" onclick={closeReportModal}>
+      <div class="modal-content" onclick={(e) => e.stopPropagation()}>
+        <div class="modal-header">
+          <h3>Report Seller</h3>
+          <button
+            class="modal-close"
+            onclick={closeReportModal}
+            type="button"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-4);">
+            Reporting <strong>{listing?.seller?.firstName || listing?.seller?.username || 'this seller'}</strong> for inappropriate behavior or violation of platform rules related to this listing.
+          </p>
+
+          <!-- Issue Type Selection -->
+          <div style="margin-bottom: var(--space-4);">
+            <label class="form-label">
+              Reason for Report <span style="color: var(--color-error);">*</span>
+            </label>
+            <select
+              bind:value={reportIssueType}
+              class="form-select"
+            >
+              <option value="">Select a reason...</option>
+              {#each reportIssueTypes as type}
+                <option value={type.value}>{type.label}</option>
+              {/each}
+            </select>
+            {#if reportIssueType}
+              <p style="font-size: var(--text-xs); color: var(--color-gray-600); margin-top: var(--space-1);">
+                {reportIssueTypes.find(t => t.value === reportIssueType)?.description}
+              </p>
+            {/if}
+          </div>
+
+          <!-- Title -->
+          <div style="margin-bottom: var(--space-4);">
+            <label class="form-label">
+              Title <span style="color: var(--color-error);">*</span>
+            </label>
+            <input
+              type="text"
+              bind:value={reportTitle}
+              placeholder="Brief summary of the issue"
+              maxlength="200"
+              class="form-input"
+            />
+            <p style="font-size: var(--text-xs); color: var(--color-gray-600); margin-top: var(--space-1);">
+              {reportTitle.length}/200 characters
+            </p>
+          </div>
+
+          <!-- Description -->
+          <div style="margin-bottom: var(--space-4);">
+            <label class="form-label">
+              Detailed Description <span style="color: var(--color-error);">*</span>
+            </label>
+            <textarea
+              bind:value={reportDescription}
+              placeholder="Please provide as much detail as possible about what happened. Include any relevant information that will help us investigate."
+              rows="6"
+              class="form-textarea"
+            ></textarea>
+            <p style="font-size: var(--text-xs); color: var(--color-gray-600); margin-top: var(--space-1);">
+              Minimum 20 characters. {reportDescription.length} characters entered.
+            </p>
+          </div>
+
+          <!-- Warning Message -->
+          <div style="padding: var(--space-3); background: var(--color-error-subtle); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
+            <p style="font-size: var(--text-xs); color: var(--color-error); line-height: 1.5;">
+              <strong>⚠️ Important:</strong> False reports may result in action against your account. 
+              Please only report genuine violations of our platform rules.
+            </p>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; gap: var(--space-2); justify-content: flex-end;">
+            <button
+              type="button"
+              class="btn btn--outline"
+              onclick={closeReportModal}
+              disabled={submittingReport}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn--primary"
+              onclick={handleReportSubmit}
+              disabled={submittingReport || !reportIssueType || !reportTitle.trim() || reportDescription.trim().length < 20}
+            >
+              {submittingReport ? 'Submitting...' : 'Submit Report'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -782,5 +896,69 @@
     .listing-detail__sidebar {
       order: 0;
     }
+  }
+
+  /* Report Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--space-4);
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-2xl);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-6);
+    border-bottom: 1px solid var(--color-gray-200);
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: var(--text-3xl);
+    color: var(--color-gray-500);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+  }
+
+  .modal-close:hover {
+    background: var(--color-gray-100);
+    color: var(--color-gray-900);
+  }
+
+  .modal-body {
+    padding: var(--space-6);
   }
 </style>

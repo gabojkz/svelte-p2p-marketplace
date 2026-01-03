@@ -1,5 +1,7 @@
 import { createAuth } from '$lib/server/auth.js';
 import { createDb } from '$lib/server/db.js';
+import { users } from '$lib/server/schema.js';
+import { eq, sql } from 'drizzle-orm';
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
@@ -36,6 +38,39 @@ export async function handle({ event, resolve }) {
 					updatedAt: session.user.updatedAt
 				}
 			: null;
+
+		// Update lastLoginAt for active users (throttled to once per minute)
+		// This helps track online status more accurately
+		if (event.locals.user && event.locals.db) {
+			try {
+				// Get the marketplace user
+				const [marketplaceUser] = await event.locals.db
+					.select()
+					.from(users)
+					.where(eq(users.authUserId, event.locals.user.id))
+					.limit(1);
+
+				if (marketplaceUser) {
+					const now = new Date();
+					const lastLogin = marketplaceUser.lastLoginAt ? new Date(marketplaceUser.lastLoginAt) : null;
+					
+					// Update if lastLoginAt is null or more than 1 minute ago
+					// This throttles updates to avoid excessive database writes
+					if (!lastLogin || (now.getTime() - lastLogin.getTime()) > 60000) {
+						await event.locals.db
+							.update(users)
+							.set({ 
+								lastLoginAt: now,
+								updatedAt: now
+							})
+							.where(eq(users.id, marketplaceUser.id));
+					}
+				}
+			} catch (error) {
+				// Silently fail - don't break the request if this update fails
+				console.warn('Failed to update lastLoginAt:', error);
+			}
+		}
 	}
 
 	return resolve(event);

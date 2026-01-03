@@ -8,6 +8,15 @@
   // In development, show minimal error page to allow SvelteKit's default error handling
   const isDev = import.meta.env.DEV;
 
+  // Debug logging in development
+  if (isDev && errorObj) {
+    console.log('Error object:', errorObj);
+    console.log('Error type:', typeof errorObj);
+    console.log('Error instanceof Error:', errorObj instanceof Error);
+    console.log('Error keys:', Object.keys(errorObj || {}));
+    console.log('Error status:', status);
+  }
+
   // Get error message - handle both Error objects and strings
   const errorMessage = $derived.by(() => {
     if (!errorObj) return null;
@@ -18,21 +27,46 @@
     // If it's an Error instance, get the message
     if (errorObj instanceof Error) return errorObj.message;
     
-    // If it has a message property
-    if (errorObj?.message) return errorObj.message;
+    // SvelteKit HttpError: check for message property (most common case)
+    if (errorObj?.message && typeof errorObj.message === 'string') {
+      return errorObj.message;
+    }
+    
+    // Check for body property (some SvelteKit error formats)
+    if (errorObj?.body?.message) return errorObj.body.message;
+    if (typeof errorObj?.body === 'string') return errorObj.body;
+    
+    // Check for statusText
+    if (errorObj?.statusText) return errorObj.statusText;
     
     // If it has a toString method, try that
     if (typeof errorObj?.toString === 'function') {
       const str = errorObj.toString();
-      if (str !== '[object Object]') return str;
+      // Only use toString if it's not the default Object.toString
+      if (str !== '[object Object]' && !str.startsWith('Error:')) {
+        return str;
+      }
     }
     
-    // Try JSON stringify for debugging
+    // Try JSON stringify for debugging (but only if it contains useful info)
     try {
-      const json = JSON.stringify(errorObj);
-      if (json !== '{}') return json;
+      const json = JSON.stringify(errorObj, null, 2);
+      if (json !== '{}' && json.length < 500) {
+        // Only use JSON if it's reasonably sized and not empty
+        return json;
+      }
     } catch (e) {
       // Ignore JSON errors
+    }
+    
+    // Last resort: try to extract any string-like values from the object
+    if (typeof errorObj === 'object') {
+      for (const key in errorObj) {
+        const value = errorObj[key];
+        if (typeof value === 'string' && value.length > 0 && value.length < 500) {
+          return value;
+        }
+      }
     }
     
     return null;
@@ -130,17 +164,24 @@
         <div class="error-status">Error {status}</div>
       {/if}
       
-      {#if errorMessage && (errorMessage !== content.message || status === 500 || status === 400)}
+      {#if errorMessage}
+        <!-- Always show the actual error message when available -->
         <p class="error-message error-message--actual">{errorMessage}</p>
+        {#if errorMessage === content.message}
+          <!-- If error message matches default, also show suggestion -->
+          <p class="error-message">{content.suggestion}</p>
+        {/if}
       {:else}
+        <!-- Fallback to default message if no error message extracted -->
         <p class="error-message">{content.message}</p>
       {/if}
       
-      {#if errorMessage && errorMessage !== content.message && status !== 500 && status !== 400}
+      {#if isDev && errorObj}
+        <!-- In development, always show error details for debugging -->
         <div class="error-details">
-          <details>
-            <summary>Technical Details</summary>
-            <pre class="error-details__content">{errorMessage}</pre>
+          <details open>
+            <summary>Debug: Error Object</summary>
+            <pre class="error-details__content">{JSON.stringify(errorObj, null, 2)}</pre>
           </details>
         </div>
       {/if}

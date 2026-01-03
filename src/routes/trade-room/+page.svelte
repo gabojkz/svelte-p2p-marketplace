@@ -38,9 +38,20 @@
   const isBuyer = $derived(marketplaceUser?.id === conversation?.buyerId);
 
   // Get the other party for review (reviewee)
-  const revieweeId = $derived(
-    trade ? (isBuyer ? trade.sellerId : trade.buyerId) : null,
-  );
+  // Use conversation data as fallback if trade doesn't have the IDs
+  const revieweeId = $derived.by(() => {
+    if (trade) {
+      // Try to get from trade first
+      const id = isBuyer ? trade.sellerId : trade.buyerId;
+      if (id) return id;
+    }
+    // Fallback to conversation data
+    if (conversation) {
+      return isBuyer ? conversation.sellerId : conversation.buyerId;
+    }
+    return null;
+  });
+
   const revieweeName = $derived(
     otherParty?.firstName || otherParty?.username || (isBuyer ? "Seller" : "Buyer"),
   );
@@ -462,7 +473,10 @@
           buyerId={conversation.buyerId}
           sellerId={seller.id}
           currentUserId={marketplaceUser.id}
-          onReviewClick={() => showReviewForm = true}
+          {trade}
+          onReviewClick={() => {
+            showReviewForm = true;
+          }}
         ></TradeStatusCard>
       {/if}
 

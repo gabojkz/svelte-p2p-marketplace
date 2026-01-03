@@ -10,7 +10,7 @@
 
   // Form state
   let fiatAmount = $state("500");
-  let currency = $state("GBP");
+  let currency = $state("USDT");
   let paymentMethod = $state("bank");
   
   // Exchange rate (placeholder - would come from API)
@@ -161,6 +161,7 @@
                   style="width: 100px; font-size: var(--text-lg);"
                   bind:value={currency}
                 >
+                  <option value="USDT">USDT</option>
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
                   <option value="GBP">GBP</option>
@@ -358,8 +359,9 @@
       <div class="footer__bottom" style="padding-top: 0; border-top: none;">
         <p>&copy; 2025 CryptoTrade. All rights reserved.</p>
         <nav class="footer__legal-links">
-          <button type="button" class="footer__link">Privacy</button>
-          <button type="button" class="footer__link">Terms</button>
+          <a href="/privacy" class="footer__link">Privacy</a>
+          <a href="/terms" class="footer__link">Terms</a>
+          <a href="/cookie-policy" class="footer__link">Cookies</a>
         </nav>
       </div>
     </div>

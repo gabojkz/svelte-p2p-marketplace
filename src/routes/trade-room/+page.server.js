@@ -107,13 +107,15 @@ export async function load({ locals, url }) {
 
     listing = listingData;
 
-    // Check if listing is active
-    if (listing.listing.status !== "active") {
+    // Check if listing is active (only when not viewing existing conversation)
+    // If we already have a conversation, the user is authorized to view it
+    if (!conversationId && listing.listing.status !== "active") {
       throw error(400, "Listing is not available");
     }
 
-    // Don't allow sellers to message themselves
-    if (listing.listing.userId === marketplaceUser.id) {
+    // Don't allow sellers to create new conversations with themselves
+    // But allow them to view existing conversations about their listings
+    if (!conversationId && listing.listing.userId === marketplaceUser.id) {
       throw error(400, "You cannot trade with yourself");
     }
   }
@@ -196,6 +198,7 @@ export async function load({ locals, url }) {
 
   // Get active trade if exists (handle case where trades table might not exist)
   // Valid trade_status enum values: 'initiated', 'payment_pending', 'paid', 'in_progress', 'completed', 'cancelled', 'disputed'
+  // Include completed trades so users can leave reviews
   let activeTrade = null;
   try {
     const tradeResult = await db
@@ -213,9 +216,11 @@ export async function load({ locals, url }) {
             "payment_pending",
             "paid",
             "in_progress",
+            "completed", // Include completed trades for reviews
           ]),
         ),
       )
+      .orderBy(desc(trades.createdAt))
       .limit(1);
     activeTrade = tradeResult[0] || null;
   } catch (err) {

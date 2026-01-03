@@ -31,6 +31,11 @@ declare global {
 			caches?: CacheStorage & { default: Cache };
 		}
 	}
+
+	// Leaflet types for CDN usage
+	interface Window {
+		L?: any;
+	}
 }
 
 export {};

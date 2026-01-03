@@ -116,7 +116,7 @@ export async function POST({ request, locals }) {
         buyerId: buyerId,
         sellerId: sellerId,
         amount: amount.toString(),
-        currency: body.currency || "GBP",
+        currency: body.currency || "USDT",
         status: body.status || "initiated",
       })
       .returning();
@@ -147,7 +147,7 @@ export async function POST({ request, locals }) {
             buyerId: buyerId,
             sellerId: sellerId,
             amount: amount.toString(),
-            currency: body.currency || "USD",
+            currency: body.currency || "USDT",
             status: body.status || "initiated",
           })
           .returning();

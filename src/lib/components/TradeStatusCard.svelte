@@ -2,12 +2,19 @@
   import { onMount } from "svelte";
   import { fetchTrade, createTrade } from "$lib/services/trade";
 
-  const { listingId, buyerId, sellerId, currentUserId, onReviewClick } = $props();
+  const { listingId, buyerId, sellerId, currentUserId, onReviewClick, trade: tradeProp } = $props();
 
   let tradeStatus = null;
   /** @type {any} */
-  let trade = $state(null);
+  let trade = $state(tradeProp || null);
   let tradeExists = $derived(trade && trade.id);
+
+  // Update trade when prop changes
+  $effect(() => {
+    if (tradeProp) {
+      trade = tradeProp;
+    }
+  });
 
   // Determine if current user is buyer or seller
   const isBuyer = $derived(currentUserId === buyerId);
@@ -50,7 +57,12 @@
 
   onMount(async () => {
     console.log("TradeStatusCard mounted");
-    await loadTrade();
+    // Only load trade if not provided as prop
+    if (!tradeProp) {
+      await loadTrade();
+    } else {
+      trade = tradeProp;
+    }
   });
 
   let processing = $state(false);
@@ -301,7 +313,10 @@
         <!-- Show Add Review button when trade is completed -->
         <button
           class="btn btn--primary btn--full btn--sm mb-2"
-          onclick={() => {
+          onclick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("Add Review button clicked", { onReviewClick, tradeCompleted, trade });
             if (onReviewClick) {
               onReviewClick();
             } else {

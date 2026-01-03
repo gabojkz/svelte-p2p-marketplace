@@ -29,12 +29,20 @@ export async function load({ params, locals, url }) {
 	const profileUser = profileData.marketplaceUser;
 	const authUser = profileData.authUser;
 
-	// Get user settings to check privacy preferences
-	const [settings] = await db
-		.select()
-		.from(userSettings)
-		.where(eq(userSettings.userId, profileUser.id))
-		.limit(1);
+	// Get user settings to check privacy preferences (optional - may not exist)
+	let settings = null;
+	try {
+		const [settingsResult] = await db
+			.select()
+			.from(userSettings)
+			.where(eq(userSettings.userId, profileUser.id))
+			.limit(1);
+		settings = settingsResult || null;
+	} catch (err) {
+		// Settings may not exist for this user, use defaults
+		console.warn('Could not fetch user settings:', err);
+		settings = null;
+	}
 
 	// Get user's active listings count
 	const [listingsCount] = await db
@@ -84,14 +92,34 @@ export async function load({ params, locals, url }) {
 			eq(trades.status, 'completed')
 		));
 
-	// Get reviews/ratings for reputation
-	const userReviews = await db
+	// Get reviews/ratings for reputation with reviewer information
+	const userReviewsData = await db
 		.select({
-			rating: reviews.rating,
-			comment: reviews.comment
+			review: reviews,
+			reviewer: users
 		})
 		.from(reviews)
-		.where(eq(reviews.revieweeId, profileUser.id));
+		.leftJoin(users, eq(reviews.reviewerId, users.id))
+		.where(and(
+			eq(reviews.revieweeId, profileUser.id),
+			eq(reviews.isPublic, true) // Only show public reviews
+		))
+		.orderBy(desc(reviews.createdAt));
+
+	// Format reviews with reviewer info
+	const userReviews = userReviewsData.map(row => ({
+		id: row.review.id,
+		rating: row.review.rating,
+		title: row.review.title,
+		comment: row.review.comment,
+		createdAt: row.review.createdAt,
+		reviewer: row.reviewer ? {
+			username: row.reviewer.username,
+			firstName: row.reviewer.firstName,
+			lastName: row.reviewer.lastName,
+			avatarUrl: row.reviewer.avatarUrl
+		} : null
+	}));
 
 	// Calculate average rating
 	const averageRating = userReviews.length > 0
@@ -129,9 +157,9 @@ export async function load({ params, locals, url }) {
 		emailVerified: authUser?.emailVerified || false,
 		lastLoginAt: lastLoginAt,
 		// Only include email/phone if privacy settings allow or it's own profile
-		email: (settings?.showEmail || isOwnProfile) ? (authUser?.email || null) : null,
-		phone: (settings?.showPhone || isOwnProfile) ? profileUser.phone : null,
-		phoneVerified: (settings?.showPhone || isOwnProfile) ? profileUser.phoneVerified : null
+		email: ((settings && settings.showEmail) || isOwnProfile) ? (authUser?.email || null) : null,
+		phone: ((settings && settings.showPhone) || isOwnProfile) ? profileUser.phone : null,
+		phoneVerified: ((settings && settings.showPhone) || isOwnProfile) ? profileUser.phoneVerified : null
 	};
 
 	return {
@@ -143,6 +171,7 @@ export async function load({ params, locals, url }) {
 		completedTrades: completedTradesResult?.count || 0,
 		averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
 		totalReviews: userReviews.length,
+		reviews: userReviews, // Include full reviews list
 		isOwnProfile,
 		currentUser: locals.user || null
 	};

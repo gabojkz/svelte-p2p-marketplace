@@ -172,12 +172,16 @@
                     {getUserInitials()}
                   </div>
                   <div class="user-dropdown__info">
-                    <div class="user-dropdown__name">{user.name || "User"}</div>
+                    <a
+                      href={marketplaceUsername ? `/profile/${marketplaceUsername}` : "#"}
+                      class="user-dropdown__name"
+                      style="text-decoration: none; color: inherit;"
+                    >
+                      {user.name || "User"}
+                    </a>
                     <div class="user-dropdown__email">{user.email}</div>
                   </div>
                 </div>
-
-                <div class="user-dropdown__divider"></div>
 
                 <div class="user-dropdown__menu">
                   <a

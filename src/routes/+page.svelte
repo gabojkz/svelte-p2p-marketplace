@@ -12,6 +12,7 @@
   // Get data from server load
   const { data } = $props();
   const featuredListings = $derived(data?.featuredListings || []);
+  const popularCategories = $derived(data?.popularCategories || []);
 
   // Search form state
   let searchQuery = $state("");
@@ -233,6 +234,45 @@
         </div>
       </div>
     </section>
+
+    <!-- ============================================
+                 DISCOVER POPULAR CATEGORIES SECTION
+                 ============================================ -->
+    {#if popularCategories.length > 0}
+      <section class="section">
+        <div class="container">
+          <div class="section__header">
+            <h2 class="section__title">Discover popular categories</h2>
+          </div>
+          <div class="categories-grid">
+            {#each popularCategories as category}
+              <a
+                href="/marketplace?category={category.slug}"
+                class="category-card"
+              >
+                <div class="category-card__image">
+                  {#if category.icon}
+                    <div class="category-card__icon">{category.icon}</div>
+                  {:else}
+                    <div class="category-card__placeholder">
+                      {category.name.charAt(0)}
+                    </div>
+                  {/if}
+                </div>
+                <div class="category-card__body">
+                  <h3 class="category-card__title">{category.name}</h3>
+                  {#if category.listingCount > 0}
+                    <p class="category-card__count">
+                      {category.listingCount} {category.listingCount === 1 ? 'listing' : 'listings'}
+                    </p>
+                  {/if}
+                </div>
+              </a>
+            {/each}
+          </div>
+        </div>
+      </section>
+    {/if}
 
     <!-- ============================================
                  HOW IT WORKS SECTION
@@ -575,9 +615,9 @@
       <div class="footer__bottom">
         <p>&copy; 2025 {appName}. All rights reserved.</p>
         <nav class="footer__legal-links">
-          <button type="button" class="footer__link">Privacy Policy</button>
-          <button type="button" class="footer__link">Terms of Service</button>
-          <button type="button" class="footer__link">Cookie Policy</button>
+          <a href="/privacy" class="footer__link">Privacy Policy</a>
+          <a href="/terms" class="footer__link">Terms of Service</a>
+          <a href="/cookie-policy" class="footer__link">Cookie Policy</a>
         </nav>
       </div>
     </div>
@@ -801,6 +841,102 @@
   @media (min-width: 1280px) {
     .hero__content {
       max-width: 900px;
+    }
+  }
+
+  /* ============================================
+     CATEGORIES GRID SECTION
+     ============================================ */
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+  }
+
+  .category-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--transition-base);
+    cursor: pointer;
+  }
+
+  .category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);
+  }
+
+  .category-card__image {
+    width: 100%;
+    height: 200px;
+    background: var(--color-gray-50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .category-card__icon {
+    font-size: 4rem;
+    line-height: 1;
+  }
+
+  .category-card__placeholder {
+    width: 80px;
+    height: 80px;
+    background: var(--color-primary);
+    color: white;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+  }
+
+  .category-card__body {
+    padding: var(--space-4);
+    text-align: center;
+  }
+
+  .category-card__title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--color-gray-900);
+    margin: 0 0 var(--space-2) 0;
+  }
+
+  .category-card__count {
+    font-size: var(--text-sm);
+    color: var(--color-gray-600);
+    margin: 0;
+  }
+
+  @media (min-width: 768px) {
+    .categories-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-6);
+    }
+
+    .category-card__image {
+      height: 220px;
+    }
+
+    .category-card__icon {
+      font-size: 5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .category-card__image {
+      height: 240px;
     }
   }
 </style>

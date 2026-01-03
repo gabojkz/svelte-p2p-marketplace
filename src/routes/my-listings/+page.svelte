@@ -505,7 +505,7 @@
                         ✏️
                       </button>
                       <a
-                        href="/marketplace?id={listing.id}"
+                        href="/listing-details?id={listing.id}"
                         class="table-action-button"
                         title="View"
                       >

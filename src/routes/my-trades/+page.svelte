@@ -416,7 +416,7 @@
                         {formatPrice(trade.amount)}
                       </div>
                       <div style="font-size: var(--text-xs); color: var(--color-gray-600);">
-                        {trade.currency || "GBP"}
+                        {trade.currency || "USDT"}
                       </div>
                     </td>
                     <td style="padding: var(--space-3);">

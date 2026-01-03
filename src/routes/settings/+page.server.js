@@ -44,9 +44,13 @@ export async function load({ locals }) {
         smsNotifications: false,
         showEmail: false,
         showPhone: false,
-        currencyPreference: "GBP",
+        currencyPreference: "USDT",
         language: "en",
         timezone: "UTC",
+        tiktok: null,
+        instagram: null,
+        whatsapp: null,
+        telegram: null,
       })
       .returning();
     settings = [newSettings];
@@ -82,6 +86,10 @@ export const actions = {
       .get("locationPostcode")
       ?.toString()
       .trim();
+    const tiktok = formData.get("tiktok")?.toString().trim();
+    const instagram = formData.get("instagram")?.toString().trim();
+    const whatsapp = formData.get("whatsapp")?.toString().trim();
+    const telegram = formData.get("telegram")?.toString().trim();
 
     // Get marketplace user
     const marketplaceUser = await db
@@ -94,7 +102,36 @@ export const actions = {
       return fail(400, { error: "User profile not found" });
     }
 
+    const userId = marketplaceUser[0].id;
+
+    // Get or create user settings
+    let currentSettings = await db
+      .select()
+      .from(userSettings)
+      .where(eq(userSettings.userId, userId))
+      .limit(1);
+
+    if (currentSettings.length === 0) {
+      // Create default settings if they don't exist
+      const [newSettings] = await db
+        .insert(userSettings)
+        .values({
+          userId: userId,
+          emailNotifications: true,
+          pushNotifications: true,
+          smsNotifications: false,
+          showEmail: false,
+          showPhone: false,
+          currencyPreference: "USDT",
+          language: "en",
+          timezone: "UTC",
+        })
+        .returning();
+      currentSettings = [newSettings];
+    }
+
     try {
+      // Update user profile
       await db
         .update(users)
         .set({
@@ -106,7 +143,19 @@ export const actions = {
           locationPostcode: locationPostcode || null,
           updatedAt: new Date(),
         })
-        .where(eq(users.id, marketplaceUser[0].id));
+        .where(eq(users.id, userId));
+
+      // Update social media in user settings
+      await db
+        .update(userSettings)
+        .set({
+          tiktok: tiktok || null,
+          instagram: instagram || null,
+          whatsapp: whatsapp || null,
+          telegram: telegram || null,
+          updatedAt: new Date(),
+        })
+        .where(eq(userSettings.userId, userId));
 
       return { success: true, message: "Profile updated successfully" };
     } catch (error) {
@@ -161,7 +210,7 @@ export const actions = {
           showEmail: formData.get("showEmail") === "true",
           showPhone: formData.get("showPhone") === "true",
           currencyPreference:
-            formData.get("currencyPreference")?.toString() || "GBP",
+            formData.get("currencyPreference")?.toString() || "USDT",
           language: formData.get("language")?.toString() || "en",
           timezone: formData.get("timezone")?.toString() || "UTC",
           updatedAt: new Date(),

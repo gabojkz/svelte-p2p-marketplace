@@ -682,9 +682,9 @@
           <span>&copy; 2025 {appName}. All rights reserved.</span>
         </div>
         <nav class="footer__legal-links">
-          <span class="footer__link">Privacy</span>
-          <span class="footer__link">Terms</span>
-          <span class="footer__link">Contact</span>
+          <a href="/privacy" class="footer__link">Privacy</a>
+          <a href="/terms" class="footer__link">Terms</a>
+          <a href="/cookie-policy" class="footer__link">Cookies</a>
         </nav>
       </div>
     </div>

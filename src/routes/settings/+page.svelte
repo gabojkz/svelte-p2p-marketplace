@@ -23,6 +23,10 @@
     phone: marketplaceUser?.phone || "",
     locationCity: marketplaceUser?.locationCity || "",
     locationPostcode: marketplaceUser?.locationPostcode || "",
+    tiktok: settings?.tiktok || "",
+    instagram: settings?.instagram || "",
+    whatsapp: settings?.whatsapp || "",
+    telegram: settings?.telegram || "",
   });
 
   let settingsForm = $state({
@@ -31,7 +35,7 @@
     smsNotifications: settings?.smsNotifications ?? false,
     showEmail: settings?.showEmail ?? false,
     showPhone: settings?.showPhone ?? false,
-    currencyPreference: settings?.currencyPreference || "GBP",
+    currencyPreference: settings?.currencyPreference || "USDT",
     language: settings?.language || "en",
     timezone: settings?.timezone || "UTC",
   });
@@ -46,6 +50,10 @@
         phone: marketplaceUser.phone || "",
         locationCity: marketplaceUser.locationCity || "",
         locationPostcode: marketplaceUser.locationPostcode || "",
+        tiktok: settings?.tiktok || "",
+        instagram: settings?.instagram || "",
+        whatsapp: settings?.whatsapp || "",
+        telegram: settings?.telegram || "",
       };
     }
   });
@@ -58,7 +66,7 @@
         smsNotifications: settings.smsNotifications ?? false,
         showEmail: settings.showEmail ?? false,
         showPhone: settings.showPhone ?? false,
-        currencyPreference: settings.currencyPreference || "GBP",
+        currencyPreference: settings.currencyPreference || "USDT",
         language: settings.language || "en",
         timezone: settings.timezone || "UTC",
       };
@@ -296,6 +304,78 @@
                   ></textarea>
                 </div>
 
+                <!-- Social Media Section -->
+                <div class="form-section">
+                  <h3 class="form-section__title">Social Media</h3>
+                  <p class="form-section__description">
+                    Add your social media accounts to help others connect with you
+                  </p>
+
+                  <div class="form-group">
+                    <label for="tiktok" class="form-label">
+                      <span style="margin-right: var(--space-2);">🎵</span>
+                      TikTok
+                    </label>
+                    <input
+                      type="text"
+                      id="tiktok"
+                      name="tiktok"
+                      class="form-input"
+                      bind:value={profileForm.tiktok}
+                      placeholder="@username"
+                    />
+                    <p class="form-helper">Enter your TikTok username (e.g., @username)</p>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="instagram" class="form-label">
+                      <span style="margin-right: var(--space-2);">📷</span>
+                      Instagram
+                    </label>
+                    <input
+                      type="text"
+                      id="instagram"
+                      name="instagram"
+                      class="form-input"
+                      bind:value={profileForm.instagram}
+                      placeholder="@username"
+                    />
+                    <p class="form-helper">Enter your Instagram username (e.g., @username)</p>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="whatsapp" class="form-label">
+                      <span style="margin-right: var(--space-2);">💬</span>
+                      WhatsApp
+                    </label>
+                    <input
+                      type="text"
+                      id="whatsapp"
+                      name="whatsapp"
+                      class="form-input"
+                      bind:value={profileForm.whatsapp}
+                      placeholder="+44 7700 900000"
+                    />
+                    <p class="form-helper">Enter your WhatsApp number with country code</p>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="telegram" class="form-label">
+                      <span style="margin-right: var(--space-2);">✈️</span>
+                      Telegram
+                    </label>
+                    <input
+                      type="text"
+                      id="telegram"
+                      name="telegram"
+                      class="form-input"
+                      bind:value={profileForm.telegram}
+                      placeholder="@username"
+                    />
+                    <p class="form-helper">Enter your Telegram username (e.g., @username)</p>
+                  </div>
+                </div>
+
                 <div class="form-actions">
                   <button type="submit" class="btn btn--primary"
                     >Save Changes</button
@@ -480,6 +560,7 @@
                     class="form-select"
                     bind:value={settingsForm.currencyPreference}
                   >
+                    <option value="USDT">USDT</option>
                     <option value="GBP">GBP (£)</option>
                     <option value="USD">USD ($)</option>
                     <option value="EUR">EUR (€)</option>
@@ -775,6 +856,25 @@
     background: rgba(255, 107, 107, 0.1);
     color: var(--color-error);
     border: 1px solid rgba(255, 107, 107, 0.3);
+  }
+
+  .form-section {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-gray-200);
+  }
+
+  .form-section__title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    margin-bottom: var(--space-2);
+    color: var(--color-gray-900);
+  }
+
+  .form-section__description {
+    font-size: var(--text-sm);
+    color: var(--color-gray-600);
+    margin-bottom: var(--space-4);
   }
 
   @media (max-width: 768px) {

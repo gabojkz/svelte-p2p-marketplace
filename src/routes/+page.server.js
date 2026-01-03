@@ -8,6 +8,7 @@ export async function load({ locals }) {
   if (!db) {
     return {
       categories: [],
+      popularCategories: [],
       featuredListings: [],
       stats: {
         activeListings: 0,
@@ -37,6 +38,12 @@ export async function load({ locals }) {
       .from(categories)
       .where(eq(categories.isActive, true))
       .orderBy(categories.displayOrder, categories.name);
+
+    // Get popular categories (top 8 by listing count, excluding parent categories)
+    const popularCategories = categoriesData
+      .filter(cat => !cat.parentId && cat.listingCount > 0)
+      .sort((a, b) => Number(b.listingCount) - Number(a.listingCount))
+      .slice(0, 8);
 
     // Fetch featured listings (active, featured, limit 4)
     const featuredListingsData = await db
@@ -101,6 +108,14 @@ export async function load({ locals }) {
         parentId: cat.parentId,
         listingCount: Number(/** @type {any} */ (cat.listingCount)) || 0,
       })),
+      popularCategories: popularCategories.map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        type: cat.type,
+        icon: cat.icon,
+        listingCount: Number(/** @type {any} */ (cat.listingCount)) || 0,
+      })),
       featuredListings: featuredListingsWithCategories,
       stats: {
         activeListings: Number(activeListingsCount) || 0,
@@ -113,6 +128,7 @@ export async function load({ locals }) {
     // Return empty data on error
     return {
       categories: [],
+      popularCategories: [],
       featuredListings: [],
       stats: {
         activeListings: 0,
