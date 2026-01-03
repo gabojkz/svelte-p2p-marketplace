@@ -138,7 +138,7 @@ export function getR2PublicUrl(key, isLocal = false) {
 	// Option 1: Use R2 public bucket URL
 	// Format: https://<account-id>.r2.cloudflarestorage.com/<bucket-name>/<key>
 	const accountId = process.env.R2_ACCOUNT_ID || '';
-	const bucketName = process.env.R2_BUCKET_NAME || 'marketplace-images';
+	const bucketName = process.env.R2_BUCKET_NAME || 'svelte-p2p-market';
 	
 	// Option 2: Use custom domain (recommended)
 	// Format: https://<custom-domain>/<key>

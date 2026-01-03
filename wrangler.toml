@@ -7,8 +7,8 @@ compatibility_flags = ["nodejs_compat"]
 NODE_ENV = "production"
 
 # R2 Bucket binding
-# Replace "marketplace-images" with your actual R2 bucket name
+# Replace "svelte-p2p-market" with your actual R2 bucket name
 [[r2_buckets]]
 binding = "R2_BUCKET"
-bucket_name = "marketplace-images"
-preview_bucket_name = "marketplace-images-preview"
+bucket_name = "svelte-p2p-market"
+preview_bucket_name = "svelte-p2p-market-preview"

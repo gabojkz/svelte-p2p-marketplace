@@ -43,7 +43,7 @@ Update `wrangler.toml` with your bucket name:
 [[r2_buckets]]
 binding = "R2_BUCKET"
 bucket_name = "svelte-p2p-market"
-preview_bucket_name = "marketplace-images-preview"
+preview_bucket_name = "svelte-p2p-market-preview"
 ```
 
 ## Step 4: Set Environment Variables
@@ -54,7 +54,7 @@ Set these in your Cloudflare Pages/Workers dashboard:
 
 - `R2_PUBLIC_URL`: Your public R2 URL (custom domain or R2 public URL)
 - `R2_ACCOUNT_ID`: Your Cloudflare Account ID (optional, for R2 public URLs)
-- `R2_BUCKET_NAME`: Your bucket name (optional, defaults to "marketplace-images")
+- `R2_BUCKET_NAME`: Your bucket name (optional, defaults to "svelte-p2p-market")
 
 The `R2_BUCKET` binding is automatically available in the Workers/Pages environment.
 
@@ -67,7 +67,7 @@ R2_PUBLIC_URL=https://your-custom-domain.com
 # Or
 R2_PUBLIC_URL=https://your-account-id.r2.cloudflarestorage.com/your-bucket-name
 R2_ACCOUNT_ID=your-account-id
-R2_BUCKET_NAME=marketplace-images
+R2_BUCKET_NAME=svelte-p2p-market
 ```
 
 **Note:** For local development, you may need to use Cloudflare Workers local development or mock the R2 bucket. The R2 bucket binding is only available in the Cloudflare Workers/Pages runtime.
