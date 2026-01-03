@@ -27,40 +27,73 @@ export async function load({ locals }) {
   const userId = marketplaceUser[0].id;
 
   // Get or create user settings
-  let settings = await db
-    .select()
-    .from(userSettings)
-    .where(eq(userSettings.userId, userId))
-    .limit(1);
+  /** @type {Array<any>} */
+  let settings = [];
+  try {
+    const settingsResult = await db
+      .select()
+      .from(userSettings)
+      .where(eq(userSettings.userId, userId))
+      .limit(1);
+    settings = settingsResult;
+  } catch (err) {
+    console.warn('Error fetching user settings, will create new:', err);
+    settings = [];
+  }
 
   if (settings.length === 0) {
     // Create default settings
-    const [newSettings] = await db
-      .insert(userSettings)
-      .values({
-        userId: userId,
-        emailNotifications: true,
-        pushNotifications: true,
-        smsNotifications: false,
-        showEmail: false,
-        showPhone: false,
-        currencyPreference: "USDT",
-        language: "en",
-        timezone: "UTC",
-        tiktok: null,
-        instagram: null,
-        whatsapp: null,
-        telegram: null,
-      })
-      .returning();
-    settings = [newSettings];
+    try {
+      const [newSettings] = await db
+        .insert(userSettings)
+        .values({
+          userId: userId,
+          emailNotifications: true,
+          pushNotifications: true,
+          smsNotifications: false,
+          showEmail: false,
+          showPhone: false,
+          currencyPreference: "USDT",
+          language: "en",
+          timezone: "UTC",
+          tiktok: null,
+          instagram: null,
+          whatsapp: null,
+          telegram: null,
+        })
+        .returning();
+      settings = [newSettings];
+    } catch (err) {
+      console.error('Error creating user settings:', err);
+      // Return default settings object if creation fails
+      return {
+        session: locals.session,
+        user: locals.user,
+        marketplaceUser: marketplaceUser[0],
+        settings: {
+          userId: userId,
+          emailNotifications: true,
+          pushNotifications: true,
+          smsNotifications: false,
+          showEmail: false,
+          showPhone: false,
+          currencyPreference: "USDT",
+          language: "en",
+          timezone: "UTC",
+          tiktok: null,
+          instagram: null,
+          whatsapp: null,
+          telegram: null,
+        },
+      };
+    }
   }
 
   return {
     session: locals.session,
     user: locals.user,
     marketplaceUser: marketplaceUser[0],
-    settings: settings[0],
+    settings: settings[0] || null,
   };
 }
 
@@ -105,29 +138,41 @@ export const actions = {
     const userId = marketplaceUser[0].id;
 
     // Get or create user settings
-    let currentSettings = await db
-      .select()
-      .from(userSettings)
-      .where(eq(userSettings.userId, userId))
-      .limit(1);
+    /** @type {Array<any>} */
+    let currentSettings = [];
+    try {
+      currentSettings = await db
+        .select()
+        .from(userSettings)
+        .where(eq(userSettings.userId, userId))
+        .limit(1);
+    } catch (err) {
+      console.warn('Error fetching user settings in updateProfile:', err);
+      currentSettings = [];
+    }
 
     if (currentSettings.length === 0) {
       // Create default settings if they don't exist
-      const [newSettings] = await db
-        .insert(userSettings)
-        .values({
-          userId: userId,
-          emailNotifications: true,
-          pushNotifications: true,
-          smsNotifications: false,
-          showEmail: false,
-          showPhone: false,
-          currencyPreference: "USDT",
-          language: "en",
-          timezone: "UTC",
-        })
-        .returning();
-      currentSettings = [newSettings];
+      try {
+        const [newSettings] = await db
+          .insert(userSettings)
+          .values({
+            userId: userId,
+            emailNotifications: true,
+            pushNotifications: true,
+            smsNotifications: false,
+            showEmail: false,
+            showPhone: false,
+            currencyPreference: "USDT",
+            language: "en",
+            timezone: "UTC",
+          })
+          .returning();
+        currentSettings = [newSettings];
+      } catch (err) {
+        console.error('Error creating user settings in updateProfile:', err);
+        return fail(500, { error: "Failed to create user settings" });
+      }
     }
 
     try {
@@ -190,14 +235,45 @@ export const actions = {
     const userId = marketplaceUser[0].id;
 
     // Get current settings
-    const currentSettings = await db
-      .select()
-      .from(userSettings)
-      .where(eq(userSettings.userId, userId))
-      .limit(1);
+    /** @type {Array<any>} */
+    let currentSettings = [];
+    try {
+      currentSettings = await db
+        .select()
+        .from(userSettings)
+        .where(eq(userSettings.userId, userId))
+        .limit(1);
+    } catch (err) {
+      console.error('Error fetching user settings in updateSettings:', err);
+      return fail(500, { error: "Failed to fetch user settings" });
+    }
 
     if (currentSettings.length === 0) {
-      return fail(400, { error: "Settings not found" });
+      // Try to create default settings
+      try {
+        const [newSettings] = await db
+          .insert(userSettings)
+          .values({
+            userId: userId,
+            emailNotifications: true,
+            pushNotifications: true,
+            smsNotifications: false,
+            showEmail: false,
+            showPhone: false,
+            currencyPreference: "USDT",
+            language: "en",
+            timezone: "UTC",
+            tiktok: null,
+            instagram: null,
+            whatsapp: null,
+            telegram: null,
+          })
+          .returning();
+        currentSettings = [newSettings];
+      } catch (err) {
+        console.error('Error creating user settings in updateSettings:', err);
+        return fail(500, { error: "Settings not found and could not be created" });
+      }
     }
 
     try {

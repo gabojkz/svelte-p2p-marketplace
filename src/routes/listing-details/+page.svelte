@@ -21,6 +21,11 @@
 
   // Local state
   let favoriteState = $state(false);
+  let showReportModal = $state(false);
+  let reportIssueType = $state("");
+  let reportTitle = $state("");
+  let reportDescription = $state("");
+  let submittingReport = $state(false);
 
   // Initialize favorite state
   $effect(() => {
