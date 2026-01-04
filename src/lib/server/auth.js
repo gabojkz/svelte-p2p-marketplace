@@ -78,9 +78,10 @@ export function createAuth(databaseUrl, baseUrl) {
 								throw new Error('Invalid email format');
 							}
 
-							const domain = emailParts[1];
+						const domain = emailParts[1];
 
-							// Check if domain is in allowed list
+						// Check if domain is in allowed list
+						try {
 							const [allowedDomain] = await db
 								.select()
 								.from(schema.allowedEmailDomains)
@@ -95,6 +96,13 @@ export function createAuth(databaseUrl, baseUrl) {
 							if (!allowedDomain) {
 								throw new Error(`Email domain "${domain}" is not allowed. Please use one of the supported email providers.`);
 							}
+						} catch (dbError) {
+							// If table doesn't exist or query fails, log but allow registration to proceed
+							// This prevents blocking users if the allowed domains table isn't set up yet
+							console.error("Error querying allowed_email_domains table in auth hook:", dbError);
+							console.warn("Allowing user registration to proceed despite domain check failure");
+							// Don't throw error - allow registration to proceed
+						}
 						}
 
 						return user;

@@ -3,12 +3,13 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { allowedEmailDomains } from "../src/lib/server/schema.js";
 import { eq } from "drizzle-orm";
 
-const databaseUrl =
-  process.env.DATABASE_URL ||
-  "postgresql://postgres:postgres@localhost:5433/marketplace_db";
+// This script requires DATABASE_URL to be set as an environment variable
+const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-  console.error("❌ DATABASE_URL environment variable is not set");
+  console.error("❌ DATABASE_URL environment variable is required");
+  console.error("   Set it with: export DATABASE_URL='your-production-database-url'");
+  console.error("   Or run: DATABASE_URL='your-url' node scripts/seed-allowed-domains-prod.js");
   process.exit(1);
 }
 
@@ -79,7 +80,8 @@ const allowedDomains = [
 ];
 
 async function seedAllowedDomains() {
-  console.log("🌱 Seeding allowed email domains...\n");
+  console.log("🌱 Seeding allowed email domains to production...\n");
+  console.log(`📊 Database: ${databaseUrl.replace(/:[^:@]+@/, ':****@')}\n`);
 
   let created = 0;
   let skipped = 0;
@@ -140,3 +142,4 @@ seedAllowedDomains()
     await sql.end().catch(() => {});
     process.exit(1);
   });
+
