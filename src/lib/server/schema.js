@@ -79,14 +79,10 @@ export const priceTypeEnum = pgEnum('price_type', ['fixed', 'negotiable', 'free'
 export const listingStatusEnum = pgEnum('listing_status', ['draft', 'active', 'paused', 'sold', 'deleted']);
 export const tradeStatusEnum = pgEnum('trade_status', [
 	'initiated',
-	'payment_pending',
-	'paid',
 	'in_progress',
 	'completed',
-	'cancelled',
-	'disputed'
+	'cancelled'
 ]);
-export const escrowStatusEnum = pgEnum('escrow_status', ['reserved', 'released', 'refunded']);
 export const messageTypeEnum = pgEnum('message_type', ['text', 'system', 'location', 'attachment']);
 export const disputeIssueTypeEnum = pgEnum('dispute_issue_type', [
 	'no_response',
@@ -96,38 +92,6 @@ export const disputeIssueTypeEnum = pgEnum('dispute_issue_type', [
 	'other'
 ]);
 export const disputeStatusEnum = pgEnum('dispute_status', ['open', 'investigating', 'resolved', 'closed']);
-export const kycDocumentTypeEnum = pgEnum('kyc_document_type', [
-	'passport',
-	'driver_license',
-	'national_id',
-	'utility_bill'
-]);
-export const kycDocumentStatusEnum = pgEnum('kyc_document_status', ['pending', 'approved', 'rejected']);
-export const transactionTypeEnum = pgEnum('transaction_type', [
-	'deposit',
-	'withdrawal',
-	'trade_payment',
-	'trade_receipt',
-	'refund'
-]);
-export const cryptoTypeEnum = pgEnum('crypto_type', ['BTC', 'ETH', 'USDT']);
-export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'completed', 'failed', 'cancelled']);
-export const paymentMethodTypeEnum = pgEnum('payment_method_type', [
-	'bank_transfer',
-	'venmo',
-	'zelle',
-	'paypal',
-	'cash_app',
-	'other'
-]);
-export const notificationTypeEnum = pgEnum('notification_type', [
-	'trade_started',
-	'trade_message',
-	'trade_completed',
-	'review_received',
-	'dispute_opened',
-	'listing_sold'
-]);
 
 // 1. users (extended user profile - marketplace-specific data only)
 // Note: email, password, and emailVerified are stored in 'user' and 'account' tables (Better Auth)
@@ -254,25 +218,7 @@ export const listingImages = pgTable(
 	})
 );
 
-// 5. listing_attributes
-export const listingAttributes = pgTable(
-	'listing_attributes',
-	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		listingId: bigint('listing_id', { mode: 'number' })
-			.notNull()
-			.references(() => listings.id, { onDelete: 'cascade' }),
-		attributeKey: varchar('attribute_key', { length: 100 }).notNull(),
-		attributeValue: varchar('attribute_value', { length: 255 }).notNull(),
-		createdAt: timestamp('created_at').defaultNow().notNull()
-	},
-	(table) => ({
-		listingIdx: index('idx_listing_attributes_listing').on(table.listingId),
-		keyIdx: index('idx_listing_attributes_key').on(table.listingId, table.attributeKey)
-	})
-);
-
-// 6. trades
+// 5. trades
 export const trades = pgTable(
 	'trades',
 	{
@@ -290,7 +236,6 @@ export const trades = pgTable(
 		amount: decimal('amount', { precision: 12, scale: 2 }).notNull(),
 		currency: varchar('currency', { length: 10 }).default('USDT'),
 		status: tradeStatusEnum('status').default('initiated'),
-		escrowStatus: escrowStatusEnum('escrow_status').default('reserved'),
 		meetingScheduledAt: timestamp('meeting_scheduled_at'),
 		meetingLocation: varchar('meeting_location', { length: 255 }),
 		completedAt: timestamp('completed_at'),
@@ -360,52 +305,7 @@ export const messages = pgTable(
 	})
 );
 
-// 9. trade_messages
-export const tradeMessages = pgTable(
-	'trade_messages',
-	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		tradeId: bigint('trade_id', { mode: 'number' })
-			.notNull()
-			.references(() => trades.id, { onDelete: 'cascade' }),
-		userId: bigint('user_id', { mode: 'number' })
-			.notNull()
-			.references(() => users.id),
-		messageType: messageTypeEnum('message_type').default('text'),
-		content: text('content'),
-		attachmentUrl: varchar('attachment_url', { length: 500 }),
-		isRead: boolean('is_read').default(false),
-		readAt: timestamp('read_at'),
-		createdAt: timestamp('created_at').defaultNow().notNull()
-	},
-	(table) => ({
-		tradeIdx: index('idx_trade_messages_trade').on(table.tradeId),
-		userIdx: index('idx_trade_messages_user').on(table.userId),
-		createdIdx: index('idx_trade_messages_created').on(table.tradeId, table.createdAt)
-	})
-);
-
-// 8. trade_status_history
-export const tradeStatusHistory = pgTable(
-	'trade_status_history',
-	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		tradeId: bigint('trade_id', { mode: 'number' })
-			.notNull()
-			.references(() => trades.id, { onDelete: 'cascade' }),
-		oldStatus: varchar('old_status', { length: 50 }),
-		newStatus: varchar('new_status', { length: 50 }).notNull(),
-		changedByUserId: bigint('changed_by_user_id', { mode: 'number' }).references(() => users.id),
-		notes: text('notes'),
-		createdAt: timestamp('created_at').defaultNow().notNull()
-	},
-	(table) => ({
-		tradeIdx: index('idx_trade_status_history_trade').on(table.tradeId),
-		createdIdx: index('idx_trade_status_history_created').on(table.createdAt)
-	})
-);
-
-// 9. reviews
+// 6. reviews
 export const reviews = pgTable(
 	'reviews',
 	{
@@ -465,117 +365,7 @@ export const disputes = pgTable(
 	})
 );
 
-// 11. dispute_evidence
-export const disputeEvidence = pgTable(
-	'dispute_evidence',
-	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		disputeId: bigint('dispute_id', { mode: 'number' })
-			.notNull()
-			.references(() => disputes.id, { onDelete: 'cascade' }),
-		uploadedByUserId: bigint('uploaded_by_user_id', { mode: 'number' })
-			.notNull()
-			.references(() => users.id),
-		fileUrl: varchar('file_url', { length: 500 }).notNull(),
-		fileType: varchar('file_type', { length: 50 }),
-		description: text('description'),
-		createdAt: timestamp('created_at').defaultNow().notNull()
-	},
-	(table) => ({
-		disputeIdx: index('idx_dispute_evidence_dispute').on(table.disputeId)
-	})
-);
-
-// 12. wallets
-export const wallets = pgTable(
-	'wallets',
-	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		userId: bigint('user_id', { mode: 'number' })
-			.notNull()
-			.unique()
-			.references(() => users.id, { onDelete: 'cascade' }),
-		btcBalance: decimal('btc_balance', { precision: 18, scale: 8 }).default('0'),
-		ethBalance: decimal('eth_balance', { precision: 18, scale: 8 }).default('0'),
-		usdtBalance: decimal('usdt_balance', { precision: 18, scale: 8 }).default('0'),
-		totalBalanceUsd: decimal('total_balance_usd', { precision: 12, scale: 2 }).default('0'),
-		createdAt: timestamp('created_at').defaultNow().notNull(),
-		updatedAt: timestamp('updated_at').defaultNow().notNull()
-	},
-	(table) => ({
-		userIdx: index('idx_wallets_user').on(table.userId)
-	})
-);
-
-// 13. transactions
-export const transactions = pgTable(
-	'transactions',
-	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		userId: bigint('user_id', { mode: 'number' })
-			.notNull()
-			.references(() => users.id),
-		tradeId: bigint('trade_id', { mode: 'number' }).references(() => trades.id),
-		type: transactionTypeEnum('type').notNull(),
-		cryptoType: cryptoTypeEnum('crypto_type').notNull(),
-		amount: decimal('amount', { precision: 18, scale: 8 }).notNull(),
-		amountUsd: decimal('amount_usd', { precision: 12, scale: 2 }),
-		status: transactionStatusEnum('status').default('pending'),
-		transactionHash: varchar('transaction_hash', { length: 255 }),
-		fromAddress: varchar('from_address', { length: 255 }),
-		toAddress: varchar('to_address', { length: 255 }),
-		notes: text('notes'),
-		createdAt: timestamp('created_at').defaultNow().notNull(),
-		completedAt: timestamp('completed_at')
-	},
-	(table) => ({
-		userIdx: index('idx_transactions_user').on(table.userId),
-		tradeIdx: index('idx_transactions_trade').on(table.tradeId),
-		typeIdx: index('idx_transactions_type').on(table.type),
-		statusIdx: index('idx_transactions_status').on(table.status),
-		createdIdx: index('idx_transactions_created').on(table.createdAt)
-	})
-);
-
-// 14. payment_methods
-export const paymentMethods = pgTable(
-	'payment_methods',
-	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		userId: bigint('user_id', { mode: 'number' })
-			.notNull()
-			.references(() => users.id, { onDelete: 'cascade' }),
-		type: paymentMethodTypeEnum('type').notNull(),
-		label: varchar('label', { length: 100 }),
-		accountDetails: text('account_details'), // Encrypted
-		isVerified: boolean('is_verified').default(false),
-		isActive: boolean('is_active').default(true),
-		createdAt: timestamp('created_at').defaultNow().notNull(),
-		updatedAt: timestamp('updated_at').defaultNow().notNull()
-	},
-	(table) => ({
-		userIdx: index('idx_payment_methods_user').on(table.userId),
-		typeIdx: index('idx_payment_methods_type').on(table.type)
-	})
-);
-
-// 15. listing_payment_methods
-export const listingPaymentMethods = pgTable(
-	'listing_payment_methods',
-	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		listingId: bigint('listing_id', { mode: 'number' })
-			.notNull()
-			.references(() => listings.id, { onDelete: 'cascade' }),
-		paymentMethodType: paymentMethodTypeEnum('payment_method_type').notNull(),
-		createdAt: timestamp('created_at').defaultNow().notNull()
-	},
-	(table) => ({
-		listingIdx: index('idx_listing').on(table.listingId)
-	})
-);
-
-// 16. favorites
+// 7. favorites
 export const favorites = pgTable(
 	'favorites',
 	{
@@ -595,53 +385,7 @@ export const favorites = pgTable(
 	})
 );
 
-// 17. kyc_documents
-export const kycDocuments = pgTable(
-	'kyc_documents',
-	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		userId: bigint('user_id', { mode: 'number' })
-			.notNull()
-			.references(() => users.id, { onDelete: 'cascade' }),
-		documentType: kycDocumentTypeEnum('document_type').notNull(),
-		fileUrl: varchar('file_url', { length: 500 }).notNull(),
-		status: kycDocumentStatusEnum('status').default('pending'),
-		rejectionReason: text('rejection_reason'),
-		reviewedByAdminId: bigint('reviewed_by_admin_id', { mode: 'number' }).references(() => users.id),
-		reviewedAt: timestamp('reviewed_at'),
-		createdAt: timestamp('created_at').defaultNow().notNull()
-	},
-	(table) => ({
-		userIdx: index('idx_kyc_documents_user').on(table.userId),
-		statusIdx: index('idx_kyc_documents_status').on(table.status)
-	})
-);
-
-// 18. notifications
-export const notifications = pgTable(
-	'notifications',
-	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		userId: bigint('user_id', { mode: 'number' })
-			.notNull()
-			.references(() => users.id, { onDelete: 'cascade' }),
-		type: notificationTypeEnum('type').notNull(),
-		title: varchar('title', { length: 200 }).notNull(),
-		message: text('message'),
-		relatedTradeId: bigint('related_trade_id', { mode: 'number' }).references(() => trades.id),
-		relatedListingId: bigint('related_listing_id', { mode: 'number' }).references(() => listings.id),
-		isRead: boolean('is_read').default(false),
-		readAt: timestamp('read_at'),
-		createdAt: timestamp('created_at').defaultNow().notNull()
-	},
-	(table) => ({
-		userIdx: index('idx_notifications_user').on(table.userId),
-		readIdx: index('idx_notifications_read').on(table.userId, table.isRead),
-		createdIdx: index('idx_notifications_created').on(table.createdAt)
-	})
-);
-
-// 19. user_settings
+// 8. user_settings
 export const userSettings = pgTable(
 	'user_settings',
 	{
@@ -670,25 +414,7 @@ export const userSettings = pgTable(
 	})
 );
 
-// 20. search_history
-export const searchHistory = pgTable(
-	'search_history',
-	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		userId: bigint('user_id', { mode: 'number' }).references(() => users.id, { onDelete: 'cascade' }),
-		searchQuery: varchar('search_query', { length: 255 }),
-		categoryId: bigint('category_id', { mode: 'number' }).references(() => categories.id),
-		filtersJson: jsonb('filters_json'),
-		resultsCount: integer('results_count'),
-		createdAt: timestamp('created_at').defaultNow().notNull()
-	},
-	(table) => ({
-		userIdx: index('idx_search_history_user').on(table.userId),
-		createdIdx: index('idx_search_history_created').on(table.createdAt)
-	})
-);
-
-// 21. allowed_email_domains
+// 9. allowed_email_domains
 export const allowedEmailDomains = pgTable(
 	'allowed_email_domains',
 	{
@@ -716,17 +442,11 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 	listings: many(listings),
 	sellerTrades: many(trades, { relationName: 'seller' }),
 	buyerTrades: many(trades, { relationName: 'buyer' }),
-	tradeMessages: many(tradeMessages),
 	reviewsAsReviewer: many(reviews, { relationName: 'reviewer' }),
 	reviewsAsReviewee: many(reviews, { relationName: 'reviewee' }),
 	disputesAsReporter: many(disputes, { relationName: 'reporter' }),
 	disputesAsReported: many(disputes, { relationName: 'reported' }),
-	wallet: one(wallets),
-	transactions: many(transactions),
-	paymentMethods: many(paymentMethods),
 	favorites: many(favorites),
-	kycDocuments: many(kycDocuments),
-	notifications: many(notifications),
 	settings: one(userSettings),
 	buyerConversations: many(conversations, { relationName: 'buyer' }),
 	sellerConversations: many(conversations, { relationName: 'seller' }),
@@ -759,9 +479,7 @@ export const listingsRelations = relations(listings, ({ one, many }) => ({
 		relationName: 'subcategory'
 	}),
 	images: many(listingImages),
-	attributes: many(listingAttributes),
 	trades: many(trades),
-	paymentMethods: many(listingPaymentMethods),
 	favorites: many(favorites),
 	conversations: many(conversations)
 }));
@@ -810,9 +528,6 @@ export const tradesRelations = relations(trades, ({ one, many }) => ({
 		references: [users.id],
 		relationName: 'buyer'
 	}),
-	messages: many(tradeMessages),
-	statusHistory: many(tradeStatusHistory),
 	reviews: many(reviews),
-	disputes: many(disputes),
-	transactions: many(transactions)
+	disputes: many(disputes)
 }));

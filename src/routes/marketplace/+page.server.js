@@ -5,8 +5,28 @@ import { eq, and, or, like, sql, desc, asc, gte, lte } from 'drizzle-orm';
 export async function load({ locals, url }) {
 	const db = locals.db;
 
+	// If database is not available, return empty data instead of throwing
 	if (!db) {
-		throw new Error('Database connection not found');
+		console.warn('Database connection not available - returning empty marketplace data');
+		return {
+			listings: [],
+			categories: [],
+			totalCount: 0,
+			currentPage: 1,
+			totalPages: 0,
+			marketplaceUser: null,
+			filters: {
+				searchQuery: '',
+				categorySlug: '',
+				location: '',
+				radius: '',
+				sortBy: 'newest',
+				type: '',
+				minPrice: '',
+				maxPrice: '',
+				condition: ''
+			}
+		};
 	}
 
 	// Get marketplace user if logged in

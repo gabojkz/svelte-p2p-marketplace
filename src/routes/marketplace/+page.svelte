@@ -1,4 +1,5 @@
 <script>
+  import SEOHead from "$lib/components/SEOHead.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
@@ -12,6 +13,22 @@
 
   // Get data from server load function
   const { data } = $props();
+
+  // SEO for marketplace page
+  const searchQueryParam = $derived($page.url.searchParams.get("q") || "");
+  const categoryParam = $derived($page.url.searchParams.get("category") || "");
+  const seoTitle = $derived(
+    searchQueryParam 
+      ? `Search Results for "${searchQueryParam}" | Marketto`
+      : categoryParam
+      ? `Browse ${categoryParam} | Marketto Marketplace`
+      : "Browse Marketplace | Marketto"
+  );
+  const seoDescription = $derived(
+    searchQueryParam
+      ? `Find ${searchQueryParam} in your local area. Browse listings, compare prices, and connect with sellers on Marketto.`
+      : "Browse thousands of local listings. Find products and services in your area. Buy and sell with your neighbors on Marketto."
+  );
 
   // Access listings and categories from page data
   const listings = $derived(data?.listings || []);
@@ -207,6 +224,12 @@
     return range;
   }
 </script>
+
+<SEOHead
+  title={seoTitle}
+  description={seoDescription}
+  keywords={categoryParam ? `${categoryParam}, marketplace, local trading, p2p` : "marketplace, local trading, p2p, buy, sell"}
+/>
 
 <div class="page-wrapper">
   <!-- Header -->

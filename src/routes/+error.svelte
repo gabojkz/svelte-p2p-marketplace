@@ -19,29 +19,30 @@
 
   // Get error message - handle both Error objects and strings
   const errorMessage = $derived.by(() => {
-    if (!errorObj) return null;
+    const err = errorObj;
+    if (!err) return null;
     
     // If it's a string, use it directly
-    if (typeof errorObj === 'string') return errorObj;
+    if (typeof err === 'string') return err;
     
     // If it's an Error instance, get the message
-    if (errorObj instanceof Error) return errorObj.message;
+    if (err instanceof Error) return err.message;
     
     // SvelteKit HttpError: check for message property (most common case)
-    if (errorObj?.message && typeof errorObj.message === 'string') {
-      return errorObj.message;
+    if (err?.message && typeof err.message === 'string') {
+      return err.message;
     }
     
     // Check for body property (some SvelteKit error formats)
-    if (errorObj?.body?.message) return errorObj.body.message;
-    if (typeof errorObj?.body === 'string') return errorObj.body;
+    if (err?.body?.message) return err.body.message;
+    if (typeof err?.body === 'string') return err.body;
     
     // Check for statusText
-    if (errorObj?.statusText) return errorObj.statusText;
+    if (err?.statusText) return err.statusText;
     
     // If it has a toString method, try that
-    if (typeof errorObj?.toString === 'function') {
-      const str = errorObj.toString();
+    if (typeof err?.toString === 'function') {
+      const str = err.toString();
       // Only use toString if it's not the default Object.toString
       if (str !== '[object Object]' && !str.startsWith('Error:')) {
         return str;
@@ -50,7 +51,7 @@
     
     // Try JSON stringify for debugging (but only if it contains useful info)
     try {
-      const json = JSON.stringify(errorObj, null, 2);
+      const json = JSON.stringify(err, null, 2);
       if (json !== '{}' && json.length < 500) {
         // Only use JSON if it's reasonably sized and not empty
         return json;
@@ -60,9 +61,9 @@
     }
     
     // Last resort: try to extract any string-like values from the object
-    if (typeof errorObj === 'object') {
-      for (const key in errorObj) {
-        const value = errorObj[key];
+    if (typeof err === 'object') {
+      for (const key in err) {
+        const value = err[key];
         if (typeof value === 'string' && value.length > 0 && value.length < 500) {
           return value;
         }
@@ -74,7 +75,8 @@
 
   // Get status-specific content
   const content = $derived.by(() => {
-    switch (status) {
+    const stat = status;
+    switch (stat) {
       case 404:
         return {
           icon: '🔍',
@@ -123,7 +125,7 @@
       default:
         return {
           icon: '⚠️',
-          title: `Error ${status || 'Unknown'}`,
+          title: `Error ${stat || 'Unknown'}`,
           message: errorMessage || 'An unexpected error occurred',
           suggestion: 'Please try again or contact support if the problem persists.',
           buttonText: 'Go to Homepage',

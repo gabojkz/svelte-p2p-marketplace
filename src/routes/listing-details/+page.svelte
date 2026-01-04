@@ -3,9 +3,11 @@
   import ListingCard from "$lib/components/ListingCard.svelte";
   import ListingMap from "$lib/components/ListingMap.svelte";
   import ListingImageGallery from "$lib/components/ListingImageGallery.svelte";
+  import SEOHead from "$lib/components/SEOHead.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  import { getProductSchema } from "$lib/utils/seo.js";
 
   const session = useSession();
   const user = $derived($session.data?.user);
@@ -267,7 +269,28 @@
     return labels[condition] || condition;
   }
 
+  // Generate SEO data for listing
+  const listingTitle = $derived(listing?.title || "Listing");
+  const listingDescription = $derived(
+    listing?.description?.substring(0, 160) || 
+    `View ${listingTitle} on Marketto - Local P2P Marketplace`
+  );
+  const listingImage = $derived(
+    listing?.images?.[0]?.imageUrl || "/favicon.svg"
+  );
+  const productSchema = $derived(getProductSchema(listing));
 </script>
+
+<SEOHead
+  title={listingTitle}
+  description={listingDescription}
+  image={listingImage}
+  type="product"
+  keywords={listing?.category?.name ? `${listing.category.name}, marketplace, p2p, local trading` : undefined}
+  publishedTime={listing?.createdAt}
+  modifiedTime={listing?.updatedAt}
+  structuredData={productSchema ? JSON.parse(productSchema) : undefined}
+/>
 
 <div class="page-wrapper">
   <NavigationBar />

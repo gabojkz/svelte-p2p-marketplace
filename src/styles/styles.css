@@ -1,26 +1,26 @@
 /* ============================================
    P2P MARKETPLACE - MAIN STYLES
-   Style: Corporate Memphis
-   Primary Color: #45D98E
+   Style: Minimalist Venezuela Theme
+   Primary Colors: Blue & White
    ============================================ */
 
 /* ============================================
    CSS CUSTOM PROPERTIES (VARIABLES)
    ============================================ */
 :root {
-  /* Primary Colors */
-  --color-primary: #45d98e;
-  --color-primary-light: #6be5a8;
-  --color-primary-dark: #2ebc74;
-  --color-primary-subtle: rgba(69, 217, 142, 0.1);
+  /* Primary Colors - Venezuela Flag Blue */
+  --color-primary: #00247d;
+  --color-primary-light: #003893;
+  --color-primary-dark: #001a5c;
+  --color-primary-subtle: rgba(0, 36, 125, 0.1);
 
-  /* Secondary Colors - Corporate Memphis Palette */
-  --color-secondary: #ff6b6b;
-  --color-tertiary: #4ecdc4;
-  --color-accent-yellow: #ffe66d;
-  --color-accent-purple: #9b59b6;
-  --color-accent-blue: #3498db;
-  --color-accent-orange: #ff9f43;
+  /* Secondary Colors - Minimalist Blue Palette */
+  --color-secondary: #003893;
+  --color-tertiary: #0052cc;
+  --color-accent-yellow: #fcd116;
+  --color-accent-purple: #6b7fd7;
+  --color-accent-blue: #00247d;
+  --color-accent-orange: #4a90e2;
 
   /* Neutral Colors */
   --color-white: #ffffff;
@@ -37,10 +37,10 @@
   --color-black: #1a1a2e;
 
   /* Status Colors */
-  --color-success: #45d98e;
-  --color-warning: #ffe66d;
-  --color-error: #ff6b6b;
-  --color-info: #4ecdc4;
+  --color-success: #0052cc;
+  --color-warning: #fcd116;
+  --color-error: #cf142b;
+  --color-info: #003893;
 
   /* Typography */
   --font-primary: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -97,7 +97,7 @@
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.15);
-  --shadow-colored: 0 10px 40px rgba(69, 217, 142, 0.3);
+  --shadow-colored: 0 10px 40px rgba(0, 36, 125, 0.2);
 
   /* Transitions */
   --transition-fast: 150ms ease;
