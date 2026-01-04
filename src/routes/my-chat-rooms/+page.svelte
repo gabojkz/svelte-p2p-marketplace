@@ -3,7 +3,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
 
-  const { data } = $props();
+  const { data, userLanguage = "en" } = $props();
 
   const conversations = $derived(data?.conversations || []);
   const totalUnread = $derived(data?.totalUnread || 0);
@@ -93,7 +93,7 @@
   <title>My Chat Rooms — Marketto</title>
 </svelte:head>
 
-<NavigationBar />
+<NavigationBar {userLanguage} />
 
 <div class="page-wrapper">
   <main class="main-content">

@@ -268,10 +268,15 @@
     grid-column: span 1;
   }
 
+  .footer__links {
+    align-items: baseline;
+  }
+
   .footer__legal-links {
     flex-wrap: wrap;
     justify-content: center;
     gap: var(--space-4);
+    align-items: baseline;
   }
 
   /* Grid */

@@ -153,7 +153,7 @@
     </div>
   </div>
 {:else}
-<NavigationBar />
+<NavigationBar {userLanguage} />
 
 <div class="page-wrapper">
   <main class="error-page">

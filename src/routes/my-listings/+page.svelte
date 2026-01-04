@@ -9,7 +9,7 @@
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data } = $props();
+  const { data, userLanguage = "en" } = $props();
 
   const marketplaceUser = $derived(data?.marketplaceUser);
   const listings = $derived(data?.listings || []);
@@ -17,9 +17,6 @@
   const stats = $derived(data?.stats || {});
   const filters = $derived(data?.filters || {});
 
-  // Modal state
-  let modalOpen = $state(false);
-  let editingListingId = $state(null);
 
   // Local state for search and filters - initialize from URL params
   let searchQuery = $state("");
@@ -167,12 +164,8 @@
     }
 
     try {
-      const response = await fetch(`/api/listings/${listingId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete listing");
-
+      const { del } = await import("$lib/services/api.js");
+      await del(`/api/listings/${listingId}`);
       // Reload page to refresh data
       window.location.reload();
     } catch (error) {
@@ -181,29 +174,6 @@
     }
   }
 
-  // Open modal for editing
-  function openEditModal(listingId) {
-    console.log("🔵 openEditModal called with listingId:", listingId);
-    editingListingId = listingId;
-    modalOpen = true;
-    console.log("🔵 modalOpen set to:", modalOpen);
-    console.log("🔵 editingListingId set to:", editingListingId);
-  }
-
-  // Open modal for creating
-  function openCreateModal() {
-    console.log("🟢 openCreateModal called");
-    editingListingId = null;
-    modalOpen = true;
-    console.log("🟢 modalOpen set to:", modalOpen);
-    console.log("🟢 editingListingId set to:", editingListingId);
-  }
-
-  // Handle modal save
-  function handleModalSave() {
-    // Reload page to refresh data
-    window.location.reload();
-  }
 
   // Format date
   function formatDate(dateString) {
@@ -241,7 +211,7 @@
 
 <div class="page-wrapper">
   <!-- Header -->
-  <NavigationBar />
+  <NavigationBar {userLanguage} />
 
   <!-- Main Content -->
   <main class="main-content">
@@ -252,13 +222,12 @@
           <h1>My Listings</h1>
           <p class="text-muted">Manage your listings</p>
         </div>
-        <button
+        <a
+          href="/listings/create"
           class="btn btn--primary"
-          onclick={openCreateModal}
-          type="button"
         >
           + Create New Listing
-        </button>
+        </a>
       </div>
 
       <!-- Stats Summary -->
@@ -432,7 +401,7 @@
                 >
                   <td>
                     <div class="table-cell-title">
-                      <a href="/marketplace?id={listing.id}" class="table-link">
+                      <a href="/listings/edit/{listing.id}" class="table-link">
                         {listing.title}
                       </a>
                       {#if listing.featured}
@@ -496,16 +465,15 @@
                   </td>
                   <td>
                     <div class="table-actions">
-                      <button
+                      <a
+                        href="/listings/edit/{listing.id}"
                         class="table-action-button"
-                        onclick={() => openEditModal(listing.id)}
                         title="Edit"
-                        type="button"
                       >
                         ✏️
-                      </button>
+                      </a>
                       <a
-                        href="/listing-details?id={listing.id}"
+                        href="/listing-details/{listing.id}"
                         class="table-action-button"
                         title="View"
                       >
@@ -531,14 +499,6 @@
   </main>
 </div>
 
-<!-- Listing Modal - Outside page-wrapper for proper z-index -->
-<ListingModal
-  bind:open={modalOpen}
-  bind:listingId={editingListingId}
-  {categories}
-  {marketplaceUser}
-  onSave={handleModalSave}
-/>
 
 <style>
   .page-header {

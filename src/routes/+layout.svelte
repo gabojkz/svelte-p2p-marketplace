@@ -5,7 +5,8 @@
   import { page } from "$app/stores";
   import { generateSEOTags, getOrganizationSchema, getWebSiteSchema } from "$lib/utils/seo.js";
 
-  let { children } = $props();
+  let { children, data } = $props();
+  const userLanguage = $derived(data?.userLanguage || 'en');
 
   // Default SEO tags
   const defaultSEO = generateSEOTags({
@@ -62,4 +63,4 @@
   {@html `<script type="application/ld+json">${websiteSchema}</script>`}
 </svelte:head>
 
-{@render children()}
+{@render children({ userLanguage })}

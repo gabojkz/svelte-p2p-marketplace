@@ -7,7 +7,7 @@
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data } = $props();
+  const { data, userLanguage = "en" } = $props();
 
   const marketplaceUser = $derived(data?.marketplaceUser);
   const trades = $derived(data?.trades || []);
@@ -188,7 +188,7 @@
 </svelte:head>
 
 <div class="page-wrapper">
-  <NavigationBar />
+  <NavigationBar {userLanguage} />
 
   <main class="main-content">
     <div class="container">

@@ -1,20 +1,24 @@
 <script>
+	import { translateCategoryName } from '$lib/utils/category-translations.js';
+	
 	/**
 	 * @typedef {Object} Category
 	 * @property {number} id
 	 * @property {string} name
+	 * @property {string} nameEs
 	 * @property {string} slug
 	 * @property {'product' | 'service'} type
 	 * @property {string | null} icon
 	 */
 
-	/** @type {{ categories: Category[], selectedValue?: string, id?: string, label?: string, onChange?: (value: string) => void }} */
+	/** @type {{ categories: Category[], selectedValue?: string, id?: string, label?: string, onChange?: (value: string) => void, userLanguage?: string }} */
 	let { 
 		categories = [], 
 		selectedValue = 'all',
 		id = 'categorySelect',
 		label = 'Category',
-		onChange
+		onChange,
+		userLanguage = 'en'
 	} = $props();
 
 	// Separate categories by type
@@ -64,7 +68,7 @@
 			<optgroup label="Products">
 				{#each productCategories as category}
 					<option value={category.slug}>
-						{category.name}
+						{translateCategoryName(category, userLanguage)}
 					</option>
 				{/each}
 			</optgroup>
@@ -74,7 +78,7 @@
 			<optgroup label="Services">
 				{#each serviceCategories as category}
 					<option value={category.slug}>
-						{category.name}
+						{translateCategoryName(category, userLanguage)}
 					</option>
 				{/each}
 			</optgroup>

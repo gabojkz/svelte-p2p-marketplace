@@ -24,6 +24,7 @@ export async function load({ locals }) {
       .select({
         id: categories.id,
         name: categories.name,
+        nameEs: categories.nameEs,
         slug: categories.slug,
         type: categories.type,
         icon: categories.icon,
@@ -102,6 +103,7 @@ export async function load({ locals }) {
       categories: categoriesData.map((cat) => ({
         id: cat.id,
         name: cat.name,
+        nameEs: cat.nameEs,
         slug: cat.slug,
         type: cat.type,
         icon: cat.icon,
@@ -111,6 +113,7 @@ export async function load({ locals }) {
       popularCategories: popularCategories.map((cat) => ({
         id: cat.id,
         name: cat.name,
+        nameEs: cat.nameEs,
         slug: cat.slug,
         type: cat.type,
         icon: cat.icon,

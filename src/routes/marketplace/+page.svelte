@@ -4,7 +4,6 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import CategorySelect from "$lib/components/CategorySelect.svelte";
-  import ListingCard from "$lib/components/ListingCard.svelte";
   import NavigationBar from "$lib/components/NavigationBar.svelte";
   
   const appName = "Marketto";
@@ -12,7 +11,7 @@
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data } = $props();
+  const { data, userLanguage = "en" } = $props();
 
   // SEO for marketplace page
   const searchQueryParam = $derived($page.url.searchParams.get("q") || "");
@@ -233,7 +232,7 @@
 
 <div class="page-wrapper">
   <!-- Header -->
-  <NavigationBar></NavigationBar>
+  <NavigationBar {userLanguage} />
 
   <!-- Main Content -->
   <main class="main-content">
@@ -529,7 +528,44 @@
           {:else}
           <div class="listings-list">
             {#each listings as listing}
-              <ListingCard {listing} marketplaceUser={data?.marketplaceUser} />
+              {@const isOwner = data?.marketplaceUser?.id === listing.userId}
+              {@const listingUrl = isOwner ? `/listings/edit/${listing.id}` : `/listing-details/${listing.id}`}
+              <a href={listingUrl} class="listing-card listing-card--list">
+                <div class="listing-card__image">
+                  <div
+                    class="listing-card__placeholder"
+                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+                  >
+                    🚗
+                  </div>
+                  {#if listing.featured}
+                    <span class="listing-card__badge listing-card__badge--featured">Featured</span>
+                  {/if}
+                </div>
+                <div class="listing-card__body">
+                  <div class="listing-card__header">
+                    <div>
+                      <div class="listing-card__category">{listing?.category?.name || 'Category'}</div>
+                      <h4 class="listing-card__title">{listing?.title || 'Listing Title'}</h4>
+                    </div>
+                    <div class="listing-card__price">£{listing?.price || '0'}</div>
+                  </div>
+                  {#if listing?.description}
+                    <div class="listing-card__details">
+                      {listing.description.substring(0, 100)}{listing.description.length > 100 ? '...' : ''}
+                    </div>
+                  {/if}
+                  <div class="listing-card__footer">
+                    <div class="listing-card__meta">
+                      <span class="listing-card__location">📍 {listing?.locationCity || 'Location'} • {listing?.locationPostcode || ''}</span>
+                      <span class="listing-card__time">{listing?.createdAt ? new Date(listing.createdAt).toLocaleDateString() : ''}</span>
+                    </div>
+                    {#if isOwner}
+                      <span class="listing-card__edit-badge" style="background: var(--color-primary); color: white; padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: var(--font-semibold);">Edit</span>
+                    {/if}
+                  </div>
+                </div>
+              </a>
             {/each}
           </div>
           {/if}

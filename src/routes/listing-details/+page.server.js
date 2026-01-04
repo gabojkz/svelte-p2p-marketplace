@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { listings, users, user, categories, reviews, trades, favorites, listingImages } from '$lib/server/schema';
+import { listings, users, user, categories, reviews, trades, favorites, listingImages, userSettings } from '$lib/server/schema';
 import { eq, and, or, ne, sql, desc } from 'drizzle-orm';
 
 /** @type {import('./$types').PageServerLoad} */
@@ -155,6 +155,24 @@ export async function load({ params, locals, url }) {
 		.where(eq(listingImages.listingId, listingId))
 		.orderBy(listingImages.displayOrder);
 
+	// Get seller's contact information (only if user is logged in)
+	let sellerContactInfo = null;
+	if (locals.session && locals.user && listing.seller) {
+		const [sellerSettings] = await db
+			.select()
+			.from(userSettings)
+			.where(eq(userSettings.userId, listing.seller.id))
+			.limit(1);
+
+		if (sellerSettings) {
+			sellerContactInfo = {
+				phone: sellerSettings.showPhone ? listing.seller.phone : null,
+				whatsapp: sellerSettings.whatsapp || null,
+				telegram: sellerSettings.telegram || null
+			};
+		}
+	}
+
 	return {
 		listing: {
 			...listing.listing,
@@ -172,6 +190,7 @@ export async function load({ params, locals, url }) {
 				}
 			} : null
 		},
+		sellerContactInfo,
 		similarListings,
 		marketplaceUser,
 		isFavorite,

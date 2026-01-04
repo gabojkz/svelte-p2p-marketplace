@@ -7,7 +7,7 @@
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data } = $props();
+  const { data, userLanguage = "en" } = $props();
 
   const profileUser = $derived(data?.profileUser);
   const listingsCount = $derived(data?.listingsCount || 0);
@@ -138,7 +138,7 @@
 
 <div class="page-wrapper">
   <!-- Header -->
-  <NavigationBar />
+  <NavigationBar {userLanguage} />
 
   <!-- Main Content -->
   <main class="main-content">

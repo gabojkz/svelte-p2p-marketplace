@@ -135,6 +135,7 @@ export const categories = pgTable(
 	{
 		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
 		name: varchar('name', { length: 100 }).notNull().unique(),
+		nameEs: varchar('name_es', { length: 100 }),
 		slug: varchar('slug', { length: 100 }).notNull().unique(),
 		type: listingTypeEnum('type').notNull(),
 		icon: varchar('icon', { length: 50 }),

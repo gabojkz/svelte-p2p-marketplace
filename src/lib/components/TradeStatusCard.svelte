@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { fetchTrade, createTrade } from "$lib/services/trade";
+  import { fetchTrade, createTrade, confirmTrade, rejectTrade, completeTrade } from "$lib/services/trade.js";
 
   const { listingId, buyerId, sellerId, currentUserId, onReviewClick, trade: tradeProp } = $props();
 
@@ -119,15 +119,7 @@
 
     processing = true;
     try {
-      const response = await fetch(`/api/trades/${trade.id}/confirm`, {
-        method: "PATCH",
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to confirm trade");
-      }
-
+      await confirmTrade(trade.id);
       alert("Trade confirmed successfully!");
       window.location.reload();
     } catch (err) {
@@ -152,15 +144,7 @@
 
     processing = true;
     try {
-      const response = await fetch(`/api/trades/${trade.id}/reject`, {
-        method: "PATCH",
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to reject trade");
-      }
-
+      await rejectTrade(trade.id);
       alert("Trade rejected. A message has been sent to both parties.");
       window.location.reload();
     } catch (err) {
@@ -185,15 +169,7 @@
 
     processing = true;
     try {
-      const response = await fetch(`/api/trades/${trade.id}/complete`, {
-        method: "PATCH",
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to complete trade");
-      }
-
+      await completeTrade(trade.id);
       alert("Trade marked as complete! You can now leave a review.");
       window.location.reload();
     } catch (err) {

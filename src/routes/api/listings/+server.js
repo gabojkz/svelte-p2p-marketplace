@@ -1,6 +1,8 @@
 import { json, error } from '@sveltejs/kit';
 import { listings, users, categories } from '$lib/server/schema';
 import { eq } from 'drizzle-orm';
+import { createListingSchema } from '$lib/utils/security-schemas.js';
+import { validateRequestBodySafe } from '$lib/utils/api-validation.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request, locals }) {
@@ -14,6 +16,15 @@ export async function POST({ request, locals }) {
 	}
 
 	const body = await request.json();
+	
+	// Validate and sanitize input using Zod schema
+	const validation = validateRequestBodySafe(createListingSchema, body);
+	if (!validation.valid) {
+		return json(validation.errors, { status: 400 });
+	}
+	
+	// Use validated and sanitized data
+	const validatedData = validation.data;
 
 	// Get marketplace user
 	const marketplaceUser = await db
@@ -26,75 +37,11 @@ export async function POST({ request, locals }) {
 		throw error(400, 'User profile not found');
 	}
 
-	// Validate required fields
-	const missingFields = [];
-	const fieldErrors = {};
-
-	if (!body.categoryId) {
-		missingFields.push("Category");
-		fieldErrors.categoryId = "Please select a category";
-	}
-	if (!body.type) {
-		missingFields.push("Listing Type");
-		fieldErrors.type = "Please select product or service";
-	}
-	if (!body.title || body.title.trim() === "") {
-		missingFields.push("Title");
-		fieldErrors.title = "Please enter a title for your listing";
-	}
-	if (!body.description || body.description.trim() === "") {
-		missingFields.push("Description");
-		fieldErrors.description = "Please provide a description";
-	}
-	if (!body.price || body.price.toString().trim() === "") {
-		missingFields.push("Price");
-		fieldErrors.price = "Please enter a price";
-	}
-	if (!body.locationCity || body.locationCity.trim() === "") {
-		missingFields.push("City");
-		fieldErrors.locationCity = "Please enter your city";
-	}
-	if (!body.locationPostcode || body.locationPostcode.trim() === "") {
-		missingFields.push("Postcode");
-		fieldErrors.locationPostcode = "Please enter your postcode";
-	}
-
-	if (body.type === "product" && !body.condition) {
-		missingFields.push("Condition");
-		fieldErrors.condition = "Please select the condition of your item";
-	}
-
-	if (missingFields.length > 0) {
-		const errorMessage = missingFields.length === 1
-			? `Missing required field: ${missingFields[0]}`
-			: `Missing required fields: ${missingFields.join(", ")}`;
-		
-		return json({
-			error: errorMessage,
-			fieldErrors
-		}, { status: 400 });
-	}
-
-	// Validate price
-	const priceNum = parseFloat(body.price);
-	if (isNaN(priceNum)) {
-		return json({
-			error: "Invalid price format",
-			fieldErrors: { price: "Please enter a valid number for the price" }
-		}, { status: 400 });
-	}
-	if (priceNum < 0) {
-		return json({
-			error: "Price cannot be negative",
-			fieldErrors: { price: "Price must be 0 or greater" }
-		}, { status: 400 });
-	}
-
-	// Validate category exists
+	// Validate category exists (additional check after schema validation)
 	const [category] = await db
 		.select()
 		.from(categories)
-		.where(eq(categories.id, Number(body.categoryId)))
+		.where(eq(categories.id, validatedData.categoryId))
 		.limit(1);
 
 	if (!category) {
@@ -103,34 +50,42 @@ export async function POST({ request, locals }) {
 			fieldErrors: { categoryId: "The selected category does not exist. Please choose a different category." }
 		}, { status: 400 });
 	}
+	
+	// Validate condition for products
+	if (validatedData.type === "product" && !validatedData.condition) {
+		return json({
+			error: "Condition is required for products",
+			fieldErrors: { condition: "Please select the condition of your item" }
+		}, { status: 400 });
+	}
 
 	try {
-		// Create listing
+		// Create listing using validated and sanitized data
 		const [newListing] = await db
 			.insert(listings)
 			.values({
 				userId: marketplaceUser[0].id,
-				categoryId: Number(body.categoryId),
-				subcategoryId: body.subcategoryId ? Number(body.subcategoryId) : null,
-				type: body.type,
-				title: body.title.trim(),
-				description: body.description.trim(),
-				condition: body.condition || null,
-				brand: body.brand ? body.brand.trim() : null,
-				price: priceNum.toString(),
-				priceType: body.priceType || "fixed",
-				acceptsOffers: body.acceptsOffers === true,
-				locationCity: body.locationCity.trim(),
-				locationPostcode: body.locationPostcode.trim(),
-				locationLatitude: body.locationLatitude || null,
-				locationLongitude: body.locationLongitude || null,
-				deliveryCollection: body.deliveryCollection !== false,
-				deliveryLocal: body.deliveryLocal === true,
-				deliveryShipping: body.deliveryShipping === true,
-				status: body.status || "draft",
-				publishedAt: body.status === 'active' ? new Date() : null,
-				featured: body.featured === true,
-				urgent: body.urgent === true
+				categoryId: validatedData.categoryId,
+				subcategoryId: validatedData.subcategoryId || null,
+				type: validatedData.type,
+				title: validatedData.title, // Already sanitized
+				description: validatedData.description, // Already sanitized
+				condition: validatedData.condition || null,
+				brand: validatedData.brand || null,
+				price: validatedData.price.toString(), // Already validated as number
+				priceType: validatedData.priceType || "fixed",
+				acceptsOffers: validatedData.acceptsOffers || false,
+				locationCity: validatedData.locationCity, // Already sanitized
+				locationPostcode: validatedData.locationPostcode, // Already validated
+				locationLatitude: validatedData.locationLatitude || null,
+				locationLongitude: validatedData.locationLongitude || null,
+				deliveryCollection: validatedData.deliveryCollection !== false,
+				deliveryLocal: validatedData.deliveryLocal || false,
+				deliveryShipping: validatedData.deliveryShipping || false,
+				status: validatedData.status || "draft",
+				publishedAt: validatedData.status === 'active' ? new Date() : null,
+				featured: validatedData.featured || false,
+				urgent: validatedData.urgent || false
 			})
 			.returning();
 

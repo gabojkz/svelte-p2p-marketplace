@@ -7,7 +7,7 @@
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data } = $props();
+  const { data, userLanguage = "en" } = $props();
 
   const marketplaceUser = $derived(data?.marketplaceUser);
   const favorites = $derived(data?.favorites || []);
@@ -114,12 +114,8 @@
     }
 
     try {
-      const response = await fetch(`/api/favorites/${listingId}`, {
-        method: "DELETE"
-      });
-
-      if (!response.ok) throw new Error("Failed to remove favorite");
-      
+      const { removeFavorite } = await import("$lib/services/favorites.js");
+      await removeFavorite(listingId);
       // Reload page to refresh data
       window.location.reload();
     } catch (error) {
@@ -148,7 +144,7 @@
 
 <div class="page-wrapper">
   <!-- Header -->
-  <NavigationBar />
+  <NavigationBar {userLanguage} />
 
   <!-- Main Content -->
   <main class="main-content">
