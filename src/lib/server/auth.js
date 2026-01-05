@@ -38,19 +38,13 @@ export function createAuth(databaseUrl, baseUrl) {
 		baseURL: baseUrl,
 		emailAndPassword: {
 			enabled: true,
-			requireEmailVerification: false,
-			// Use bcrypt (Blowfish) for password hashing
-			// Alternative: To use Argon2 instead, install @node-rs/argon2 and replace with:
-			// password: {
-			//   hash: async (password) => {
-			//     const { hash } = await import('@node-rs/argon2');
-			//     return await hash(password, { memoryCost: 65536, timeCost: 3, parallelism: 4 });
-			//   },
-			//   verify: async (data) => {
-			//     const { verify } = await import('@node-rs/argon2');
-			//     return await verify(data.hash, data.password);
-			//   }
-			// }
+			requireEmailVerification: process.env.REQUIRE_EMAIL_VERIFICATION === 'true',
+			sendVerificationEmail: async ({ user, url }) => {
+				if (process.env.REQUIRE_EMAIL_VERIFICATION === 'true') {
+					const { sendVerificationEmail } = await import('./email.js');
+					await sendVerificationEmail(user.email, url);
+				}
+			},
 			password: {
 				hash: async (password) => {
 					const saltRounds = 10;

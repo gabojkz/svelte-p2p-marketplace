@@ -55,16 +55,26 @@ export async function POST({ request, platform }) {
           expiresAt: expiresAt,
         });
 
-        // In a real app, you would send an email here with the reset link
-        // For now, we'll just log it (in development) or return success
         const resetUrl = `${baseUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(foundUser.email)}`;
 
-        // TODO: Send email with reset link
-        // await sendPasswordResetEmail(foundUser.email, resetUrl);
-
-        // In development, log the reset URL (remove in production)
-        if (process.env.NODE_ENV === "development") {
-          console.log("Password reset link:", resetUrl);
+        // Send password reset email
+        try {
+          const { sendPasswordResetEmail } = await import("$lib/server/email.js");
+          const emailResult = await sendPasswordResetEmail(foundUser.email, resetUrl);
+          
+          if (!emailResult.success) {
+            console.error("Failed to send password reset email:", emailResult.error);
+            // In development, log the reset URL as fallback
+            if (process.env.NODE_ENV === "development") {
+              console.log("Password reset link (fallback):", resetUrl);
+            }
+          }
+        } catch (emailError) {
+          console.error("Error sending password reset email:", emailError);
+          // In development, log the reset URL as fallback
+          if (process.env.NODE_ENV === "development") {
+            console.log("Password reset link (fallback):", resetUrl);
+          }
         }
       }
     }
