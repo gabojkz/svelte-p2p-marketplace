@@ -702,6 +702,7 @@
   .chat-input form {
     display: flex;
     gap: var(--space-2);
+    width: 100%;
   }
 
   .chat-input input {
