@@ -15,6 +15,11 @@ const dbInstances = new Map();
  * @returns {ReturnType<typeof drizzlePostgres> | ReturnType<typeof drizzleNeon>}
  */
 export function createDb(databaseUrl) {
+	// Validate database URL
+	if (!databaseUrl || databaseUrl.trim() === '') {
+		throw new Error('Database URL is required but was not provided');
+	}
+
 	// Return existing instance if already created
 	if (dbInstances.has(databaseUrl)) {
 		return dbInstances.get(databaseUrl);

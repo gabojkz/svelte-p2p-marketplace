@@ -1,18 +1,15 @@
 <script>
   import NavigationBar from "$lib/components/NavigationBar.svelte";
+  import Footer from "$lib/components/Footer.svelte";
 
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
-  import { page } from "$app/stores";
   const appName = "Marketto";
 
   const session = useSession();
-  const user = $derived($session.data?.user);
 
   // Get data from server load
-  const { data } = $props();
-  const featuredListings = $derived(data?.featuredListings || []);
-  const popularCategories = $derived(data?.popularCategories || []);
+  const { data, userLanguage = "en" } = $props();
 
   // Search form state
   let searchQuery = $state("");
@@ -36,59 +33,17 @@
   function navigateToCategory(category) {
     goto(`/marketplace?category=${category}`);
   }
-
-  // Navigate to marketplace
-  function navigateToMarketplace() {
-    goto("/marketplace");
-  }
-
-  // Navigate to login
-  function navigateToLogin() {
-    goto("/login");
-  }
-
-  // Format number with K suffix
-  /** @param {number} num */
-  function formatNumber(num) {
-    if (num >= 1000) {
-      return `${(num / 1000).toFixed(0)}K+`;
-    }
-    return num.toString();
-  }
-
-  // Format price
-  /** @param {string | number | null | undefined} price */
-  function formatPrice(price) {
-    if (!price) return "£0";
-    return `£${Number(price).toLocaleString("en-GB")}`;
-  }
-
-  // Get time ago
-  /** @param {string | Date | null | undefined} date */
-  function getTimeAgo(date) {
-    if (!date) return "Recently";
-    const now = new Date();
-    const then = new Date(date);
-    const diffMs = Number(now) - Number(then);
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  }
 </script>
 
 <div class="page-wrapper">
   <!-- ============================================
              HEADER / NAVIGATION
       ============================================ -->
-  <NavigationBar />
+  <NavigationBar {userLanguage} />
   <!-- ============================================
              MAIN CONTENT
              ============================================ -->
-  <main class="main-content">
+  <main class="main-content main-content--no-padding">
     <!-- ============================================
                  HERO SECTION WITH SEARCH
                  ============================================ -->
@@ -110,19 +65,31 @@
         >
           <!-- Hero Text -->
           <h1 class="hero__title mb-6">
-            Local <span style="color: var(--color-primary);">P2P Trading</span> & Barter
+            Local <span style="color: var(--color-primary);">P2P Trading</span> &
+            Barter
           </h1>
           <p
             class="hero__description text-muted"
             style="font-size: var(--text-lg); margin-bottom: var(--space-4); max-width: 600px; margin-left: auto; margin-right: auto;"
           >
-            Connect with your city community for safe, local peer-to-peer trades and barter. 
-            Trade with any currency, gold, silver, products, or services — all payment methods welcome. 
-            Trade directly with neighbors in your area — reputation matters here.
+            {#if userLanguage === 'es'}
+              Conecta con personas en tu ciudad para comercio y trueque local seguro entre pares. Intercambia usando cualquier moneda en efectivo, oro, plata, bienes o servicios. Todos los métodos de pago son bienvenidos.
+            {:else}
+              Connect with people in your city for safe, local peer-to-peer
+              trading and bartering. Trade using any currency cash, gold, silver,
+              goods, or services. All payment methods are welcome.
+            {/if}
           </p>
-          <div style="display: flex; align-items: center; justify-content: center; gap: var(--space-2); margin-bottom: var(--space-8); flex-wrap: wrap;">
-            <span class="badge badge--success" style="font-size: var(--text-sm);">100% Free to Use</span>
-            <span class="badge badge--info" style="font-size: var(--text-sm);">No Hidden Fees</span>
+          <div
+            style="display: flex; align-items: center; justify-content: center; gap: var(--space-2); margin-bottom: var(--space-8); flex-wrap: wrap;"
+          >
+            <span
+              class="badge badge--success"
+              style="font-size: var(--text-sm);">100% Free to Use</span
+            >
+            <span class="badge badge--info" style="font-size: var(--text-sm);"
+              >No Hidden Fees</span
+            >
           </div>
 
           <!-- Hero Search Box -->
@@ -236,45 +203,6 @@
     </section>
 
     <!-- ============================================
-                 DISCOVER POPULAR CATEGORIES SECTION
-                 ============================================ -->
-    {#if popularCategories.length > 0}
-      <section class="section">
-        <div class="container">
-          <div class="section__header">
-            <h2 class="section__title">Discover popular categories</h2>
-          </div>
-          <div class="categories-grid">
-            {#each popularCategories as category}
-              <a
-                href="/marketplace?category={category.slug}"
-                class="category-card"
-              >
-                <div class="category-card__image">
-                  {#if category.icon}
-                    <div class="category-card__icon">{category.icon}</div>
-                  {:else}
-                    <div class="category-card__placeholder">
-                      {category.name.charAt(0)}
-                    </div>
-                  {/if}
-                </div>
-                <div class="category-card__body">
-                  <h3 class="category-card__title">{category.name}</h3>
-                  {#if category.listingCount > 0}
-                    <p class="category-card__count">
-                      {category.listingCount} {category.listingCount === 1 ? 'listing' : 'listings'}
-                    </p>
-                  {/if}
-                </div>
-              </a>
-            {/each}
-          </div>
-        </div>
-      </section>
-    {/if}
-
-    <!-- ============================================
                  HOW IT WORKS SECTION
                  ============================================ -->
     <section class="section section--gray" id="how-it-works">
@@ -345,8 +273,8 @@
               </div>
               <h4 class="card__title">Complete Payment</h4>
               <p class="card__content">
-                Pay with any currency, gold, silver, products, or services. 
-                All payment methods are welcome and encouraged.
+                Pay with any currency, gold, silver, products, or services. All
+                payment methods are welcome and encouraged.
               </p>
             </div>
           </div>
@@ -378,105 +306,106 @@
     <!-- ============================================
                  TRUST & SAFETY SECTION
                  ============================================ -->
-    <section class="section">
+    <section class="section trust-safety-section">
       <div class="container">
-        <div
-          class="grid"
-          style="grid-template-columns: 1fr 1fr; gap: var(--space-12); align-items: center;"
-        >
+        <div class="trust-safety-section__grid">
           <!-- Visual -->
-          <div style="position: relative;">
-            <div
-              style="background: linear-gradient(135deg, var(--color-primary-subtle), rgba(78, 205, 196, 0.1)); border-radius: var(--radius-2xl); padding: var(--space-10); position: relative;"
-            >
-              <div class="card" style="margin-bottom: var(--space-4);">
-                <div class="card__body flex items-center gap-4">
-                  <div
-                    style="width: 48px; height: 48px; background: var(--color-tertiary); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: var(--text-xl);"
-                  >
+          <div class="trust-safety-section__visual">
+            <div class="trust-safety-section__cards-wrapper">
+              <div class="card trust-safety-section__card">
+                <div class="card__body trust-safety-section__card-body">
+                  <div class="trust-safety-section__icon trust-safety-section__icon--tertiary">
                     ✅
                   </div>
-                  <div>
-                    <div style="font-weight: var(--font-semibold);">
+                  <div class="trust-safety-section__card-content">
+                    <div class="trust-safety-section__card-title">
                       Verified Sellers
                     </div>
-                    <div class="text-muted" style="font-size: var(--text-sm);">
+                    <div class="text-muted trust-safety-section__card-description">
                       ID verification for trusted trading
                     </div>
                   </div>
-                  <span
-                    style="color: var(--color-primary); font-size: var(--text-xl); margin-left: auto;"
-                    >✓</span
-                  >
+                  <span class="trust-safety-section__check">✓</span>
                 </div>
               </div>
-              <div class="card">
-                <div class="card__body flex items-center gap-4">
-                  <div
-                    style="width: 48px; height: 48px; background: var(--color-secondary); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: var(--text-xl);"
-                  >
+              <div class="card trust-safety-section__card">
+                <div class="card__body trust-safety-section__card-body">
+                  <div class="trust-safety-section__icon trust-safety-section__icon--secondary">
                     ⚖️
                   </div>
-                  <div>
-                    <div style="font-weight: var(--font-semibold);">
+                  <div class="trust-safety-section__card-content">
+                    <div class="trust-safety-section__card-title">
                       Dispute Resolution
                     </div>
-                    <div class="text-muted" style="font-size: var(--text-sm);">
+                    <div class="text-muted trust-safety-section__card-description">
                       Fair mediation if issues arise
                     </div>
                   </div>
-                  <span
-                    style="color: var(--color-primary); font-size: var(--text-xl); margin-left: auto;"
-                    >✓</span
-                  >
+                  <span class="trust-safety-section__check">✓</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Text -->
-          <div>
+          <div class="trust-safety-section__content">
             <span class="badge badge--info">Trust & Safety</span>
             <h2 class="section__title mt-4">Safe Local P2P Trading & Barter</h2>
-            <p
-              class="text-muted"
-              style="font-size: var(--text-lg); margin-bottom: var(--space-6);"
-            >
+            <p class="text-muted trust-safety-section__description">
               {appName} is a local peer-to-peer marketplace for city barter and trades. 
-              We track meetings to keep everyone safe, and <strong>reputation matters</strong> — 
-              users who abuse or scam will lose access forever.
+              We track meetings to keep everyone safe, and
+              <strong>reputation matters</strong> — users who abuse or scam will
+              lose access forever.
             </p>
-            <ul style="list-style: none; padding: 0;">
-              <li class="flex items-center gap-3 mb-4">
-                <span style="color: var(--color-primary);">✓</span>
-                <span><strong>100% Free</strong> - No fees, no commissions, no hidden costs</span>
+            <ul class="trust-safety-section__features">
+              <li class="trust-safety-section__feature">
+                <span class="trust-safety-section__feature-icon">✓</span>
+                <span
+                  ><strong>100% Free</strong> - No fees, no commissions, no hidden
+                  costs</span
+                >
               </li>
-              <li class="flex items-center gap-3 mb-4">
-                <span style="color: var(--color-primary);">✓</span>
-                <span><strong>Flexible Payment Methods</strong> - Trade with any currency, gold, silver, products, or services — all methods welcome and encouraged</span>
+              <li class="trust-safety-section__feature">
+                <span class="trust-safety-section__feature-icon">✓</span>
+                <span
+                  ><strong>Flexible Payment Methods</strong> - Trade with any currency,
+                  gold, silver, products, or services — all methods welcome and encouraged</span
+                >
               </li>
-              <li class="flex items-center gap-3 mb-4">
-                <span style="color: var(--color-primary);">✓</span>
-                <span><strong>Meeting Tracking</strong> - We track all meetings to keep you safe during local trades</span>
+              <li class="trust-safety-section__feature">
+                <span class="trust-safety-section__feature-icon">✓</span>
+                <span
+                  ><strong>Meeting Tracking</strong> - We track all meetings to keep
+                  you safe during local trades</span
+                >
               </li>
-              <li class="flex items-center gap-3 mb-4">
-                <span style="color: var(--color-primary);">✓</span>
-                <span><strong>Zero Tolerance Policy</strong> - Users caught abusing or scamming lose access forever</span>
+              <li class="trust-safety-section__feature">
+                <span class="trust-safety-section__feature-icon">✓</span>
+                <span
+                  ><strong>Zero Tolerance Policy</strong> - Users caught abusing
+                  or scamming lose access forever</span
+                >
               </li>
-              <li class="flex items-center gap-3 mb-4">
-                <span style="color: var(--color-primary);">✓</span>
-                <span><strong>Reputation Matters</strong> - Your trading history and reviews build your reputation in the community</span>
+              <li class="trust-safety-section__feature">
+                <span class="trust-safety-section__feature-icon">✓</span>
+                <span
+                  ><strong>Reputation Matters</strong> - Your trading history and
+                  reviews build your reputation in the community</span
+                >
               </li>
-              <li class="flex items-center gap-3 mb-4">
-                <span style="color: var(--color-primary);">✓</span>
-                <span><strong>Prohibited Items</strong> - No drugs, weapons, or illegal products allowed</span>
+              <li class="trust-safety-section__feature">
+                <span class="trust-safety-section__feature-icon">✓</span>
+                <span
+                  ><strong>Prohibited Items</strong> - No drugs, weapons, or illegal
+                  products allowed</span
+                >
               </li>
-              <li class="flex items-center gap-3 mb-4">
-                <span style="color: var(--color-primary);">✓</span>
+              <li class="trust-safety-section__feature">
+                <span class="trust-safety-section__feature-icon">✓</span>
                 <span>24/7 support for dispute resolution</span>
               </li>
-              <li class="flex items-center gap-3">
-                <span style="color: var(--color-primary);">✓</span>
+              <li class="trust-safety-section__feature">
+                <span class="trust-safety-section__feature-icon">✓</span>
                 <span>Secure messaging with no personal info shared</span>
               </li>
             </ul>
@@ -491,38 +420,27 @@
     <!-- ============================================
                  CTA SECTION
                  ============================================ -->
-    <section
-      class="section section--primary"
-      style="position: relative; overflow: hidden;"
-    >
+    <section class="section section--primary cta-section">
       <!-- Decorative elements -->
-      <div
-        style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: var(--radius-full);"
-      ></div>
-      <div
-        style="position: absolute; bottom: -80px; left: -80px; width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: var(--radius-full);"
-      ></div>
+      <div class="cta-section__blob cta-section__blob--top"></div>
+      <div class="cta-section__blob cta-section__blob--bottom"></div>
 
-      <div class="container" style="position: relative; z-index: 1;">
-        <div class="text-center" style="max-width: 700px; margin: 0 auto;">
-          <h2 style="color: white; margin-bottom: var(--space-4);">
+      <div class="container cta-section__container">
+        <div class="cta-section__content">
+          <h2 class="cta-section__title">
             Ready to Start Selling?
           </h2>
-          <p
-            style="color: rgba(255,255,255,0.9); font-size: var(--text-lg); margin-bottom: var(--space-8);"
-          >
-            Join your local P2P trading community. List items for barter or sale <strong>completely free</strong>. 
-            Build your reputation through honest trades. No fees, no commissions, ever.
+          <p class="cta-section__description">
+            Join your local P2P trading community. List items for barter or sale <strong
+              >completely free</strong
+            >. Build your reputation through honest trades. No fees, no
+            commissions, ever.
           </p>
-          <div class="flex justify-center gap-4">
+          <div class="cta-section__actions">
             <a href="/my-listings" class="btn btn--secondary btn--xl">
               Create Free Listing
             </a>
-            <a
-              href="/marketplace"
-              class="btn btn--xl"
-              style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3);"
-            >
+            <a href="/marketplace" class="btn btn--xl cta-section__btn-secondary">
               Browse Marketplace
             </a>
           </div>
@@ -531,132 +449,15 @@
     </section>
   </main>
 
-  <!-- ============================================
-             FOOTER
-             ============================================ -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer__grid">
-        <!-- Brand Column -->
-        <div class="footer__brand">
-          <a href="/" class="logo footer__logo">
-            <span class="logo__icon">🏪</span>
-            <span>LocalMarket</span>
-          </a>
-          <p class="footer__description">
-            The best way to buy and sell locally. Connect with your community.
-          </p>
-          <div class="footer__social">
-            <button
-              type="button"
-              class="footer__social-link"
-              aria-label="Twitter">𝕏</button
-            >
-            <button
-              type="button"
-              class="footer__social-link"
-              aria-label="Facebook">📘</button
-            >
-            <button
-              type="button"
-              class="footer__social-link"
-              aria-label="Instagram">📷</button
-            >
-            <button
-              type="button"
-              class="footer__social-link"
-              aria-label="YouTube">▶️</button
-            >
-          </div>
-        </div>
-
-        <!-- Categories Column -->
-        <div class="footer__column">
-          <h4 class="footer__column-title">Categories</h4>
-          <nav class="footer__links">
-            <a href="/marketplace?category=vehicles" class="footer__link"
-              >Vehicles</a
-            >
-            <a href="/marketplace?category=electronics" class="footer__link"
-              >Electronics</a
-            >
-            <a href="/marketplace?category=property" class="footer__link"
-              >Property</a
-            >
-            <a href="/marketplace?category=fashion" class="footer__link"
-              >Fashion</a
-            >
-          </nav>
-        </div>
-
-        <!-- Resources Column -->
-        <div class="footer__column">
-          <h4 class="footer__column-title">Resources</h4>
-          <nav class="footer__links">
-            <button type="button" class="footer__link">Help Center</button>
-            <button type="button" class="footer__link">Safety Tips</button>
-            <button type="button" class="footer__link">Seller Guide</button>
-            <button type="button" class="footer__link">Buyer Guide</button>
-          </nav>
-        </div>
-
-        <!-- Company Column -->
-        <div class="footer__column">
-          <h4 class="footer__column-title">Company</h4>
-          <nav class="footer__links">
-            <button type="button" class="footer__link">About Us</button>
-            <button type="button" class="footer__link">Careers</button>
-            <button type="button" class="footer__link">Blog</button>
-            <button type="button" class="footer__link">Contact</button>
-          </nav>
-        </div>
-      </div>
-
-      <div class="footer__bottom">
-        <p>&copy; 2025 {appName}. All rights reserved.</p>
-        <nav class="footer__legal-links">
-          <a href="/privacy" class="footer__link">Privacy Policy</a>
-          <a href="/terms" class="footer__link">Terms of Service</a>
-          <a href="/cookie-policy" class="footer__link">Cookie Policy</a>
-        </nav>
-      </div>
-    </div>
-  </footer>
+  <Footer {appName} />
 </div>
 
 <style>
-  /* Mobile menu styles */
-  .nav-overlay.active {
-    display: block;
-  }
+  /* ============================================
+     COMPONENT-SPECIFIC STYLES
+     ============================================ */
 
-  .nav.active {
-    transform: translateX(0);
-  }
-
-  .menu-toggle.active .menu-toggle__bar {
-    transform: rotate(45deg);
-  }
-
-  .menu-toggle.active .menu-toggle__bar::before {
-    transform: rotate(-90deg);
-    top: 0;
-  }
-
-  .menu-toggle.active .menu-toggle__bar::after {
-    opacity: 0;
-  }
-
-  /* Category card button styles */
-  .category-card {
-    cursor: pointer;
-    border: none;
-    background: none;
-    text-align: left;
-    padding: 0;
-    width: 100%;
-  }
-
+  /* Category Chip */
   .category-chip {
     cursor: pointer;
     border: none;
@@ -672,30 +473,18 @@
     text-decoration: underline;
   }
 
-  /* Footer button styles */
-  .footer__social-link,
-  .footer__link {
-    cursor: pointer;
-  }
-
-  .footer__social-link:focus,
-  .footer__link:focus {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-  }
-
   /* ============================================
-     MOBILE-FIRST RESPONSIVE STYLES
+     MOBILE-FIRST STYLES
      ============================================ */
 
-  /* Hero Section - Mobile */
+  /* Hero Section */
   .section--hero {
     position: relative;
     overflow: hidden;
   }
 
   .blob {
-    display: none; /* Hide decorative blobs on mobile */
+    display: none;
   }
 
   .hero__content {
@@ -711,7 +500,7 @@
     font-size: var(--text-base);
   }
 
-  /* Search Form - Mobile */
+  /* Search Form */
   .search-form__grid {
     display: flex;
     flex-direction: column;
@@ -727,7 +516,7 @@
     margin-top: var(--space-2);
   }
 
-  /* Quick Categories - Mobile */
+  /* Quick Categories */
   .quick-categories {
     display: flex;
     flex-wrap: wrap;
@@ -743,28 +532,187 @@
     padding: var(--space-1) var(--space-2);
   }
 
-  /* How It Works Section - Mobile */
+  /* Grid Layouts */
   .grid-cols-4 {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-4);
   }
 
-  /* Trust & Safety Section - Mobile */
-  .section > .grid {
+  /* Trust & Safety Section */
+  .trust-safety-section__grid {
     display: flex;
     flex-direction: column;
-    gap: var(--space-6);
+    gap: var(--space-8);
   }
 
-  /* CTA Section - Mobile */
-  .flex.justify-center.gap-4 {
+  .trust-safety-section__visual {
+    position: relative;
+  }
+
+  .trust-safety-section__cards-wrapper {
+    background: linear-gradient(135deg, var(--color-primary-subtle), rgba(78, 205, 196, 0.1));
+    border-radius: var(--radius-2xl);
+    padding: var(--space-6);
+    position: relative;
+  }
+
+  .trust-safety-section__card {
+    margin-bottom: var(--space-4);
+  }
+
+  .trust-safety-section__card:last-child {
+    margin-bottom: 0;
+  }
+
+  .trust-safety-section__card-body {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .trust-safety-section__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-xl);
+    flex-shrink: 0;
+  }
+
+  .trust-safety-section__icon--tertiary {
+    background: var(--color-tertiary);
+  }
+
+  .trust-safety-section__icon--secondary {
+    background: var(--color-secondary);
+  }
+
+  .trust-safety-section__card-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .trust-safety-section__card-title {
+    font-weight: var(--font-semibold);
+    margin-bottom: var(--space-1);
+  }
+
+  .trust-safety-section__card-description {
+    font-size: var(--text-sm);
+  }
+
+  .trust-safety-section__check {
+    color: var(--color-primary);
+    font-size: var(--text-xl);
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .trust-safety-section__description {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-6);
+    line-height: var(--leading-relaxed);
+  }
+
+  .trust-safety-section__features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-6) 0;
+  }
+
+  .trust-safety-section__feature {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+
+  .trust-safety-section__feature:last-child {
+    margin-bottom: 0;
+  }
+
+  .trust-safety-section__feature-icon {
+    color: var(--color-primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* CTA Section */
+  .cta-section {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section__blob {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+    display: none;
+  }
+
+  .cta-section__blob--top {
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+  }
+
+  .cta-section__blob--bottom {
+    bottom: -80px;
+    left: -80px;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .cta-section__container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-section__content {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .cta-section__title {
+    color: white;
+    margin-bottom: var(--space-4);
+    font-size: var(--text-2xl);
+    line-height: 1.2;
+  }
+
+  .cta-section__description {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: var(--text-base);
+    margin-bottom: var(--space-6);
+    line-height: var(--leading-relaxed);
+  }
+
+  .cta-section__actions {
+    display: flex;
     flex-direction: column;
+    gap: var(--space-4);
     width: 100%;
   }
 
-  .flex.justify-center.gap-4 .btn {
+  .cta-section__actions .btn {
     width: 100%;
+  }
+
+  .cta-section__btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .cta-section__btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
   }
 
   /* ============================================
@@ -772,7 +720,7 @@
      ============================================ */
   @media (min-width: 768px) {
     .blob {
-      display: block; /* Show blobs on tablet+ */
+      display: block;
     }
 
     .hero__title {
@@ -804,16 +752,41 @@
       grid-template-columns: repeat(2, 1fr);
     }
 
-    .section > .grid {
+    .trust-safety-section__grid {
       grid-template-columns: 1fr 1fr;
       display: grid;
+      gap: var(--space-12);
+      align-items: center;
     }
 
-    .flex.justify-center.gap-4 {
+    .trust-safety-section__cards-wrapper {
+      padding: var(--space-10);
+    }
+
+    .trust-safety-section__description {
+      font-size: var(--text-lg);
+    }
+
+    .cta-section__blob {
+      display: block;
+    }
+
+    .cta-section__title {
+      font-size: var(--text-3xl);
+    }
+
+    .cta-section__description {
+      font-size: var(--text-lg);
+      margin-bottom: var(--space-8);
+    }
+
+    .cta-section__actions {
       flex-direction: row;
+    justify-content: center;
+      gap: var(--space-4);
     }
 
-    .flex.justify-center.gap-4 .btn {
+    .cta-section__actions .btn {
       width: auto;
     }
   }
@@ -841,102 +814,6 @@
   @media (min-width: 1280px) {
     .hero__content {
       max-width: 900px;
-    }
-  }
-
-  /* ============================================
-     CATEGORIES GRID SECTION
-     ============================================ */
-  .categories-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-4);
-  }
-
-  .category-card {
-    display: flex;
-    flex-direction: column;
-    background: var(--color-white);
-    border: 1px solid var(--color-gray-200);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    text-decoration: none;
-    color: inherit;
-    transition: all var(--transition-base);
-    cursor: pointer;
-  }
-
-  .category-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--color-primary);
-  }
-
-  .category-card__image {
-    width: 100%;
-    height: 200px;
-    background: var(--color-gray-50);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .category-card__icon {
-    font-size: 4rem;
-    line-height: 1;
-  }
-
-  .category-card__placeholder {
-    width: 80px;
-    height: 80px;
-    background: var(--color-primary);
-    color: white;
-    border-radius: var(--radius-full);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--text-3xl);
-    font-weight: var(--font-bold);
-  }
-
-  .category-card__body {
-    padding: var(--space-4);
-    text-align: center;
-  }
-
-  .category-card__title {
-    font-size: var(--text-lg);
-    font-weight: var(--font-semibold);
-    color: var(--color-gray-900);
-    margin: 0 0 var(--space-2) 0;
-  }
-
-  .category-card__count {
-    font-size: var(--text-sm);
-    color: var(--color-gray-600);
-    margin: 0;
-  }
-
-  @media (min-width: 768px) {
-    .categories-grid {
-      grid-template-columns: repeat(4, 1fr);
-      gap: var(--space-6);
-    }
-
-    .category-card__image {
-      height: 220px;
-    }
-
-    .category-card__icon {
-      font-size: 5rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .category-card__image {
-      height: 240px;
     }
   }
 </style>

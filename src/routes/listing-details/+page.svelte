@@ -1,23 +1,25 @@
 <script>
   import NavigationBar from "$lib/components/NavigationBar.svelte";
-  import ListingCard from "$lib/components/ListingCard.svelte";
   import ListingMap from "$lib/components/ListingMap.svelte";
   import ListingImageGallery from "$lib/components/ListingImageGallery.svelte";
+  import SEOHead from "$lib/components/SEOHead.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  import { getProductSchema } from "$lib/utils/seo.js";
 
   const session = useSession();
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data } = $props();
+  const { data, userLanguage = "en" } = $props();
 
   const listing = $derived(data?.listing);
   const similarListings = $derived(data?.similarListings || []);
   const marketplaceUser = $derived(data?.marketplaceUser);
   const initialIsFavorite = $derived(data?.isFavorite || false);
   const listingImages = $derived(listing?.images || []);
+  const sellerContactInfo = $derived(data?.sellerContactInfo || null);
 
   // Local state
   let favoriteState = $state(false);
@@ -76,20 +78,8 @@
     if (!listing?.id) return;
 
     try {
-      const method = favoriteState ? "DELETE" : "POST";
-      const response = await fetch(`/api/favorites/${listing.id}`, {
-        method,
-      });
-
-      if (response.ok) {
-        favoriteState = !favoriteState;
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Error toggling favorite:", errorData.error);
-        alert(
-          errorData.error || "Failed to update favorite. Please try again.",
-        );
-      }
+      const { toggleFavorite } = await import("$lib/services/favorites.js");
+      favoriteState = await toggleFavorite(listing.id, favoriteState);
     } catch (err) {
       console.error("Error toggling favorite:", err);
       alert("Failed to update favorite. Please try again.");
@@ -115,25 +105,15 @@
     }
 
     try {
-      // Create or get conversation
-      const response = await fetch("/api/conversations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          listingId: listing.id,
-          sellerId: listing.userId
-        })
+      const { createOrGetConversation } = await import("$lib/services/conversations.js");
+      const conversation = await createOrGetConversation({
+        listingId: listing.id,
+        sellerId: listing.userId
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to create conversation");
-      }
       
-      const data = await response.json();
       // Navigate to trade room with the conversation ID
-      if (data.conversation?.id) {
-        await goto(`/trade-room?conversationId=${data.conversation.id}`);
+      if (conversation?.id) {
+        await goto(`/trade-room?conversationId=${conversation.id}`);
       } else {
         alert("Failed to create conversation. Please try again.");
       }
@@ -183,23 +163,13 @@
     try {
       // For listing reports, we'll send to a general report endpoint
       // Since disputes require a trade, we'll create a simpler report mechanism
-      const response = await fetch("/api/user/report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reportedUserId: listing.seller.id,
-          listingId: listing.id,
-          issueType: reportIssueType,
-          title: reportTitle.trim(),
-          description: reportDescription.trim(),
-          context: "listing"
-        }),
+      const { reportUser } = await import("$lib/services/user.js");
+      await reportUser({
+        userId: listing.seller.id,
+        issueType: reportIssueType,
+        title: reportTitle.trim(),
+        description: reportDescription.trim()
       });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to submit report");
-      }
 
       alert("Report submitted successfully. Our team will review it shortly.");
       showReportModal = false;
@@ -267,10 +237,31 @@
     return labels[condition] || condition;
   }
 
+  // Generate SEO data for listing
+  const listingTitle = $derived(listing?.title || "Listing");
+  const listingDescription = $derived(
+    listing?.description?.substring(0, 160) || 
+    `View ${listingTitle} on Marketto - Local P2P Marketplace`
+  );
+  const listingImage = $derived(
+    listing?.images?.[0]?.imageUrl || "/favicon.svg"
+  );
+  const productSchema = $derived(getProductSchema(listing));
 </script>
 
+<SEOHead
+  title={listingTitle}
+  description={listingDescription}
+  image={listingImage}
+  type="product"
+  keywords={listing?.category?.name ? `${listing.category.name}, marketplace, p2p, local trading` : undefined}
+  publishedTime={listing?.createdAt}
+  modifiedTime={listing?.updatedAt}
+  structuredData={productSchema ? JSON.parse(productSchema) : undefined}
+/>
+
 <div class="page-wrapper">
-  <NavigationBar />
+  <NavigationBar {userLanguage} />
 
   <main class="main-content">
     <div class="container">
@@ -310,10 +301,7 @@
         </nav>
 
         <!-- Main Layout -->
-        <div
-          class="listing-detail"
-          style="display: grid; grid-template-columns: 1fr 400px; gap: var(--space-8);"
-        >
+        <div class="listing-detail">
           <!-- Left Column - Images & Details -->
           <div class="listing-detail__main">
             <!-- Image Gallery -->
@@ -549,6 +537,69 @@
                       </a>
                     {/if}
                   </div>
+
+                  <!-- Contact Information (only for logged-in users) -->
+                  {#if user && !isSeller && sellerContactInfo}
+                    <div
+                      style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-gray-200);"
+                    >
+                      <h4
+                        style="font-size: var(--text-sm); font-weight: var(--font-semibold); color: var(--color-gray-700); margin-bottom: var(--space-3);"
+                      >
+                        Contact Seller
+                      </h4>
+                      <div
+                        style="display: flex; flex-direction: column; gap: var(--space-2);"
+                      >
+                        {#if sellerContactInfo.phone}
+                          <a
+                            href="tel:{sellerContactInfo.phone}"
+                            style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--color-gray-50); border-radius: var(--radius-md); text-decoration: none; color: var(--color-gray-900); font-size: var(--text-sm); transition: background var(--transition-fast);"
+                            onmouseover={(e) => e.currentTarget.style.background = 'var(--color-gray-100)'}
+                            onmouseout={(e) => e.currentTarget.style.background = 'var(--color-gray-50)'}
+                          >
+                            <span style="font-size: var(--text-lg);">📞</span>
+                            <span style="flex: 1;">{sellerContactInfo.phone}</span>
+                          </a>
+                        {/if}
+                        {#if sellerContactInfo.whatsapp}
+                          <a
+                            href="https://wa.me/{sellerContactInfo.whatsapp.replace(/[^0-9]/g, '')}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: #25D366; border-radius: var(--radius-md); text-decoration: none; color: white; font-size: var(--text-sm); transition: opacity var(--transition-fast);"
+                            onmouseover={(e) => e.currentTarget.style.opacity = '0.9'}
+                            onmouseout={(e) => e.currentTarget.style.opacity = '1'}
+                          >
+                            <span style="font-size: var(--text-lg);">💬</span>
+                            <span style="flex: 1;">WhatsApp: {sellerContactInfo.whatsapp}</span>
+                            <span style="font-size: var(--text-xs);">↗</span>
+                          </a>
+                        {/if}
+                        {#if sellerContactInfo.telegram}
+                          <a
+                            href="https://t.me/{sellerContactInfo.telegram.replace('@', '')}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: #0088cc; border-radius: var(--radius-md); text-decoration: none; color: white; font-size: var(--text-sm); transition: opacity var(--transition-fast);"
+                            onmouseover={(e) => e.currentTarget.style.opacity = '0.9'}
+                            onmouseout={(e) => e.currentTarget.style.opacity = '1'}
+                          >
+                            <span style="font-size: var(--text-lg);">✈️</span>
+                            <span style="flex: 1;">Telegram: {sellerContactInfo.telegram}</span>
+                            <span style="font-size: var(--text-xs);">↗</span>
+                          </a>
+                        {/if}
+                        {#if !sellerContactInfo.phone && !sellerContactInfo.whatsapp && !sellerContactInfo.telegram}
+                          <p
+                            style="font-size: var(--text-xs); color: var(--color-gray-500); text-align: center; padding: var(--space-2);"
+                          >
+                            No contact information available
+                          </p>
+                        {/if}
+                      </div>
+                    </div>
+                  {/if}
                 </div>
               </div>
 
@@ -726,7 +777,44 @@
               style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--space-4);"
             >
               {#each similarListings as similarListing}
-                <ListingCard listing={similarListing} {marketplaceUser} />
+                {@const isOwner = marketplaceUser?.id === similarListing.userId}
+                {@const listingUrl = isOwner ? `/listings/edit/${similarListing.id}` : `/listing-details/${similarListing.id}`}
+                <a href={listingUrl} class="listing-card listing-card--list">
+                  <div class="listing-card__image">
+                    <div
+                      class="listing-card__placeholder"
+                      style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+                    >
+                      🚗
+                    </div>
+                    {#if similarListing.featured}
+                      <span class="listing-card__badge listing-card__badge--featured">Featured</span>
+                    {/if}
+                  </div>
+                  <div class="listing-card__body">
+                    <div class="listing-card__header">
+                      <div>
+                        <div class="listing-card__category">{similarListing?.category?.name || 'Category'}</div>
+                        <h4 class="listing-card__title">{similarListing?.title || 'Listing Title'}</h4>
+                      </div>
+                      <div class="listing-card__price">£{similarListing?.price || '0'}</div>
+                    </div>
+                    {#if similarListing?.description}
+                      <div class="listing-card__details">
+                        {similarListing.description.substring(0, 100)}{similarListing.description.length > 100 ? '...' : ''}
+                      </div>
+                    {/if}
+                    <div class="listing-card__footer">
+                      <div class="listing-card__meta">
+                        <span class="listing-card__location">📍 {similarListing?.locationCity || 'Location'} • {similarListing?.locationPostcode || ''}</span>
+                        <span class="listing-card__time">{similarListing?.createdAt ? new Date(similarListing.createdAt).toLocaleDateString() : ''}</span>
+                      </div>
+                      {#if isOwner}
+                        <span class="listing-card__edit-badge" style="background: var(--color-primary); color: white; padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: var(--font-semibold);">Edit</span>
+                      {/if}
+                    </div>
+                  </div>
+                </a>
               {/each}
             </div>
           </section>
@@ -844,13 +932,18 @@
 
 <style>
   .listing-detail {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: var(--space-6);
+    width: 100%;
+  }
+
+  .listing-detail__main {
+    width: 100%;
   }
 
   .listing-detail__sidebar {
-    order: -1;
+    width: 100%;
   }
 
   .error-state {
@@ -894,11 +987,17 @@
 
   @media (min-width: 1024px) {
     .listing-detail {
+      display: grid;
       grid-template-columns: 1fr 400px;
       gap: var(--space-8);
     }
 
+    .listing-detail__main {
+      width: auto;
+    }
+
     .listing-detail__sidebar {
+      width: auto;
       order: 0;
     }
   }

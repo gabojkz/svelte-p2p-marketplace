@@ -7,7 +7,7 @@
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data } = $props();
+  const { data, userLanguage = "en" } = $props();
 
   const profileUser = $derived(data?.profileUser);
   const listingsCount = $derived(data?.listingsCount || 0);
@@ -134,18 +134,87 @@
     // Navigate to marketplace to find their listings
     await goto("/marketplace");
   }
+
+  // Report state
+  let showReportModal = $state(false);
+  let reportIssueType = $state("");
+  let reportTitle = $state("");
+  let reportDescription = $state("");
+  let submittingReport = $state(false);
+
+  // Report issue types for user reports
+  const reportIssueTypes = [
+    { value: "scam", label: "Scam / Fraud", description: "Suspicious or fraudulent behavior" },
+    { value: "harassment", label: "Harassment", description: "Inappropriate or abusive behavior" },
+    { value: "spam", label: "Spam Account", description: "Fake or spam account" },
+    { value: "fake", label: "Fake Profile", description: "Misleading or fake profile information" },
+    { value: "other", label: "Other", description: "Other issue not listed above" }
+  ];
+
+  // Handle report submission
+  async function handleReportSubmit() {
+    if (!reportIssueType) {
+      alert("Please select a reason for reporting this user");
+      return;
+    }
+
+    if (!reportTitle.trim()) {
+      alert("Please provide a title for your report");
+      return;
+    }
+
+    if (!reportDescription.trim() || reportDescription.trim().length < 20) {
+      alert("Please provide a detailed description (at least 20 characters)");
+      return;
+    }
+
+    if (!profileUser?.id) {
+      alert("Unable to submit report. User information not available.");
+      return;
+    }
+
+    submittingReport = true;
+
+    try {
+      const { reportUser } = await import("$lib/services/user.js");
+      await reportUser({
+        userId: profileUser.id,
+        issueType: reportIssueType,
+        title: reportTitle.trim(),
+        description: reportDescription.trim()
+      });
+
+      alert("Report submitted successfully. Our team will review it shortly.");
+      showReportModal = false;
+      reportIssueType = "";
+      reportTitle = "";
+      reportDescription = "";
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to submit report. Please try again.";
+      alert(message);
+      console.error("Error submitting report:", err);
+    } finally {
+      submittingReport = false;
+    }
+  }
+
+  function closeReportModal() {
+    showReportModal = false;
+    reportIssueType = "";
+    reportTitle = "";
+    reportDescription = "";
+  }
 </script>
 
 <div class="page-wrapper">
   <!-- Header -->
-  <NavigationBar />
+  <NavigationBar {userLanguage} />
 
   <!-- Main Content -->
   <main class="main-content">
     <div class="container">
       <!-- Profile Header -->
       <div class="profile-header">
-        <div class="profile-header__background"></div>
         <div class="profile-header__content">
           <!-- Avatar -->
           <div class="profile-avatar">
@@ -170,92 +239,78 @@
                   : profileUser?.username || "User"}
               </h1>
               {#if profileUser?.emailVerified}
-                <span class="badge badge--success">Verified</span>
+                <span class="badge badge--success badge--sm">Verified</span>
               {/if}
             </div>
 
-            <div class="profile-info__meta">
-              <span class="profile-info__username">@{profileUser?.username}</span>
+            <!-- Key Data Points -->
+            <div class="profile-info__data">
+              <div class="profile-info__data-item">
+                <span class="profile-info__data-label">Username</span>
+                <span class="profile-info__data-value">@{profileUser?.username}</span>
+              </div>
+              
               {#if profileUser?.locationCity}
-                <span class="profile-info__location">
-                  📍 {profileUser.locationCity}
-                  {#if profileUser.locationPostcode}
-                    , {profileUser.locationPostcode}
-                  {/if}
-                </span>
+                <div class="profile-info__data-item">
+                  <span class="profile-info__data-label">Location</span>
+                  <span class="profile-info__data-value">
+                    {profileUser.locationCity}
+                    {#if profileUser.locationPostcode}
+                      , {profileUser.locationPostcode}
+                    {/if}
+                  </span>
+                </div>
               {/if}
-              <span class="profile-info__joined">
-                🗓️ Joined {formatDate(profileUser?.createdAt)}
-              </span>
-              {#if profileUser?.lastLoginAt}
-                <span class="profile-info__last-login">
-                  🕐 Last active {formatLastLogin(profileUser.lastLoginAt)}
+
+              <div class="profile-info__data-item">
+                <span class="profile-info__data-label">Member since</span>
+                <span class="profile-info__data-value">{formatDate(profileUser?.createdAt)}</span>
+              </div>
+
+              <div class="profile-info__data-item">
+                <span class="profile-info__data-label">Last active</span>
+                <span class="profile-info__data-value">
+                  {profileUser?.lastLoginAt ? formatLastLogin(profileUser.lastLoginAt) : "Never"}
                 </span>
+              </div>
+
+              {#if averageRating > 0}
+                <div class="profile-info__data-item">
+                  <span class="profile-info__data-label">Rating</span>
+                  <span class="profile-info__data-value">
+                    <span style="color: var(--color-accent-yellow); font-weight: var(--font-semibold);">
+                      ⭐ {averageRating.toFixed(1)}
+                    </span>
+                    <span style="color: var(--color-gray-500); margin-left: var(--space-1);">
+                      ({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})
+                    </span>
+                  </span>
+                </div>
               {/if}
             </div>
-
-            <!-- Reputation/Rating -->
-            {#if averageRating > 0}
-              <div class="profile-info__reputation">
-                <div class="reputation-badge reputation-badge--{getReputationColor(averageRating)}">
-                  <span class="reputation-badge__rating">{averageRating.toFixed(1)}</span>
-                  <span class="reputation-badge__stars">{renderStars(averageRating)}</span>
-                  <span class="reputation-badge__count">({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})</span>
-                </div>
-              </div>
-            {:else}
-              <div class="profile-info__reputation">
-                <span class="reputation-badge reputation-badge--neutral">
-                  No reviews yet
-                </span>
-              </div>
-            {/if}
 
             {#if profileUser?.bio}
               <p class="profile-info__bio">{profileUser.bio}</p>
-            {/if}
-
-            <!-- Contact Info (if privacy allows) -->
-            {#if profileUser?.email || profileUser?.phone}
-              <div class="profile-info__contact">
-                {#if profileUser.email}
-                  <div class="profile-info__contact-item">
-                    <span class="profile-info__contact-label">Email:</span>
-                    <span class="profile-info__contact-value">{profileUser.email}</span>
-                  </div>
-                {/if}
-                {#if profileUser.phone}
-                  <div class="profile-info__contact-item">
-                    <span class="profile-info__contact-label">Phone:</span>
-                    <span class="profile-info__contact-value">
-                      {profileUser.phone}
-                      {#if profileUser.phoneVerified}
-                        <span class="badge badge--success badge--sm">Verified</span>
-                      {/if}
-                    </span>
-                  </div>
-                {/if}
-              </div>
             {/if}
           </div>
 
           <!-- Action Buttons -->
           <div class="profile-actions">
             {#if isOwnProfile}
-              <a href="/settings" class="btn btn--primary">
-                ⚙️ Edit Profile
+              <a href="/settings" class="btn btn--primary btn--sm">
+                Edit Profile
               </a>
             {:else if user}
               <button
-                class="btn btn--primary"
+                class="btn btn--primary btn--sm"
                 onclick={startConversation}
                 type="button"
               >
-                💬 Send Message
+                Message
               </button>
               {#if profileUser?.email || profileUser?.phone}
                 <button
-                  class="btn btn--outline"
+                  class="btn btn--outline btn--sm"
                   onclick={() => {
                     if (profileUser?.email) {
                       window.location.href = `mailto:${profileUser.email}`;
@@ -265,12 +320,19 @@
                   }}
                   type="button"
                 >
-                  📧 Contact
+                  Contact
                 </button>
               {/if}
+              <button
+                class="btn btn--outline btn--sm btn--danger"
+                onclick={() => showReportModal = true}
+                type="button"
+              >
+                Report
+              </button>
             {:else}
-              <a href="/login" class="btn btn--primary">
-                💬 Send Message
+              <a href="/login" class="btn btn--primary btn--sm">
+                Message
               </a>
             {/if}
           </div>
@@ -417,34 +479,118 @@
       </section>
     </div>
   </main>
+
+  <!-- Report Modal -->
+  {#if showReportModal}
+    <div class="modal-overlay" onclick={closeReportModal}>
+      <div class="modal-content" onclick={(e) => e.stopPropagation()}>
+        <div class="modal-header">
+          <h3>Report Seller</h3>
+          <button
+            class="modal-close"
+            onclick={closeReportModal}
+            type="button"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-4);">
+            Reporting <strong>{profileUser?.firstName || profileUser?.username || 'this user'}</strong> for inappropriate behavior or violation of platform rules.
+          </p>
+
+          <!-- Issue Type Selection -->
+          <div style="margin-bottom: var(--space-4);">
+            <label class="form-label">
+              Reason for Report <span style="color: var(--color-error);">*</span>
+            </label>
+            <select
+              bind:value={reportIssueType}
+              class="form-select"
+            >
+              <option value="">Select a reason...</option>
+              {#each reportIssueTypes as type}
+                <option value={type.value}>{type.label}</option>
+              {/each}
+            </select>
+            {#if reportIssueType}
+              <p style="font-size: var(--text-xs); color: var(--color-gray-600); margin-top: var(--space-1);">
+                {reportIssueTypes.find(t => t.value === reportIssueType)?.description}
+              </p>
+            {/if}
+          </div>
+
+          <!-- Title -->
+          <div style="margin-bottom: var(--space-4);">
+            <label class="form-label">
+              Title <span style="color: var(--color-error);">*</span>
+            </label>
+            <input
+              type="text"
+              bind:value={reportTitle}
+              placeholder="Brief summary of the issue"
+              maxlength="200"
+              class="form-input"
+            />
+            <p style="font-size: var(--text-xs); color: var(--color-gray-600); margin-top: var(--space-1);">
+              {reportTitle.length}/200 characters
+            </p>
+          </div>
+
+          <!-- Description -->
+          <div style="margin-bottom: var(--space-4);">
+            <label class="form-label">
+              Detailed Description <span style="color: var(--color-error);">*</span>
+            </label>
+            <textarea
+              bind:value={reportDescription}
+              placeholder="Please provide as much detail as possible about what happened. Include any relevant information that will help us investigate."
+              rows="6"
+              class="form-textarea"
+            ></textarea>
+            <p style="font-size: var(--text-xs); color: var(--color-gray-600); margin-top: var(--space-1);">
+              Minimum 20 characters. {reportDescription.length} characters entered.
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn--ghost"
+            onclick={closeReportModal}
+            type="button"
+            disabled={submittingReport}
+          >
+            Cancel
+          </button>
+          <button
+            class="btn btn--primary btn--danger"
+            onclick={handleReportSubmit}
+            type="button"
+            disabled={submittingReport || !reportIssueType || !reportTitle.trim() || reportDescription.trim().length < 20}
+          >
+            {submittingReport ? "Submitting..." : "Submit Report"}
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
   .profile-header {
-    position: relative;
-    background: linear-gradient(135deg, var(--color-primary-subtle), rgba(78, 205, 196, 0.1));
-    border-radius: var(--radius-lg);
+    background: white;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
     margin-bottom: var(--space-6);
-    overflow: hidden;
-  }
-
-  .profile-header__background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 120px;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-tertiary) 100%);
-    opacity: 0.1;
   }
 
   .profile-header__content {
-    position: relative;
-    padding: var(--space-8);
-    display: flex;
+    padding: var(--space-6);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     gap: var(--space-6);
-    align-items: flex-start;
-    flex-wrap: wrap;
+    align-items: start;
   }
 
   .profile-avatar {
@@ -454,177 +600,108 @@
 
   .profile-avatar img,
   .profile-avatar__initials {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 4px solid white;
-    box-shadow: var(--shadow-lg);
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-gray-200);
     object-fit: cover;
   }
 
   .profile-avatar__initials {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-tertiary) 100%);
-    color: white;
+    background: var(--color-gray-100);
+    color: var(--color-gray-700);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--text-3xl);
-    font-weight: var(--font-bold);
+    font-size: var(--text-2xl);
+    font-weight: var(--font-semibold);
   }
 
   .profile-avatar__badge {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 32px;
-    height: 32px;
+    bottom: -4px;
+    right: -4px;
+    width: 24px;
+    height: 24px;
     background: var(--color-success);
     color: white;
     border-radius: 50%;
-    border: 3px solid white;
+    border: 2px solid white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: var(--font-bold);
-    font-size: var(--text-sm);
+    font-size: var(--text-xs);
   }
 
   .profile-info {
     flex: 1;
-    min-width: 200px;
+    min-width: 0;
   }
 
   .profile-info__header {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    margin-bottom: var(--space-2);
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
     flex-wrap: wrap;
   }
 
   .profile-info__name {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-bold);
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
     margin: 0;
+    color: var(--color-gray-900);
   }
 
-  .profile-info__meta {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
+  .profile-info__data {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-3) var(--space-6);
     margin-bottom: var(--space-4);
-    flex-wrap: wrap;
-    font-size: var(--text-sm);
-    color: var(--color-gray-600);
   }
 
-  .profile-info__username {
+  .profile-info__data-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .profile-info__data-label {
+    font-size: var(--text-xs);
     font-weight: var(--font-medium);
-    color: var(--color-gray-700);
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .profile-info__data-value {
+    font-size: var(--text-sm);
+    color: var(--color-gray-900);
+    font-weight: var(--font-medium);
   }
 
   .profile-info__bio {
     max-width: 600px;
     color: var(--color-gray-700);
     line-height: 1.6;
-    margin-bottom: var(--space-4);
-  }
-
-  .profile-info__contact {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
+    font-size: var(--text-sm);
     margin-top: var(--space-4);
     padding-top: var(--space-4);
-    border-top: 1px solid var(--color-gray-200);
-  }
-
-  .profile-info__contact-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-size: var(--text-sm);
-  }
-
-  .profile-info__contact-label {
-    font-weight: var(--font-medium);
-    color: var(--color-gray-600);
-  }
-
-  .profile-info__contact-value {
-    color: var(--color-gray-900);
-  }
-
-  .profile-info__reputation {
-    margin: var(--space-4) 0;
-  }
-
-  .reputation-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-full);
-    font-size: var(--text-sm);
-    font-weight: var(--font-semibold);
-  }
-
-  .reputation-badge--success {
-    background: rgba(34, 197, 94, 0.1);
-    color: var(--color-success);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-  }
-
-  .reputation-badge--info {
-    background: rgba(59, 130, 246, 0.1);
-    color: var(--color-info);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-  }
-
-  .reputation-badge--warning {
-    background: rgba(251, 191, 36, 0.1);
-    color: var(--color-warning);
-    border: 1px solid rgba(251, 191, 36, 0.3);
-  }
-
-  .reputation-badge--error {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--color-error);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-  }
-
-  .reputation-badge--neutral {
-    background: var(--color-gray-100);
-    color: var(--color-gray-600);
-    border: 1px solid var(--color-gray-200);
-  }
-
-  .reputation-badge__rating {
-    font-size: var(--text-lg);
-    font-weight: var(--font-bold);
-  }
-
-  .reputation-badge__stars {
-    color: var(--color-accent-yellow);
-    font-size: var(--text-base);
-  }
-
-  .reputation-badge__count {
-    font-size: var(--text-xs);
-    font-weight: var(--font-normal);
-    opacity: 0.8;
-  }
-
-  .profile-info__last-login {
-    font-size: var(--text-xs);
-    color: var(--color-gray-500);
+    border-top: 1px solid var(--color-gray-100);
   }
 
   .profile-actions {
     display: flex;
-    gap: var(--space-3);
-    align-items: flex-start;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: stretch;
+    min-width: 120px;
+  }
+
+  .btn--sm {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
   }
 
   .profile-stats {
@@ -879,23 +956,37 @@
 
   @media (max-width: 768px) {
     .profile-header__content {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
     }
 
-    .profile-info {
-      text-align: center;
+    .profile-avatar {
+      justify-self: center;
     }
 
-    .profile-info__header,
-    .profile-info__meta {
+    .profile-info__header {
       justify-content: center;
+      text-align: center;
+    }
+
+    .profile-info__data {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+      text-align: center;
+    }
+
+    .profile-info__data-item {
+      align-items: center;
     }
 
     .profile-actions {
       width: 100%;
-      justify-content: center;
+      flex-direction: row;
+      justify-content: stretch;
+    }
+
+    .profile-actions .btn {
+      flex: 1;
     }
 
     .listings-grid {
@@ -920,6 +1011,94 @@
     .reviews-summary {
       width: 100%;
     }
+  }
+
+  /* Report Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--space-4);
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-5);
+    border-bottom: 1px solid var(--color-gray-200);
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: var(--text-3xl);
+    color: var(--color-gray-500);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .modal-close:hover {
+    background: var(--color-gray-100);
+    color: var(--color-gray-700);
+  }
+
+  .modal-body {
+    padding: var(--space-5);
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    border-top: 1px solid var(--color-gray-200);
+  }
+
+  .btn--danger {
+    background: var(--color-error);
+    color: white;
+    border-color: var(--color-error);
+  }
+
+  .btn--danger:hover:not(:disabled) {
+    background: var(--color-error-dark);
+    border-color: var(--color-error-dark);
+  }
+
+  .btn--danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 </style>
 

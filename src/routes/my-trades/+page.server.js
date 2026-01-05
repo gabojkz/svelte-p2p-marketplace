@@ -149,7 +149,7 @@ export async function load({ locals, url }) {
     .where(
       and(
         or(eq(trades.buyerId, userId), eq(trades.sellerId, userId)),
-        inArray(trades.status, ["initiated", "payment_pending", "paid", "in_progress"])
+        inArray(trades.status, ["initiated", "in_progress"])
       )
     );
 

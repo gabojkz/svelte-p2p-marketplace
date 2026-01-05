@@ -6,8 +6,11 @@
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import { useSession, signOut } from "$lib/auth-client.js";
+  import { sendMessage } from "$lib/services/conversations.js";
+  import { completeTrade, submitReview } from "$lib/services/trade.js";
+  import { createDispute } from "$lib/services/disputes.js";
 
-  const { data } = $props();
+  const { data, userLanguage = "en" } = $props();
 
   const listing = $derived(data?.listing);
   const seller = $derived(listing?.seller);
@@ -136,19 +139,7 @@
     messageInput = "";
 
     try {
-      const response = await fetch(
-        `/api/conversations/${conversation.id}/messages`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to send message");
-      }
-
+      await sendMessage(conversation.id, content);
       // Reload page to show new message
       window.location.reload();
     } catch (err) {
@@ -193,16 +184,7 @@
     }
 
     try {
-      const response = await fetch(`/api/trades/${trade.id}/complete`, {
-        method: "PATCH",
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to complete trade");
-      }
-
-      const data = await response.json();
+      await completeTrade(trade.id);
       alert("Trade marked as complete! You can now leave a review.");
 
       // Reload the page to show the updated trade status
@@ -224,17 +206,7 @@
     }
 
     try {
-      const response = await fetch(`/api/trades/${trade.id}/reviews`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reviewData),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to submit review");
-      }
-
+      await submitReview(trade.id, reviewData);
       alert("Review submitted successfully! Thank you for your feedback.");
       showReviewForm = false;
 
@@ -257,20 +229,10 @@
     }
 
     try {
-      const response = await fetch("/api/disputes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...reportData,
-          tradeId: trade.id,
-        }),
+      await createDispute({
+        ...reportData,
+        tradeId: trade.id,
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to submit report");
-      }
-
       alert("Report submitted successfully. Our team will review it shortly.");
       showReportForm = false;
 
@@ -740,6 +702,7 @@
   .chat-input form {
     display: flex;
     gap: var(--space-2);
+    width: 100%;
   }
 
   .chat-input input {

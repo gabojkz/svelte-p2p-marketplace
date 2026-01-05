@@ -46,21 +46,10 @@
     loading = true;
 
     try {
-      const response = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token,
-          email,
-          password,
-        }),
-      });
+      const { resetPassword } = await import("$lib/services/auth.js");
+      const data = await resetPassword(token, password);
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      if (data.error) {
         error = data.error || "Failed to reset password";
       } else {
         success = true;
@@ -222,16 +211,14 @@
   .auth-page {
     min-height: 60vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: var(--space-16) 0;
-    position: relative;
+    gap: var(--space-6);
   }
 
   .back-link {
-    position: absolute;
-    top: var(--space-8);
-    left: var(--space-6);
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -239,6 +226,8 @@
     font-size: var(--text-sm);
     transition: color var(--transition-fast);
     text-decoration: none;
+    align-self: flex-start;
+    margin-left: var(--space-4);
   }
 
   .back-link:hover {
@@ -351,13 +340,19 @@
   }
 
   @media (max-width: 768px) {
+    .auth-page {
+      padding: var(--space-8) 0;
+      gap: var(--space-4);
+    }
+
     .back-link {
-      position: static;
-      margin-bottom: var(--space-4);
+      margin-left: 0;
+      align-self: flex-start;
     }
 
     .auth-container {
       padding: var(--space-6);
+      width: 100%;
     }
   }
 </style>

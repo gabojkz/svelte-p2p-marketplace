@@ -2,6 +2,7 @@
   import CategorySelect from "$lib/components/CategorySelect.svelte";
   import ImageUpload from "$lib/components/ImageUpload.svelte";
   import { onMount } from "svelte";
+  import { getListing, createListing, updateListing, uploadListingImages } from "$lib/services/listings.js";
 
   // Props
   let {
@@ -67,14 +68,7 @@
     fieldErrors = {};
 
     try {
-      const response = await fetch(`/api/listings/${listingId}`);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to load listing");
-      }
-
-      const data = await response.json();
-      const listing = data.listing;
+      const listing = await getListing(listingId);
       console.log("📋 Listing loaded:", listing);
 
       // Populate form with listing data
@@ -179,37 +173,13 @@
         urgent: urgent,
       };
 
-      let response;
+      let savedListing;
       if (isEditing) {
-        response = await fetch(`/api/listings/${listingId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(listingData),
-        });
+        savedListing = await updateListing(listingId, listingData);
       } else {
-        response = await fetch("/api/listings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(listingData),
-        });
+        savedListing = await createListing(listingData);
       }
 
-      let result;
-      try {
-        result = await response.json();
-      } catch (e) {
-        throw new Error("Failed to parse server response");
-      }
-
-      if (!response.ok) {
-        // Handle error response
-        if (result.fieldErrors) {
-          fieldErrors = result.fieldErrors;
-        }
-        throw new Error(result.error || "Failed to save listing");
-      }
-
-      const savedListing = result.listing || result;
       const newListingId = savedListing.id || listingId;
 
       // Upload images if any
@@ -226,17 +196,10 @@
           });
 
           if (formData.has("images")) {
-            const imageResponse = await fetch(
-              `/api/listings/${newListingId}/images`,
-              {
-                method: "POST",
-                // Don't set Content-Type header - browser will set it with boundary for FormData
-                body: formData,
-              },
-            );
-
-            if (!imageResponse.ok) {
-              console.warn("Failed to upload images, but listing was saved");
+            try {
+              await uploadListingImages(newListingId, formData);
+            } catch (imgErr) {
+              console.warn("Failed to upload images, but listing was saved", imgErr);
             }
           }
         } catch (imgErr) {

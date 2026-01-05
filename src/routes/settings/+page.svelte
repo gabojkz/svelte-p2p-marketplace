@@ -15,6 +15,11 @@
   // Active tab state
   let activeTab = $state("profile");
 
+  // Avatar upload state
+  let avatarUploading = $state(false);
+  let avatarError = $state(null);
+  let avatarPreview = $state(marketplaceUser?.avatarUrl || null);
+
   // Form states
   let profileForm = $state({
     firstName: marketplaceUser?.firstName || "",
@@ -107,7 +112,7 @@
 
   <!-- Main Content -->
   <main class="main-content">
-    <div class="container">
+    <div class="container settings-container">
       <!-- Page Header -->
       <div class="settings-header">
         <h1>Settings</h1>
@@ -188,6 +193,56 @@
                 Update your personal information and profile details
               </p>
 
+              <!-- Avatar Upload Section -->
+              <div class="avatar-upload-section">
+                <label class="form-label">Profile Picture</label>
+                <div class="avatar-upload">
+                  <div class="avatar-preview">
+                    {#if avatarPreview}
+                      <img src={avatarPreview} alt="Avatar" class="avatar-image" />
+                    {:else}
+                      <div class="avatar-placeholder">
+                        {getUserInitials()}
+                      </div>
+                    {/if}
+                    {#if avatarUploading}
+                      <div class="avatar-upload-overlay">
+                        <div class="spinner"></div>
+                      </div>
+                    {/if}
+                  </div>
+                  <div class="avatar-upload-actions">
+                    <label for="avatar-input" class="btn btn--secondary btn--sm">
+                      {avatarPreview ? "Change" : "Upload"} Avatar
+                    </label>
+                    <input
+                      type="file"
+                      id="avatar-input"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                      onchange={handleAvatarUpload}
+                      style="display: none;"
+                      disabled={avatarUploading}
+                    />
+                    {#if avatarPreview}
+                      <button
+                        type="button"
+                        class="btn btn--outline btn--sm"
+                        onclick={handleAvatarDelete}
+                        disabled={avatarUploading}
+                      >
+                        Remove
+                      </button>
+                    {/if}
+                  </div>
+                  {#if avatarError}
+                    <p class="form-error">{avatarError}</p>
+                  {/if}
+                  <p class="form-helper">
+                    Upload a JPEG, PNG, WebP, or GIF image (max 2MB)
+                  </p>
+                </div>
+              </div>
+
               <form method="POST" action="?/updateProfile" use:enhance>
                 <div class="form-group">
                   <label for="username" class="form-label">Username</label>
@@ -202,9 +257,7 @@
                   <p class="form-helper">Username cannot be changed</p>
                 </div>
 
-                <div
-                  style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);"
-                >
+                <div class="form-row">
                   <div class="form-group">
                     <label for="firstName" class="form-label">First Name</label>
                     <input
@@ -229,16 +282,13 @@
 
                 <div class="form-group">
                   <label for="email" class="form-label">Email</label>
-                  <div
-                    style="display: flex; gap: var(--space-2); align-items: center;"
-                  >
+                  <div class="form-input-group">
                     <input
                       type="email"
                       id="email"
-                      class="form-input"
+                      class="form-input form-input--readonly"
                       value={user?.email || ""}
                       readonly
-                      style="flex: 1; background: var(--color-gray-50);"
                     />
                     {#if user?.emailVerified}
                       <span class="badge badge--success">Verified</span>
@@ -263,9 +313,7 @@
                   />
                 </div>
 
-                <div
-                  style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);"
-                >
+                <div class="form-row">
                   <div class="form-group">
                     <label for="locationCity" class="form-label">City</label>
                     <input
@@ -677,8 +725,16 @@
 </div>
 
 <style>
+  .settings-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
   .settings-header {
     margin-bottom: var(--space-8);
+    width: 100%;
+    max-width: 100%;
   }
 
   .settings-header h1 {
@@ -688,14 +744,18 @@
 
   .settings-layout {
     display: grid;
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
     gap: var(--space-8);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .settings-sidebar {
     position: sticky;
     top: var(--space-8);
     height: fit-content;
+    min-width: 0;
   }
 
   .settings-nav {
@@ -737,6 +797,10 @@
 
   .settings-content {
     min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
   }
 
   .settings-section {
@@ -744,6 +808,11 @@
     border: 1px solid var(--color-gray-200);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
   }
 
   .settings-section h2 {
@@ -760,6 +829,9 @@
     flex-direction: column;
     gap: var(--space-4);
     margin-bottom: var(--space-6);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .settings-item {
@@ -769,6 +841,9 @@
     padding: var(--space-4);
     border: 1px solid var(--color-gray-200);
     border-radius: var(--radius-md);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .settings-item__content {
@@ -877,23 +952,263 @@
     margin-bottom: var(--space-4);
   }
 
+  /* Avatar Upload Section */
+  .avatar-upload-section {
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--color-gray-200);
+  }
+
+  .avatar-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+
+  .avatar-preview {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    border: 3px solid var(--color-gray-200);
+    background: var(--color-gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+      135deg,
+      var(--color-primary) 0%,
+      var(--color-tertiary) 100%
+    );
+    color: white;
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+  }
+
+  .avatar-upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .avatar-upload-actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  /* Form responsive styles */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .form-input-group {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .form-input--readonly {
+    flex: 1;
+    background: var(--color-gray-50);
+    min-width: 0;
+  }
+
+  .form-group {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .settings-header h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .settings-section {
+    padding: var(--space-4);
+  }
+
+  .settings-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .settings-item__content {
+    width: 100%;
+  }
+
+  .toggle {
+    align-self: flex-end;
+  }
+
   @media (max-width: 768px) {
     .settings-layout {
       grid-template-columns: 1fr;
+      gap: var(--space-6);
+      width: 100%;
+      max-width: 100%;
     }
 
     .settings-sidebar {
       position: static;
+      width: 100%;
+      max-width: 100%;
     }
 
     .settings-nav {
       flex-direction: row;
       overflow-x: auto;
       padding-bottom: var(--space-2);
+      -webkit-overflow-scrolling: touch;
+      width: 100%;
     }
 
     .settings-nav__item {
       white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .settings-header h1 {
+      font-size: var(--text-xl);
+    }
+
+    .settings-section {
+      padding: var(--space-4);
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .form-input-group {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .form-input-group .badge {
+      align-self: flex-start;
+    }
+
+    .settings-item {
+      padding: var(--space-3);
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .settings-item__content {
+      margin-bottom: var(--space-2);
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .toggle {
+      align-self: flex-start;
+    }
+
+    .form-actions {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .form-actions .btn {
+      width: 100%;
+    }
+
+    .avatar-upload {
+      align-items: center;
+    }
+
+    .avatar-preview {
+      width: 100px;
+      height: 100px;
+    }
+
+    .avatar-upload-actions {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .avatar-upload-actions .btn {
+      flex: 1;
+      min-width: 120px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .settings-header {
+      margin-bottom: var(--space-6);
+    }
+
+    .settings-section {
+      padding: var(--space-3);
+    }
+
+    .settings-nav__item {
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-xs);
+    }
+
+    .settings-nav__icon {
+      font-size: var(--text-sm);
     }
   }
 </style>

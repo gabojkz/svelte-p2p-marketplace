@@ -23,13 +23,8 @@
     emailError = "";
 
     try {
-      const response = await fetch("/api/auth/validate-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailValue }),
-      });
-
-      const data = await response.json();
+      const { validateEmail } = await import("$lib/services/auth.js");
+      const data = await validateEmail(emailValue);
 
       if (data.valid) {
         emailError = "";
@@ -136,7 +131,7 @@
             <p class="text-muted">Get started with Marketto today</p>
           </div>
 
-          <form class="auth-form" onsubmit={handleSubmit}>
+          <form class="auth-form" onsubmit={handleSubmit} autocomplete="on">
             {#if error}
               <div class="alert alert--error">
                 <span class="error-icon">⚠️</span>
@@ -148,10 +143,12 @@
               <label for="name" class="form-label">Full Name</label>
               <input
                 id="name"
+                name="name"
                 type="text"
                 bind:value={name}
                 class="form-input"
                 placeholder="John Doe"
+                autocomplete="name"
                 required
                 disabled={loading}
               />
@@ -161,11 +158,13 @@
               <label for="email" class="form-label">Email</label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 bind:value={email}
                 class="form-input"
                 class:form-input--error={!!emailError}
                 placeholder="you@example.com"
+                autocomplete="email"
                 required
                 disabled={loading || checkingEmail}
                 oninput={handleEmailInput}
@@ -187,10 +186,12 @@
               <label for="password" class="form-label">Password</label>
               <input
                 id="password"
+                name="password"
                 type="password"
                 bind:value={password}
                 class="form-input"
                 placeholder="••••••••"
+                autocomplete="new-password"
                 required
                 disabled={loading}
                 minlength="8"
@@ -204,10 +205,12 @@
               >
               <input
                 id="confirmPassword"
+                name="confirmPassword"
                 type="password"
                 bind:value={confirmPassword}
                 class="form-input"
                 placeholder="••••••••"
+                autocomplete="new-password"
                 required
                 disabled={loading}
               />
@@ -257,16 +260,14 @@
   .auth-page {
     min-height: 60vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: var(--space-16) 0;
-    position: relative;
+    gap: var(--space-6);
   }
 
   .back-link {
-    position: absolute;
-    top: var(--space-8);
-    left: var(--space-6);
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -274,6 +275,8 @@
     font-size: var(--text-sm);
     transition: color var(--transition-fast);
     text-decoration: none;
+    align-self: flex-start;
+    margin-left: var(--space-4);
   }
 
   .back-link:hover {
@@ -377,13 +380,19 @@
   }
 
   @media (max-width: 768px) {
+    .auth-page {
+      padding: var(--space-8) 0;
+      gap: var(--space-4);
+    }
+
     .back-link {
-      position: static;
-      margin-bottom: var(--space-4);
+      margin-left: 0;
+      align-self: flex-start;
     }
 
     .auth-container {
       padding: var(--space-6);
+      width: 100%;
     }
   }
 </style>

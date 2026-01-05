@@ -65,7 +65,7 @@
             <p class="text-muted">Sign in to your account to continue</p>
           </div>
 
-          <form class="auth-form" onsubmit={handleSubmit}>
+          <form class="auth-form" onsubmit={handleSubmit} autocomplete="on">
             {#if error}
               <div class="alert alert--error">
                 <span class="error-icon">⚠️</span>
@@ -77,10 +77,12 @@
               <label for="email" class="form-label">Email</label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 bind:value={email}
                 class="form-input"
                 placeholder="you@example.com"
+                autocomplete="email"
                 required
                 disabled={loading}
               />
@@ -93,10 +95,12 @@
               </div>
               <input
                 id="password"
+                name="password"
                 type="password"
                 bind:value={password}
                 class="form-input"
                 placeholder="••••••••"
+                autocomplete="current-password"
                 required
                 disabled={loading}
                 minlength="8"
@@ -147,16 +151,14 @@
   .auth-page {
     min-height: 60vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: var(--space-16) 0;
-    position: relative;
+    gap: var(--space-6);
   }
 
   .back-link {
-    position: absolute;
-    top: var(--space-8);
-    left: var(--space-6);
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -164,6 +166,8 @@
     font-size: var(--text-sm);
     transition: color var(--transition-fast);
     text-decoration: none;
+    align-self: flex-start;
+    margin-left: var(--space-4);
   }
 
   .back-link:hover {
@@ -269,13 +273,19 @@
   }
 
   @media (max-width: 768px) {
+    .auth-page {
+      padding: var(--space-8) 0;
+      gap: var(--space-4);
+    }
+
     .back-link {
-      position: static;
-      margin-bottom: var(--space-4);
+      margin-left: 0;
+      align-self: flex-start;
     }
 
     .auth-container {
       padding: var(--space-6);
+      width: 100%;
     }
   }
 </style>
