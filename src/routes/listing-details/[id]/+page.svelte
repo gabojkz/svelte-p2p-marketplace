@@ -568,6 +568,8 @@
                             style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--color-gray-50); border-radius: var(--radius-md); text-decoration: none; color: var(--color-gray-900); font-size: var(--text-sm); transition: background var(--transition-fast);"
                             onmouseover={(e) => e.currentTarget.style.background = 'var(--color-gray-100)'}
                             onmouseout={(e) => e.currentTarget.style.background = 'var(--color-gray-50)'}
+                            onfocus={(e) => e.currentTarget.style.background = 'var(--color-gray-100)'}
+                            onblur={(e) => e.currentTarget.style.background = 'var(--color-gray-50)'}
                           >
                             <span style="font-size: var(--text-lg);">📞</span>
                             <span style="flex: 1;">{sellerContactInfo.phone}</span>
@@ -581,6 +583,8 @@
                             style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: #25D366; border-radius: var(--radius-md); text-decoration: none; color: white; font-size: var(--text-sm); transition: opacity var(--transition-fast);"
                             onmouseover={(e) => e.currentTarget.style.opacity = '0.9'}
                             onmouseout={(e) => e.currentTarget.style.opacity = '1'}
+                            onfocus={(e) => e.currentTarget.style.opacity = '0.9'}
+                            onblur={(e) => e.currentTarget.style.opacity = '1'}
                           >
                             <span style="font-size: var(--text-lg);">💬</span>
                             <span style="flex: 1;">WhatsApp: {sellerContactInfo.whatsapp}</span>
@@ -595,6 +599,8 @@
                             style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: #0088cc; border-radius: var(--radius-md); text-decoration: none; color: white; font-size: var(--text-sm); transition: opacity var(--transition-fast);"
                             onmouseover={(e) => e.currentTarget.style.opacity = '0.9'}
                             onmouseout={(e) => e.currentTarget.style.opacity = '1'}
+                            onfocus={(e) => e.currentTarget.style.opacity = '0.9'}
+                            onblur={(e) => e.currentTarget.style.opacity = '1'}
                           >
                             <span style="font-size: var(--text-lg);">✈️</span>
                             <span style="flex: 1;">Telegram: {sellerContactInfo.telegram}</span>
@@ -828,8 +834,15 @@
 
   <!-- Report Modal -->
   {#if showReportModal}
-    <div class="modal-overlay" onclick={closeReportModal}>
-      <div class="modal-content" onclick={(e) => e.stopPropagation()}>
+    <div 
+      class="modal-overlay" 
+      onclick={closeReportModal}
+      onkeydown={(e) => e.key === 'Escape' && closeReportModal()}
+      role="button"
+      tabindex="0"
+      aria-label="Close modal"
+    >
+      <div class="modal-content" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.key === 'Escape' && e.stopPropagation()}>
         <div class="modal-header">
           <h3>Report Seller</h3>
           <button
@@ -848,10 +861,11 @@
 
           <!-- Issue Type Selection -->
           <div style="margin-bottom: var(--space-4);">
-            <label class="form-label">
+            <label for="reportIssueType" class="form-label">
               Reason for Report <span style="color: var(--color-error);">*</span>
             </label>
             <select
+              id="reportIssueType"
               bind:value={reportIssueType}
               class="form-select"
             >
@@ -869,10 +883,11 @@
 
           <!-- Title -->
           <div style="margin-bottom: var(--space-4);">
-            <label class="form-label">
+            <label for="reportTitle" class="form-label">
               Title <span style="color: var(--color-error);">*</span>
             </label>
             <input
+              id="reportTitle"
               type="text"
               bind:value={reportTitle}
               placeholder="Brief summary of the issue"
@@ -886,10 +901,11 @@
 
           <!-- Description -->
           <div style="margin-bottom: var(--space-4);">
-            <label class="form-label">
+            <label for="reportDescription" class="form-label">
               Detailed Description <span style="color: var(--color-error);">*</span>
             </label>
             <textarea
+              id="reportDescription"
               bind:value={reportDescription}
               placeholder="Please provide as much detail as possible about what happened. Include any relevant information that will help us investigate."
               rows="6"

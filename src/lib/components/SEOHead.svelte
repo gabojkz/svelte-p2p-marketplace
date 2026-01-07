@@ -16,7 +16,8 @@
 	 */
 
 	/** @type {SEOProps} */
-	let {
+	const props = $props();
+	const {
 		title,
 		description,
 		image,
@@ -26,20 +27,20 @@
 		publishedTime,
 		modifiedTime,
 		structuredData
-	} = $props();
+	} = props;
 
-	// Generate SEO tags
-	const seo = generateSEOTags({
-		title,
-		description,
-		image,
+	// Generate SEO tags - use $derived to make it reactive
+	const seo = $derived(generateSEOTags({
+		title: props.title,
+		description: props.description,
+		image: props.image,
 		url: $page.url.href,
-		type,
-		keywords,
-		author,
-		publishedTime,
-		modifiedTime
-	});
+		type: props.type || "website",
+		keywords: props.keywords,
+		author: props.author,
+		publishedTime: props.publishedTime,
+		modifiedTime: props.modifiedTime
+	}));
 </script>
 
 <svelte:head>

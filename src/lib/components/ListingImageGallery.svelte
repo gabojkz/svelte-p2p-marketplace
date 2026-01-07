@@ -151,6 +151,8 @@
   <div 
     class="gallery-main"
     bind:this={galleryContainer}
+    role="img"
+    aria-label="Listing image gallery"
     ontouchstart={handleTouchStart}
     ontouchmove={handleTouchMove}
     ontouchend={handleTouchEnd}
