@@ -1,5 +1,5 @@
 <script>
-  import Logo from "$lib/components/Logo.svelte";
+  import NavigationBar from "$lib/components/NavigationBar.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { enhance } from "$app/forms";
 
@@ -95,20 +95,7 @@
 
 <div class="page-wrapper">
   <!-- Header -->
-  <header class="header">
-    <div class="container">
-      <div class="header__inner">
-        <Logo />
-        <nav class="nav" aria-label="Main navigation">
-          <a href="/marketplace" class="nav__link">Browse</a>
-          <a href="/my-listings" class="nav__link">My Listings</a>
-        </nav>
-        <div class="header__actions">
-          <a href="/my-listings" class="btn btn--ghost">Back to My Listings</a>
-        </div>
-      </div>
-    </div>
-  </header>
+  <NavigationBar userLanguage="es" />
 
   <!-- Main Content -->
   <main class="main-content">

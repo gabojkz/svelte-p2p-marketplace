@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { APP_NAME } from '$lib/utils/constants.js';
 
   const { city, postcode, latitude, longitude } = $props();
 
@@ -18,7 +19,7 @@
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
         {
           headers: {
-            'User-Agent': 'Marketto P2P Marketplace' // Required by Nominatim
+            'User-Agent': `${APP_NAME} P2P Marketplace` // Required by Nominatim
           }
         }
       );

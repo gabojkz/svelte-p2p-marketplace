@@ -1,9 +1,11 @@
 <script>
   import Fa from "svelte-fa";
-  import { faStore } from "@fortawesome/free-solid-svg-icons";
   import { faXTwitter, faFacebook, faInstagram, faYoutube } from "@fortawesome/free-brands-svg-icons";
+  import { APP_NAME } from '$lib/utils/constants.js';
+  import { t } from '$lib/utils/translations.js';
+  import LogoIcon from './LogoIcon.svelte';
 
-  let { appName = "Marketto" } = $props();
+  let { appName = APP_NAME, userLanguage = 'en' } = $props();
 </script>
 
 <!-- ============================================
@@ -15,8 +17,10 @@
       <!-- Brand Column -->
       <div class="footer__brand">
         <a href="/" class="logo footer__logo">
-          <span class="logo__icon"><Fa icon={faStore} /></span>
-          <span>LocalMarket</span>
+          <span class="logo__icon">
+            <LogoIcon size={24} />
+          </span>
+          <span>{appName}</span>
         </a>
         <p class="footer__description">
           The best way to buy and sell locally. Connect with your community.
@@ -96,11 +100,11 @@
     </div>
 
     <div class="footer__bottom">
-      <p>&copy; 2025 {appName}. All rights reserved.</p>
+      <p>{t('footer.copyright', userLanguage, { year: new Date().getFullYear(), appName })}</p>
       <nav class="footer__legal-links">
-        <a href="/privacy" class="footer__link">Privacy Policy</a>
-        <a href="/terms" class="footer__link">Terms of Service</a>
-        <a href="/cookie-policy" class="footer__link">Cookie Policy</a>
+        <a href="/privacy" class="footer__link">{t('footer.privacy', userLanguage)}</a>
+        <a href="/terms" class="footer__link">{t('footer.terms', userLanguage)}</a>
+        <a href="/cookie-policy" class="footer__link">{t('footer.cookies', userLanguage)}</a>
       </nav>
     </div>
   </div>

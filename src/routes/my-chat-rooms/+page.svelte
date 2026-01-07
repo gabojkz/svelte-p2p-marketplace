@@ -2,8 +2,10 @@
   import NavigationBar from "$lib/components/NavigationBar.svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  import { APP_NAME } from "$lib/utils/constants.js";
 
-  const { data, userLanguage = "en" } = $props();
+  const { data } = $props();
+  const userLanguage = $derived(data?.userLanguage || 'en');
 
   const conversations = $derived(data?.conversations || []);
   const totalUnread = $derived(data?.totalUnread || 0);
@@ -90,7 +92,7 @@
 </script>
 
 <svelte:head>
-  <title>My Chat Rooms — Marketto</title>
+  <title>My Chat Rooms — {APP_NAME}</title>
 </svelte:head>
 
 <NavigationBar {userLanguage} />

@@ -42,7 +42,7 @@ This guide explains how to set up email services for sending confirmation and pa
 ### Step 2: Get API Key
 1. Go to https://resend.com/api-keys
 2. Click "Create API Key"
-3. Give it a name (e.g., "Marketto Production")
+3. Give it a name (e.g., "verkado Production")
 4. Copy the API key (starts with `re_`)
 
 ### Step 3: Add Domain (Required for Production)
@@ -68,7 +68,7 @@ RESEND_API_KEY=re_your_api_key_here
 
 # Email Configuration
 FROM_EMAIL=noreply@yourdomain.com  # Must be verified domain in Resend
-FROM_NAME=Marketto
+FROM_NAME=verkado
 
 # Optional: Enable email verification
 REQUIRE_EMAIL_VERIFICATION=false  # Set to true to require email verification
@@ -106,7 +106,7 @@ For Cloudflare Pages:
 EMAIL_PROVIDER=sendgrid
 SENDGRID_API_KEY=SG.your_api_key_here
 FROM_EMAIL=noreply@yourdomain.com
-FROM_NAME=Marketto
+FROM_NAME=verkado
 ```
 
 ## Alternative Setup (Postmark)
@@ -134,7 +134,7 @@ FROM_NAME=Marketto
 EMAIL_PROVIDER=postmark
 POSTMARK_SERVER_TOKEN=your_server_token_here
 FROM_EMAIL=noreply@yourdomain.com
-FROM_NAME=Marketto
+FROM_NAME=verkado
 ```
 
 ## Testing

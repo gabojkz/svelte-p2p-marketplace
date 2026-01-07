@@ -2,10 +2,12 @@
  * SEO utility functions for generating meta tags
  */
 
-const SITE_NAME = 'Marketto';
-const SITE_DESCRIPTION = 'Local peer-to-peer marketplace for safe trading, barter, and community exchange. Buy and sell products and services with your neighbors.';
+import { APP_NAME, APP_DESCRIPTION } from './constants.js';
+
+const SITE_NAME = APP_NAME;
+const SITE_DESCRIPTION = APP_DESCRIPTION;
 const DEFAULT_IMAGE = '/favicon.svg';
-const TWITTER_HANDLE = '@marketto'; // Update with your actual Twitter handle
+const TWITTER_HANDLE = '@verkado'; // Update with your actual Twitter handle
 
 /**
  * Generate comprehensive meta tags for a page
@@ -90,13 +92,13 @@ export function generateStructuredData(type, data) {
 export function getOrganizationSchema() {
 	return generateStructuredData('Organization', {
 		name: SITE_NAME,
-		url: 'https://marketto.com', // Update with your actual domain
-		logo: 'https://marketto.com/favicon.svg', // Update with your actual logo URL
+		url: 'https://verkado.com', // Update with your actual domain
+		logo: 'https://verkado.com/favicon.svg', // Update with your actual logo URL
 		description: SITE_DESCRIPTION,
 		sameAs: [
 			// Add your social media profiles
-			// 'https://twitter.com/marketto',
-			// 'https://facebook.com/marketto',
+			// 'https://twitter.com/verkado',
+			// 'https://facebook.com/verkado',
 		]
 	});
 }
@@ -104,7 +106,7 @@ export function getOrganizationSchema() {
 /**
  * Generate WebSite structured data with search action
  */
-export function getWebSiteSchema(siteUrl = 'https://marketto.com') {
+export function getWebSiteSchema(siteUrl = 'https://verkado.com') {
 	return generateStructuredData('WebSite', {
 		name: SITE_NAME,
 		url: siteUrl,
@@ -135,7 +137,7 @@ export function getProductSchema(listing) {
 			price: listing.price,
 			priceCurrency: 'USD', // Update based on your currency
 			availability: listing.status === 'active' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-			url: `https://marketto.com/listing-details/${listing.id}` // Update with your domain
+			url: `https://verkado.com/listing-details/${listing.id}` // Update with your domain
 		},
 		category: listing.category?.name,
 		aggregateRating: listing.averageRating ? {
@@ -153,7 +155,7 @@ export function getLocalBusinessSchema() {
 	return generateStructuredData('LocalBusiness', {
 		name: SITE_NAME,
 		description: SITE_DESCRIPTION,
-		url: 'https://marketto.com', // Update with your actual domain
+		url: 'https://verkado.com', // Update with your actual domain
 		priceRange: 'Free',
 		// Add your business address if applicable
 		// address: {

@@ -1,12 +1,14 @@
 <script>
   import Logo from "$lib/components/Logo.svelte";
+  import LogoIcon from "$lib/components/LogoIcon.svelte";
+  import { APP_NAME } from "$lib/utils/constants.js";
 </script>
 
 <svelte:head>
-  <title>Terms of Service — Marketto</title>
+  <title>Terms of Service — {APP_NAME}</title>
   <meta
     name="description"
-    content="Terms of Service for Marketto - Read our terms and conditions for using our peer-to-peer marketplace platform"
+    content="Terms of Service for {APP_NAME} - Read our terms and conditions for using our peer-to-peer marketplace platform"
   />
 </svelte:head>
 
@@ -41,20 +43,20 @@
             Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
           <p class="legal-intro">
-            Please read these Terms of Service ("Terms") carefully before using the Marketto platform. By accessing or using our service, you agree to be bound by these Terms.
+            Please read these Terms of Service ("Terms") carefully before using the {APP_NAME} platform. By accessing or using our service, you agree to be bound by these Terms.
           </p>
 
           <section class="legal-section">
             <h2>1. Acceptance of Terms</h2>
             <p>
-              By creating an account, accessing, or using Marketto, you agree to comply with and be bound by these Terms of Service. If you do not agree to these Terms, you may not use our platform.
+              By creating an account, accessing, or using {APP_NAME}, you agree to comply with and be bound by these Terms of Service. If you do not agree to these Terms, you may not use our platform.
             </p>
           </section>
 
           <section class="legal-section">
             <h2>2. Description of Service</h2>
             <p>
-              Marketto is a peer-to-peer marketplace platform that connects buyers and sellers. We provide a platform for users to list items for sale, browse listings, communicate with other users, and facilitate transactions. Marketto acts as an intermediary and does not take ownership of items listed on the platform.
+              {APP_NAME} is a peer-to-peer marketplace platform that connects buyers and sellers. We provide a platform for users to list items for sale, browse listings, communicate with other users, and facilitate transactions. {APP_NAME} acts as an intermediary and does not take ownership of items listed on the platform.
             </p>
           </section>
 
@@ -74,7 +76,7 @@
 
             <h3>3.2 Account Eligibility</h3>
             <p>
-              You must be at least 18 years old to use our platform. By using Marketto, you represent and warrant that you meet this age requirement.
+              You must be at least 18 years old to use our platform. By using {APP_NAME}, you represent and warrant that you meet this age requirement.
             </p>
           </section>
 
@@ -102,7 +104,7 @@
 
             <h3>5.2 Transactions</h3>
             <p>
-              Transactions are between buyers and sellers. Marketto facilitates the connection but is not a party to transactions. We are not responsible for:
+              Transactions are between buyers and sellers. {APP_NAME} facilitates the connection but is not a party to transactions. We are not responsible for:
             </p>
             <ul>
               <li>The quality, safety, or legality of items listed</li>
@@ -115,17 +117,17 @@
           <section class="legal-section">
             <h2>6. Fees and Payments</h2>
             <p>
-              Marketto may charge fees for certain services. All fees will be clearly disclosed before you commit to a transaction. You are responsible for all applicable taxes related to your use of the platform.
+              {APP_NAME} may charge fees for certain services. All fees will be clearly disclosed before you commit to a transaction. You are responsible for all applicable taxes related to your use of the platform.
             </p>
           </section>
 
           <section class="legal-section">
             <h2>7. Intellectual Property</h2>
             <p>
-              The Marketto platform, including its design, features, and content, is owned by Marketto and protected by intellectual property laws. You may not copy, modify, distribute, or create derivative works without our express written permission.
+              The {APP_NAME} platform, including its design, features, and content, is owned by {APP_NAME} and protected by intellectual property laws. You may not copy, modify, distribute, or create derivative works without our express written permission.
             </p>
             <p>
-              You retain ownership of content you post on the platform, but by posting, you grant Marketto a license to use, display, and distribute your content on the platform.
+              You retain ownership of content you post on the platform, but by posting, you grant {APP_NAME} a license to use, display, and distribute your content on the platform.
             </p>
           </section>
 
@@ -135,14 +137,14 @@
               THE PLATFORM IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND. WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
             </p>
             <p>
-              TO THE MAXIMUM EXTENT PERMITTED BY LAW, MARKETTO SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE PLATFORM.
+              TO THE MAXIMUM EXTENT PERMITTED BY LAW, VERKADO SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE PLATFORM.
             </p>
           </section>
 
           <section class="legal-section">
             <h2>9. Indemnification</h2>
             <p>
-              You agree to indemnify and hold harmless Marketto, its officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising from your use of the platform, violation of these Terms, or infringement of any rights of another.
+              You agree to indemnify and hold harmless {APP_NAME}, its officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising from your use of the platform, violation of these Terms, or infringement of any rights of another.
             </p>
           </section>
 
@@ -156,7 +158,7 @@
           <section class="legal-section">
             <h2>11. Dispute Resolution</h2>
             <p>
-              If you have a dispute with another user, we encourage you to contact them directly. Marketto may, but is not obligated to, assist in resolving disputes. For disputes with Marketto, you agree to first contact us to seek resolution.
+              If you have a dispute with another user, we encourage you to contact them directly. {APP_NAME} may, but is not obligated to, assist in resolving disputes. For disputes with {APP_NAME}, you agree to first contact us to seek resolution.
             </p>
           </section>
 
@@ -180,7 +182,7 @@
               If you have any questions about these Terms of Service, please contact us at:
             </p>
             <p>
-              <strong>Email:</strong> legal@marketto.com<br />
+              <strong>Email:</strong> legal@verkado.com<br />
               <strong>Address:</strong> [Your Company Address]
             </p>
           </section>
@@ -194,8 +196,8 @@
     <div class="container">
       <div class="footer__bottom">
         <div class="flex items-center gap-3">
-          <span class="logo__icon">🏪</span>
-          <span>&copy; 2025 Marketto. All rights reserved.</span>
+          <span class="logo__icon"><LogoIcon size={20} /></span>
+          <span>&copy; 2025 {APP_NAME}. All rights reserved.</span>
         </div>
         <nav class="footer__legal-links">
           <a href="/privacy" class="footer__link">Privacy</a>

@@ -10,7 +10,8 @@
   import { completeTrade, submitReview } from "$lib/services/trade.js";
   import { createDispute } from "$lib/services/disputes.js";
 
-  const { data, userLanguage = "en" } = $props();
+  const { data } = $props();
+  const userLanguage = $derived(data?.userLanguage || 'en');
 
   const listing = $derived(data?.listing);
   const seller = $derived(listing?.seller);

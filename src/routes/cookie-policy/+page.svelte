@@ -1,12 +1,14 @@
 <script>
   import Logo from "$lib/components/Logo.svelte";
+  import LogoIcon from "$lib/components/LogoIcon.svelte";
+  import { APP_NAME } from "$lib/utils/constants.js";
 </script>
 
 <svelte:head>
-  <title>Cookie Policy — Marketto</title>
+  <title>Cookie Policy — {APP_NAME}</title>
   <meta
     name="description"
-    content="Cookie Policy for Marketto - Learn about how we use cookies and similar tracking technologies on our platform"
+    content="Cookie Policy for {APP_NAME} - Learn about how we use cookies and similar tracking technologies on our platform"
   />
 </svelte:head>
 
@@ -41,7 +43,7 @@
             Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
           <p class="legal-intro">
-            This Cookie Policy explains how Marketto uses cookies and similar tracking technologies when you visit our platform. By using our platform, you consent to the use of cookies as described in this policy.
+            This Cookie Policy explains how {APP_NAME} uses cookies and similar tracking technologies when you visit our platform. By using our platform, you consent to the use of cookies as described in this policy.
           </p>
 
           <section class="legal-section">
@@ -204,7 +206,7 @@
               If you have any questions about our use of cookies, please contact us at:
             </p>
             <p>
-              <strong>Email:</strong> privacy@marketto.com<br />
+              <strong>Email:</strong> privacy@verkado.com<br />
               <strong>Address:</strong> [Your Company Address]
             </p>
           </section>
@@ -218,8 +220,8 @@
     <div class="container">
       <div class="footer__bottom">
         <div class="flex items-center gap-3">
-          <span class="logo__icon">🏪</span>
-          <span>&copy; 2025 Marketto. All rights reserved.</span>
+          <span class="logo__icon"><LogoIcon size={20} /></span>
+          <span>&copy; 2025 {APP_NAME}. All rights reserved.</span>
         </div>
         <nav class="footer__legal-links">
           <a href="/privacy" class="footer__link">Privacy</a>

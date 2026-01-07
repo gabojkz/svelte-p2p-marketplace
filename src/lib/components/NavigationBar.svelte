@@ -15,9 +15,9 @@
   import { useSession, signOut } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
-  import { page } from "$app/stores";
   import { getUserProfile } from "$lib/services/user.js";
   import { invalidateAll } from "$app/navigation";
+  import { t } from "$lib/utils/translations.js";
 
   let { userLanguage = "en" } = $props();
 
@@ -109,21 +109,21 @@
   }
 
   // Navigation menu items configuration
-  const generalNavItems = [
-    { href: "/marketplace", label: "Browse" },
-    { href: "/#how-it-works", label: "How It Works" }
-  ];
+  const generalNavItems = $derived([
+    { href: "/marketplace", label: t('nav.browse', userLanguage) },
+    { href: "/#how-it-works", label: t('nav.howItWorks', userLanguage) }
+  ]);
 
   // User menu items configuration
   const userMenuItems = $derived([
-    { href: "/favorites", label: "Favorites", icon: faStar },
-    { href: "/my-listings", label: "My Listings", icon: faList },
-    { href: "/my-trades", label: "My Trades", icon: faHandshake },
-    { href: "/my-chat-rooms", label: "Chat Rooms", icon: faComments },
+    { href: "/favorites", label: t('nav.favorites', userLanguage), icon: faStar },
+    { href: "/my-listings", label: t('nav.myListings', userLanguage), icon: faList },
+    { href: "/my-trades", label: t('nav.myTrades', userLanguage), icon: faHandshake },
+    { href: "/my-chat-rooms", label: t('nav.chatRooms', userLanguage), icon: faComments },
     ...(marketplaceUsername
-      ? [{ href: `/profile/${marketplaceUsername}`, label: "Profile", icon: faUser }]
+      ? [{ href: `/profile/${marketplaceUsername}`, label: t('nav.profile', userLanguage), icon: faUser }]
       : []),
-    { href: "/settings", label: "Settings", icon: faGear }
+    { href: "/settings", label: t('nav.settings', userLanguage), icon: faGear }
   ]);
 
   // Close menu on navigation
@@ -231,14 +231,14 @@
               </a>
             {/each}
             <button class="nav__link nav__link--button" onclick={handleSignOut}>
-              <Fa icon={faRightFromBracket} /> Logout
+              <Fa icon={faRightFromBracket} /> {t('nav.logout', userLanguage)}
             </button>
           </div>
         {:else}
           <!-- Not logged in - show login link -->
           <div class="nav__mobile-user">
-            <a href="/login" class="nav__link" onclick={closeMobileMenu}>Log In</a>
-            <a href="/register" class="nav__link" onclick={closeMobileMenu}>Sign Up</a>
+            <a href="/login" class="nav__link" onclick={closeMobileMenu}>{t('nav.logIn', userLanguage)}</a>
+            <a href="/register" class="nav__link" onclick={closeMobileMenu}>{t('nav.signUp', userLanguage)}</a>
           </div>
         {/if}
       </nav>
@@ -345,7 +345,7 @@
                     type="button"
                   >
                     <span class="user-dropdown__icon"><Fa icon={faRightFromBracket} /></span>
-                    <span>Logout</span>
+                    <span>{t('nav.logout', userLanguage)}</span>
                   </button>
                 </div>
               </div>
@@ -354,7 +354,7 @@
         {:else}
           <!-- Not logged in -->
           <a href="/login" class="btn btn--ghost">
-            <span>Log In</span>
+            <span>{t('nav.logIn', userLanguage)}</span>
           </a>
         {/if}
 

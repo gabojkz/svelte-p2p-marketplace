@@ -2,20 +2,27 @@
   import NavigationBar from "$lib/components/NavigationBar.svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  import { APP_NAME } from "$lib/utils/constants.js";
 
-  const { error: errorObj, status } = $props();
+  const props = $props();
+  const { error: errorObj, status } = props;
+  
+  // Default userLanguage (error pages may not have layout data)
+  const userLanguage = 'en';
 
   // In development, show minimal error page to allow SvelteKit's default error handling
   const isDev = import.meta.env.DEV;
 
   // Debug logging in development
-  if (isDev && errorObj) {
-    console.log('Error object:', errorObj);
-    console.log('Error type:', typeof errorObj);
-    console.log('Error instanceof Error:', errorObj instanceof Error);
-    console.log('Error keys:', Object.keys(errorObj || {}));
-    console.log('Error status:', status);
-  }
+  $effect(() => {
+    if (isDev && errorObj) {
+      console.log('Error object:', errorObj);
+      console.log('Error type:', typeof errorObj);
+      console.log('Error instanceof Error:', errorObj instanceof Error);
+      console.log('Error keys:', Object.keys(errorObj || {}));
+      console.log('Error status:', props.status);
+    }
+  });
 
   // Get error message - handle both Error objects and strings
   const errorMessage = $derived.by(() => {
@@ -75,7 +82,7 @@
 
   // Get status-specific content
   const content = $derived.by(() => {
-    const stat = status;
+    const stat = props.status;
     switch (stat) {
       case 404:
         return {
@@ -136,13 +143,13 @@
 </script>
 
 <svelte:head>
-  <title>{content.title} — Marketto</title>
+  <title>{content.title} — {APP_NAME}</title>
 </svelte:head>
 
 {#if isDev}
   <!-- In development, show minimal error for debugging -->
   <div style="padding: 2rem; font-family: monospace; background: #1e1e1e; color: #d4d4d4; min-height: 100vh;">
-    <h1 style="color: #f48771; margin-bottom: 1rem;">Error {status || 'Unknown'}</h1>
+    <h1 style="color: #f48771; margin-bottom: 1rem;">Error {props.status || 'Unknown'}</h1>
     <pre style="background: #252526; padding: 1rem; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; word-break: break-word;">
       {JSON.stringify(errorObj, null, 2)}
     </pre>
@@ -157,13 +164,13 @@
 
 <div class="page-wrapper">
   <main class="error-page">
-    <div class="error-container" data-status={status}>
+    <div class="error-container" data-status={props.status}>
       <div class="error-icon">{content.icon}</div>
       
       <h1 class="error-title">{content.title}</h1>
       
-      {#if status}
-        <div class="error-status">Error {status}</div>
+      {#if props.status}
+        <div class="error-status">Error {props.status}</div>
       {/if}
       
       {#if errorMessage}

@@ -3,9 +3,11 @@
  * Supports multiple providers: Resend, SendGrid, Postmark, etc.
  */
 
+import { APP_NAME } from '../utils/constants.js';
+
 const EMAIL_PROVIDER = process.env.EMAIL_PROVIDER || 'resend'; // 'resend' | 'sendgrid' | 'postmark'
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@yourdomain.com';
-const FROM_NAME = process.env.FROM_NAME || 'Marketto';
+const FROM_NAME = process.env.FROM_NAME || APP_NAME;
 
 /**
  * Send email using the configured provider
@@ -201,7 +203,7 @@ export async function sendVerificationEmail(email, verificationUrl) {
           <p style="font-size: 14px; color: #666;">If you didn't create an account, you can safely ignore this email.</p>
         </div>
         <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #999;">
-          <p>© ${new Date().getFullYear()} Marketto. All rights reserved.</p>
+          <p>© ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
         </div>
       </body>
     </html>
@@ -244,7 +246,7 @@ export async function sendPasswordResetEmail(email, resetUrl) {
           <p style="font-size: 14px; color: #666;">If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.</p>
         </div>
         <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #999;">
-          <p>© ${new Date().getFullYear()} Marketto. All rights reserved.</p>
+          <p>© ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
         </div>
       </body>
     </html>

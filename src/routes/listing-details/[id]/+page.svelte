@@ -7,12 +7,14 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { getProductSchema } from "$lib/utils/seo.js";
+  import { APP_NAME } from "$lib/utils/constants.js";
 
   const session = useSession();
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data, userLanguage = "en" } = $props();
+  const { data } = $props();
+  const userLanguage = $derived(data?.userLanguage || 'en');
 
   const listing = $derived(data?.listing);
   const similarListings = $derived(data?.similarListings || []);
@@ -250,7 +252,7 @@
   const listingTitle = $derived(listing?.title || "Listing");
   const listingDescription = $derived(
     listing?.description?.substring(0, 160) || 
-    `View ${listingTitle} on Marketto - Local P2P Marketplace`
+    `View ${listingTitle} on ${APP_NAME} - Local P2P Marketplace`
   );
   const listingImage = $derived(
     listing?.images?.[0]?.imageUrl || "/favicon.svg"

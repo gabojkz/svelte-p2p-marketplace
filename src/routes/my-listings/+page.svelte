@@ -9,7 +9,8 @@
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data, userLanguage = "en" } = $props();
+  const { data } = $props();
+  const userLanguage = $derived(data?.userLanguage || 'en');
 
   const marketplaceUser = $derived(data?.marketplaceUser);
   const listings = $derived(data?.listings || []);

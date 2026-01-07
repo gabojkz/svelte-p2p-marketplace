@@ -2,12 +2,14 @@
   import NavigationBar from "$lib/components/NavigationBar.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
+  import { APP_NAME } from "$lib/utils/constants.js";
 
   const session = useSession();
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data, userLanguage = "en" } = $props();
+  const { data } = $props();
+  const userLanguage = $derived(data?.userLanguage || 'en');
 
   const marketplaceUser = $derived(data?.marketplaceUser);
   const trades = $derived(data?.trades || []);
@@ -184,7 +186,7 @@
 </script>
 
 <svelte:head>
-  <title>My Trades — Marketto</title>
+  <title>My Trades — {APP_NAME}</title>
 </svelte:head>
 
 <div class="page-wrapper">

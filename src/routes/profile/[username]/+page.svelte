@@ -7,7 +7,8 @@
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data, userLanguage = "en" } = $props();
+  const { data } = $props();
+  const userLanguage = $derived(data?.userLanguage || 'en');
 
   const profileUser = $derived(data?.profileUser);
   const listingsCount = $derived(data?.listingsCount || 0);

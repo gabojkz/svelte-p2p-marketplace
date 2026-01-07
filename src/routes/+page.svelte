@@ -4,12 +4,16 @@
 
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
-  const appName = "Marketto";
+  import { APP_NAME } from "$lib/utils/constants.js";
+  import { t } from "$lib/utils/translations.js";
+  
+  const appName = APP_NAME;
 
   const session = useSession();
 
   // Get data from server load
-  const { data, userLanguage = "en" } = $props();
+  const { data } = $props();
+  const userLanguage = $derived(data?.userLanguage || 'en');
 
   // Search form state
   let searchQuery = $state("");
@@ -65,30 +69,23 @@
         >
           <!-- Hero Text -->
           <h1 class="hero__title mb-6">
-            Local <span style="color: var(--color-primary);">P2P Trading</span> &
-            Barter
+            {@html t('home.heroTitle', userLanguage).replace('P2P Trading', `<span style="color: var(--color-primary);">P2P Trading</span>`)}
           </h1>
           <p
             class="hero__description text-muted"
             style="font-size: var(--text-lg); margin-bottom: var(--space-4); max-width: 600px; margin-left: auto; margin-right: auto;"
           >
-            {#if userLanguage === 'es'}
-              Conecta con personas en tu ciudad para comercio y trueque local seguro entre pares. Intercambia usando cualquier moneda en efectivo, oro, plata, bienes o servicios. Todos los métodos de pago son bienvenidos.
-            {:else}
-              Connect with people in your city for safe, local peer-to-peer
-              trading and bartering. Trade using any currency cash, gold, silver,
-              goods, or services. All payment methods are welcome.
-            {/if}
+            {t('home.heroDescription', userLanguage)}
           </p>
           <div
             style="display: flex; align-items: center; justify-content: center; gap: var(--space-2); margin-bottom: var(--space-8); flex-wrap: wrap;"
           >
             <span
               class="badge badge--success"
-              style="font-size: var(--text-sm);">100% Free to Use</span
+              style="font-size: var(--text-sm);">{t('home.badgeFree', userLanguage)}</span
             >
             <span class="badge badge--info" style="font-size: var(--text-sm);"
-              >No Hidden Fees</span
+              >{t('home.badgeNoFees', userLanguage)}</span
             >
           </div>
 
@@ -99,7 +96,7 @@
                 <!-- What are you looking for? -->
                 <div class="form-group">
                   <label for="search-query" class="form-label"
-                    >What are you looking for?</label
+                    >{t('home.searchPlaceholder', userLanguage)}</label
                   >
                   <div class="input-icon">
                     <span class="input-icon__icon">🔍</span>
@@ -108,14 +105,14 @@
                       type="text"
                       bind:value={searchQuery}
                       class="form-input"
-                      placeholder="e.g., BMW, iPhone, Sofa..."
+                      placeholder={t('home.searchExample', userLanguage)}
                     />
                   </div>
                 </div>
 
                 <!-- Location -->
                 <div class="form-group">
-                  <label for="location-input" class="form-label">Location</label
+                  <label for="location-input" class="form-label">{t('home.locationLabel', userLanguage)}</label
                   >
                   <div class="input-icon">
                     <span class="input-icon__icon">📍</span>
@@ -124,14 +121,14 @@
                       type="text"
                       bind:value={location}
                       class="form-input"
-                      placeholder="City, postcode, or area..."
+                      placeholder={t('home.locationPlaceholder', userLanguage)}
                     />
                   </div>
                 </div>
 
                 <!-- Radius -->
                 <div class="form-group search-form__radius">
-                  <label for="radius-select" class="form-label">Radius</label>
+                  <label for="radius-select" class="form-label">{t('home.radiusLabel', userLanguage)}</label>
                   <select
                     id="radius-select"
                     bind:value={radius}
@@ -142,7 +139,7 @@
                     <option value="20">20 km</option>
                     <option value="50">50 km</option>
                     <option value="100">100 km</option>
-                    <option value="any">Any</option>
+                    <option value="any">{t('home.radiusAny', userLanguage)}</option>
                   </select>
                 </div>
 
@@ -151,7 +148,7 @@
                   type="submit"
                   class="btn btn--primary btn--lg search-form__btn"
                 >
-                  Search
+                  {t('home.searchButton', userLanguage)}
                 </button>
               </div>
             </form>
@@ -159,7 +156,7 @@
             <!-- Quick Category Links -->
             <div class="quick-categories">
               <span class="text-muted" style="font-size: var(--text-sm);"
-                >Popular:</span
+                >{t('home.popularCategories', userLanguage)}</span
               >
               <button
                 type="button"
@@ -209,9 +206,9 @@
       <div class="container">
         <div class="section__header">
           <span class="badge badge--primary">Simple & Secure</span>
-          <h2 class="section__title mt-4">How {appName} Works</h2>
+          <h2 class="section__title mt-4">{t('home.howItWorksTitle', userLanguage, { appName })}</h2>
           <p class="section__subtitle">
-            Buy and sell with confidence in your local community
+            {t('home.howItWorksSubtitle', userLanguage)}
           </p>
         </div>
 
@@ -229,10 +226,9 @@
               >
                 1
               </div>
-              <h4 class="card__title">Search Nearby</h4>
+              <h4 class="card__title">{t('home.step1Title', userLanguage)}</h4>
               <p class="card__content">
-                Find items near you by category, location, and price. Set your
-                radius to discover local deals.
+                {t('home.step1Description', userLanguage)}
               </p>
             </div>
           </div>
@@ -250,10 +246,9 @@
               >
                 2
               </div>
-              <h4 class="card__title">Chat & Agree</h4>
+              <h4 class="card__title">{t('home.step2Title', userLanguage)}</h4>
               <p class="card__content">
-                Message the seller, ask questions, negotiate price, and arrange
-                viewing or delivery.
+                {t('home.step2Description', userLanguage)}
               </p>
             </div>
           </div>
@@ -271,10 +266,9 @@
               >
                 3
               </div>
-              <h4 class="card__title">Complete Payment</h4>
+              <h4 class="card__title">{t('home.step3Title', userLanguage)}</h4>
               <p class="card__content">
-                Pay with any currency, gold, silver, products, or services. All
-                payment methods are welcome and encouraged.
+                {t('home.step3Description', userLanguage)}
               </p>
             </div>
           </div>
@@ -292,10 +286,9 @@
               >
                 4
               </div>
-              <h4 class="card__title">Complete & Rate</h4>
+              <h4 class="card__title">{t('home.step4Title', userLanguage)}</h4>
               <p class="card__content">
-                Confirm receipt, release payment to seller, and leave a review
-                for future buyers.
+                {t('home.step4Description', userLanguage)}
               </p>
             </div>
           </div>
@@ -350,67 +343,46 @@
           <!-- Text -->
           <div class="trust-safety-section__content">
             <span class="badge badge--info">Trust & Safety</span>
-            <h2 class="section__title mt-4">Safe Local P2P Trading & Barter</h2>
+            <h2 class="section__title mt-4">{t('home.trustSafetyTitle', userLanguage)}</h2>
             <p class="text-muted trust-safety-section__description">
-              {appName} is a local peer-to-peer marketplace for city barter and trades. 
-              We track meetings to keep everyone safe, and
-              <strong>reputation matters</strong> — users who abuse or scam will
-              lose access forever.
+              {@html t('home.trustSafetyDescription', userLanguage, { appName }).replace('reputation matters', '<strong>reputation matters</strong>')}
             </p>
             <ul class="trust-safety-section__features">
               <li class="trust-safety-section__feature">
                 <span class="trust-safety-section__feature-icon">✓</span>
-                <span
-                  ><strong>100% Free</strong> - No fees, no commissions, no hidden
-                  costs</span
-                >
+                <span>{@html t('home.trustFeature1', userLanguage).replace('100% Free', '<strong>100% Free</strong>')}</span>
               </li>
               <li class="trust-safety-section__feature">
                 <span class="trust-safety-section__feature-icon">✓</span>
-                <span
-                  ><strong>Flexible Payment Methods</strong> - Trade with any currency,
-                  gold, silver, products, or services — all methods welcome and encouraged</span
-                >
+                <span>{@html t('home.trustFeature2', userLanguage).replace('Flexible Payment Methods', '<strong>Flexible Payment Methods</strong>')}</span>
               </li>
               <li class="trust-safety-section__feature">
                 <span class="trust-safety-section__feature-icon">✓</span>
-                <span
-                  ><strong>Meeting Tracking</strong> - We track all meetings to keep
-                  you safe during local trades</span
-                >
+                <span>{@html t('home.trustFeature3', userLanguage).replace('Meeting Tracking', '<strong>Meeting Tracking</strong>')}</span>
               </li>
               <li class="trust-safety-section__feature">
                 <span class="trust-safety-section__feature-icon">✓</span>
-                <span
-                  ><strong>Zero Tolerance Policy</strong> - Users caught abusing
-                  or scamming lose access forever</span
-                >
+                <span>{@html t('home.trustFeature4', userLanguage).replace('Zero Tolerance Policy', '<strong>Zero Tolerance Policy</strong>')}</span>
               </li>
               <li class="trust-safety-section__feature">
                 <span class="trust-safety-section__feature-icon">✓</span>
-                <span
-                  ><strong>Reputation Matters</strong> - Your trading history and
-                  reviews build your reputation in the community</span
-                >
+                <span>{@html t('home.trustFeature5', userLanguage).replace('Reputation Matters', '<strong>Reputation Matters</strong>')}</span>
               </li>
               <li class="trust-safety-section__feature">
                 <span class="trust-safety-section__feature-icon">✓</span>
-                <span
-                  ><strong>Prohibited Items</strong> - No drugs, weapons, or illegal
-                  products allowed</span
-                >
+                <span>{@html t('home.trustFeature6', userLanguage).replace('Prohibited Items', '<strong>Prohibited Items</strong>')}</span>
               </li>
               <li class="trust-safety-section__feature">
                 <span class="trust-safety-section__feature-icon">✓</span>
-                <span>24/7 support for dispute resolution</span>
+                <span>{t('home.trustFeature7', userLanguage)}</span>
               </li>
               <li class="trust-safety-section__feature">
                 <span class="trust-safety-section__feature-icon">✓</span>
-                <span>Secure messaging with no personal info shared</span>
+                <span>{t('home.trustFeature8', userLanguage)}</span>
               </li>
             </ul>
             <a href="/marketplace" class="btn btn--primary btn--lg mt-6"
-              >Start Browsing</a
+              >{t('home.startBrowsing', userLanguage)}</a
             >
           </div>
         </div>
@@ -428,20 +400,17 @@
       <div class="container cta-section__container">
         <div class="cta-section__content">
           <h2 class="cta-section__title">
-            Ready to Start Selling?
+            {t('home.ctaTitle', userLanguage)}
           </h2>
           <p class="cta-section__description">
-            Join your local P2P trading community. List items for barter or sale <strong
-              >completely free</strong
-            >. Build your reputation through honest trades. No fees, no
-            commissions, ever.
+            {@html t('home.ctaDescription', userLanguage).replace('completely free', '<strong>completely free</strong>')}
           </p>
           <div class="cta-section__actions">
             <a href="/my-listings" class="btn btn--secondary btn--xl">
-              Create Free Listing
+              {t('home.createListing', userLanguage)}
             </a>
             <a href="/marketplace" class="btn btn--xl cta-section__btn-secondary">
-              Browse Marketplace
+              {t('home.browseMarketplace', userLanguage)}
             </a>
           </div>
         </div>
@@ -449,7 +418,7 @@
     </section>
   </main>
 
-  <Footer {appName} />
+  <Footer {appName} {userLanguage} />
 </div>
 
 <style>

@@ -2,6 +2,8 @@
   import { signUp } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import Logo from "$lib/components/Logo.svelte";
+  import LogoIcon from "$lib/components/LogoIcon.svelte";
+  import { APP_NAME } from "$lib/utils/constants.js";
 
   let name = $state("");
   let email = $state("");
@@ -97,7 +99,7 @@
 </script>
 
 <svelte:head>
-  <title>Create Account — Marketto</title>
+  <title>Create Account — {APP_NAME}</title>
 </svelte:head>
 
 <div class="page-wrapper">
@@ -128,7 +130,7 @@
         <div class="auth-container">
           <div class="auth-header">
             <h1>Create your account</h1>
-            <p class="text-muted">Get started with Marketto today</p>
+            <p class="text-muted">Get started with {APP_NAME} today</p>
           </div>
 
           <form class="auth-form" onsubmit={handleSubmit} autocomplete="on">
@@ -243,8 +245,8 @@
     <div class="container">
       <div class="footer__bottom">
         <div class="flex items-center gap-3">
-          <span class="logo__icon">🏪</span>
-          <span>&copy; 2025 Marketto. All rights reserved.</span>
+          <span class="logo__icon"><LogoIcon size={20} /></span>
+          <span>&copy; 2025 {APP_NAME}. All rights reserved.</span>
         </div>
         <nav class="footer__legal-links">
           <a href="/privacy" class="footer__link">Privacy</a>

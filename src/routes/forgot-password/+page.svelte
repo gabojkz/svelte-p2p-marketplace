@@ -1,6 +1,8 @@
 <script>
   import { goto } from "$app/navigation";
   import Logo from "$lib/components/Logo.svelte";
+  import LogoIcon from "$lib/components/LogoIcon.svelte";
+  import { APP_NAME } from "$lib/utils/constants.js";
 
   let email = $state("");
   let error = $state("");
@@ -32,7 +34,7 @@
 </script>
 
 <svelte:head>
-  <title>Forgot Password — Marketto</title>
+  <title>Forgot Password — {APP_NAME}</title>
 </svelte:head>
 
 <div class="page-wrapper">
@@ -132,8 +134,8 @@
     <div class="container">
       <div class="footer__bottom">
         <div class="flex items-center gap-3">
-          <span class="logo__icon">🏪</span>
-          <span>&copy; 2025 Marketto. All rights reserved.</span>
+          <span class="logo__icon"><LogoIcon size={20} /></span>
+          <span>&copy; 2025 {APP_NAME}. All rights reserved.</span>
         </div>
         <nav class="footer__legal-links">
           <a href="/privacy" class="footer__link">Privacy</a>

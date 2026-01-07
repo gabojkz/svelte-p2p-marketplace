@@ -4,14 +4,15 @@
   import "../styles/responsive.css";
   import { page } from "$app/stores";
   import { generateSEOTags, getOrganizationSchema, getWebSiteSchema } from "$lib/utils/seo.js";
+  import { APP_NAME, APP_DESCRIPTION } from "$lib/utils/constants.js";
 
   let { children, data } = $props();
   const userLanguage = $derived(data?.userLanguage || 'en');
 
   // Default SEO tags
   const defaultSEO = generateSEOTags({
-    title: "Marketto - Local P2P Marketplace",
-    description: "Local peer-to-peer marketplace for safe trading, barter, and community exchange. Buy and sell products and services with your neighbors. 100% free, no fees, no commissions.",
+    title: `${APP_NAME} - Local P2P Marketplace`,
+    description: `${APP_DESCRIPTION} 100% free, no fees, no commissions.`,
     url: $page.url.href,
     type: "website"
   });
@@ -22,6 +23,12 @@
 </script>
 
 <svelte:head>
+  <!-- Favicon and Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" href="/icon.svg" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
+  <link rel="manifest" href="/manifest.json" />
+  
   <!-- Primary Meta Tags -->
   <title>{defaultSEO.title}</title>
   <meta name="title" content={defaultSEO.title} />

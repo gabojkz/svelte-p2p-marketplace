@@ -5,28 +5,32 @@
   import { page } from "$app/stores";
   import CategorySelect from "$lib/components/CategorySelect.svelte";
   import NavigationBar from "$lib/components/NavigationBar.svelte";
+  import LogoIcon from "$lib/components/LogoIcon.svelte";
+  import { APP_NAME } from "$lib/utils/constants.js";
+  import { t } from "$lib/utils/translations.js";
   
-  const appName = "Marketto";
+  const appName = APP_NAME;
   const session = useSession();
   const user = $derived($session.data?.user);
 
   // Get data from server load function
-  const { data, userLanguage = "en" } = $props();
+  const { data } = $props();
+  const userLanguage = $derived(data?.userLanguage || 'en');
 
   // SEO for marketplace page
   const searchQueryParam = $derived($page.url.searchParams.get("q") || "");
   const categoryParam = $derived($page.url.searchParams.get("category") || "");
   const seoTitle = $derived(
     searchQueryParam 
-      ? `Search Results for "${searchQueryParam}" | Marketto`
+      ? `Search Results for "${searchQueryParam}" | ${APP_NAME}`
       : categoryParam
-      ? `Browse ${categoryParam} | Marketto Marketplace`
-      : "Browse Marketplace | Marketto"
+      ? `Browse ${categoryParam} | ${APP_NAME} Marketplace`
+      : `Browse Marketplace | ${APP_NAME}`
   );
   const seoDescription = $derived(
     searchQueryParam
-      ? `Find ${searchQueryParam} in your local area. Browse listings, compare prices, and connect with sellers on Marketto.`
-      : "Browse thousands of local listings. Find products and services in your area. Buy and sell with your neighbors on Marketto."
+      ? `Find ${searchQueryParam} in your local area. Browse listings, compare prices, and connect with sellers on ${APP_NAME}.`
+      : `Browse thousands of local listings. Find products and services in your area. Buy and sell with your neighbors on ${APP_NAME}.`
   );
 
   // Access listings and categories from page data
@@ -246,7 +250,7 @@
           onclick={closeMobileFilters}
           role="button"
           tabindex="0"
-          aria-label="Close filters"
+          aria-label={t('marketplace.closeFilters', userLanguage)}
           onkeydown={(e) => e.key === "Enter" && closeMobileFilters()}
         ></div>
 
@@ -262,25 +266,25 @@
               href="/my-listings"
               class="btn btn--outline btn--block sell-btn"
             >
-              <span>+</span>Sell Something
+              <span>+</span>{t('marketplace.sellSomething', userLanguage)}
             </a>
 
             <!-- Filters Header -->
             <div class="filter-panel__header">
-              <h3 class="filter-panel__title">Filters</h3>
+              <h3 class="filter-panel__title">{t('marketplace.filters', userLanguage)}</h3>
               <button class="btn btn--ghost btn--xs" onclick={clearAllFilters}>
-                Clear all
+                {t('marketplace.clearAll', userLanguage)}
               </button>
             </div>
 
             <!-- Search Input -->
             <div class="filter-group">
-              <label class="filter-group__label">Search</label>
+              <label class="filter-group__label">{t('marketplace.search', userLanguage)}</label>
               <input
                 type="text"
                 id="searchQuery"
                 class="form-input"
-                placeholder="What are you looking for?"
+                placeholder={t('marketplace.searchPlaceholder', userLanguage)}
                 bind:value={searchQuery}
                 onkeydown={handleSearchKeydown}
                 oninput={() => {
@@ -293,16 +297,16 @@
 
             <!-- Type Dropdown -->
             <div class="filter-group">
-              <label class="filter-group__label">Type</label>
+              <label class="filter-group__label">{t('marketplace.type', userLanguage)}</label>
               <select 
                 id="listingType" 
                 class="form-select" 
                 bind:value={listingType}
                 onchange={applyFilters}
               >
-                <option value="all">All Types</option>
-                <option value="product">Products</option>
-                <option value="service">Services</option>
+                <option value="all">{t('marketplace.allTypes', userLanguage)}</option>
+                <option value="product">{t('marketplace.products', userLanguage)}</option>
+                <option value="service">{t('marketplace.services', userLanguage)}</option>
               </select>
             </div>
 
@@ -323,15 +327,15 @@
 
             <!-- Price Range -->
             <div class="filter-group">
-              <label class="filter-group__label">Price Range</label>
+              <label class="filter-group__label">{t('marketplace.priceRange', userLanguage)}</label>
               <div class="filter-group__row">
                 <div class="filter-input-half">
-                  <label class="form-label--sm">Min price</label>
+                  <label class="form-label--sm">{t('marketplace.minPrice', userLanguage)}</label>
                   <input
                     type="number"
                     id="minPrice"
                     class="form-input"
-                    placeholder="Min"
+                    placeholder={t('marketplace.min', userLanguage)}
                     bind:value={minPrice}
                     min="0"
                     step="0.01"
@@ -339,12 +343,12 @@
                   />
                 </div>
                 <div class="filter-input-half">
-                  <label class="form-label--sm">Max price</label>
+                  <label class="form-label--sm">{t('marketplace.maxPrice', userLanguage)}</label>
                   <input
                     type="number"
                     id="maxPrice"
                     class="form-input"
-                    placeholder="Max"
+                    placeholder={t('marketplace.max', userLanguage)}
                     bind:value={maxPrice}
                     min="0"
                     step="0.01"
@@ -356,12 +360,12 @@
 
             <!-- Location -->
             <div class="filter-group">
-              <label class="filter-group__label">Location</label>
+              <label class="filter-group__label">{t('common.location', userLanguage)}</label>
               <input
                 type="text"
                 id="locationInput"
                 class="form-input"
-                placeholder="City or address"
+                placeholder={t('marketplace.locationPlaceholder', userLanguage)}
                 bind:value={location}
                 oninput={() => {
                   if (searchTimeout) clearTimeout(searchTimeout);
@@ -372,7 +376,7 @@
 
             <!-- Radius -->
             <div class="filter-group">
-              <label class="filter-group__label">Radius (km)</label>
+              <label class="filter-group__label">{t('marketplace.radius', userLanguage)}</label>
               <select 
                 id="radiusSelect" 
                 class="form-select" 
@@ -384,13 +388,13 @@
                 <option value="20">20 km</option>
                 <option value="50">50 km</option>
                 <option value="100">100 km</option>
-                <option value="any">Any distance</option>
+                <option value="any">{t('marketplace.anyDistance', userLanguage)}</option>
               </select>
             </div>
 
             <!-- Condition -->
             <div class="filter-group">
-              <label class="filter-group__label">Condition</label>
+              <label class="filter-group__label">{t('marketplace.condition', userLanguage)}</label>
               <div class="filter-radios">
                 <label class="radio-label">
                   <input 
@@ -399,7 +403,7 @@
                     value="new"
                     bind:group={condition}
                     onchange={applyFilters}
-                  /> New
+                  /> {t('listing.new', userLanguage)}
                 </label>
                 <label class="radio-label">
                   <input 
@@ -408,7 +412,7 @@
                     value="like-new"
                     bind:group={condition}
                     onchange={applyFilters}
-                  /> Like New
+                  /> {t('listing.likeNew', userLanguage)}
                 </label>
                 <label class="radio-label">
                   <input 
@@ -417,7 +421,7 @@
                     value="good"
                     bind:group={condition}
                     onchange={applyFilters}
-                  /> Good
+                  /> {t('listing.good', userLanguage)}
                 </label>
                 <label class="radio-label">
                   <input 
@@ -426,7 +430,7 @@
                     value="fair"
                     bind:group={condition}
                     onchange={applyFilters}
-                  /> Fair
+                  /> {t('listing.fair', userLanguage)}
                 </label>
                 <label class="radio-label">
                   <input 
@@ -435,7 +439,7 @@
                     value="parts"
                     bind:group={condition}
                     onchange={applyFilters}
-                  /> For Parts
+                  /> {t('listing.forParts', userLanguage)}
                 </label>
                 <label class="radio-label">
                   <input 
@@ -444,26 +448,26 @@
                     value=""
                     bind:group={condition}
                     onchange={applyFilters}
-                  /> Any
+                  /> {t('marketplace.any', userLanguage)}
                 </label>
               </div>
             </div>
 
             <!-- Sort -->
             <div class="filter-group">
-              <label class="filter-group__label">Sort</label>
+              <label class="filter-group__label">{t('marketplace.sort', userLanguage)}</label>
               <select 
                 id="sortSelect" 
                 class="form-select" 
                 bind:value={sortBy}
                 onchange={applyFilters}
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
+                <option value="newest">{t('marketplace.sortNewest', userLanguage)}</option>
+                <option value="oldest">{t('marketplace.sortOldest', userLanguage)}</option>
+                <option value="price-low">{t('marketplace.sortPriceLow', userLanguage)}</option>
+                <option value="price-high">{t('marketplace.sortPriceHigh', userLanguage)}</option>
                 {#if data?.marketplaceUser?.locationLatitude && data?.marketplaceUser?.locationLongitude}
-                  <option value="distance">Nearest First</option>
+                  <option value="distance">{t('marketplace.sortDistance', userLanguage)}</option>
                 {/if}
               </select>
             </div>
@@ -473,7 +477,7 @@
               class="filter-close-btn"
               id="filterCloseBtn"
               onclick={closeMobileFilters}
-              aria-label="Close filters"
+              aria-label={t('marketplace.closeFilters', userLanguage)}
             >
               ✕
             </button>
@@ -490,29 +494,29 @@
                 class="mobile-filter-btn"
                 id="mobileFilterBtn"
                 onclick={toggleMobileFilters}
-                aria-label="Open filters"
+                aria-label={t('marketplace.openFilters', userLanguage)}
               >
                 <span>⚙️</span>
-                <span>Filters</span>
+                <span>{t('marketplace.filters', userLanguage)}</span>
               </button>
               <span>
-                Showing <strong>{totalCount}</strong> {totalCount === 1 ? 'listing' : 'listings'}
+                {t('marketplace.showingResults', userLanguage, { count: totalCount })}
                 {#if location}
-                  near {location}
+                  {' '}{t('marketplace.near', userLanguage)}{' '}{location}
                 {/if}
               </span>
             </div>
             <div class="results-sort">
-              <label class="text-muted">Sort by:</label>
+              <label class="text-muted">{t('marketplace.sortBy', userLanguage)}</label>
               <select 
                 class="form-select form-select--sm" 
                 bind:value={sortBy}
                 onchange={applyFilters}
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
+                <option value="newest">{t('marketplace.sortNewest', userLanguage)}</option>
+                <option value="oldest">{t('marketplace.sortOldest', userLanguage)}</option>
+                <option value="price-low">{t('marketplace.sortPriceLow', userLanguage)}</option>
+                <option value="price-high">{t('marketplace.sortPriceHigh', userLanguage)}</option>
               </select>
             </div>
           </div>
@@ -520,9 +524,9 @@
           <!-- Listings List -->
           {#if listings.length === 0}
             <div class="empty-state">
-              <p>No listings found matching your filters.</p>
+              <p>{t('marketplace.noResults', userLanguage)}</p>
               <button class="btn btn--outline" onclick={clearAllFilters}>
-                Clear Filters
+                {t('common.clear', userLanguage)} {t('marketplace.filters', userLanguage)}
               </button>
             </div>
           {:else}
@@ -644,6 +648,7 @@
     }
 
     .results-header {
+      width: 800px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -737,7 +742,7 @@
     <div class="container">
       <div class="footer__bottom">
         <div class="flex items-center gap-3">
-          <span class="logo__icon">🏪</span>
+          <span class="logo__icon"><LogoIcon size={20} /></span>
           <span>&copy; 2025 {appName}. All rights reserved.</span>
         </div>
         <nav class="footer__legal-links">

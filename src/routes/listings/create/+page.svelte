@@ -6,7 +6,8 @@
   import { createListing, uploadListingImages } from "$lib/services/listings.js";
 
   // Get data from server load function
-  const { data, userLanguage = "en" } = $props();
+  const { data } = $props();
+  const userLanguage = $derived(data?.userLanguage || 'en');
 
   const marketplaceUser = $derived(data?.marketplaceUser);
   const categories = $derived(data?.categories || []);
