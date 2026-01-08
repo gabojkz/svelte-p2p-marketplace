@@ -44,9 +44,12 @@ export async function POST({ request, locals }) {
         )
         .limit(1);
     } catch (dbError) {
-      // If table doesn't exist or query fails, log but allow registration to proceed
-      // This prevents blocking users if the allowed domains table isn't set up yet
-      console.error("Error querying allowed_email_domains table:", dbError);
+      // Enhanced error logging for debugging
+      console.error("Error querying allowed_email_domains table:");
+      console.error("Error message:", dbError?.message);
+      console.error("Error stack:", dbError?.stack);
+      console.error("Error details:", JSON.stringify(dbError, Object.getOwnPropertyNames(dbError)));
+      console.error("Domain being checked:", domain);
       console.warn("Allowing email registration to proceed despite domain check failure");
       
       // Return valid: true to not block registration
@@ -55,6 +58,7 @@ export async function POST({ request, locals }) {
         valid: true,
         domain: domain,
         warning: "Domain validation temporarily unavailable",
+        error: dbError?.message || "Database query failed"
       });
     }
 

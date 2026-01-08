@@ -74,8 +74,14 @@ export async function handle({ event, resolve }) {
 				}
 			}
 		} catch (error) {
-			// Log database connection errors but don't break the request
-			console.error('Database connection error:', error.message);
+			// Enhanced error logging for debugging
+			console.error('Database connection error:');
+			console.error('Error message:', error?.message);
+			console.error('Error stack:', error?.stack);
+			console.error('Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+			console.error('Database URL present:', !!databaseUrl);
+			console.error('Database URL length:', databaseUrl?.length || 0);
+			console.error('Database URL starts with:', databaseUrl?.substring(0, 20) || 'N/A');
 			// Set locals to null to prevent further database operations
 			event.locals.db = null;
 			event.locals.session = null;

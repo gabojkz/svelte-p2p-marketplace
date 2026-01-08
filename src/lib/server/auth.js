@@ -91,9 +91,12 @@ export function createAuth(databaseUrl, baseUrl) {
 								throw new Error(`Email domain "${domain}" is not allowed. Please use one of the supported email providers.`);
 							}
 						} catch (dbError) {
-							// If table doesn't exist or query fails, log but allow registration to proceed
-							// This prevents blocking users if the allowed domains table isn't set up yet
-							console.error("Error querying allowed_email_domains table in auth hook:", dbError);
+							// Enhanced error logging for debugging
+							console.error("Error querying allowed_email_domains table in auth hook:");
+							console.error("Error message:", dbError?.message);
+							console.error("Error stack:", dbError?.stack);
+							console.error("Error details:", JSON.stringify(dbError, Object.getOwnPropertyNames(dbError)));
+							console.error("Domain being checked:", domain);
 							console.warn("Allowing user registration to proceed despite domain check failure");
 							// Don't throw error - allow registration to proceed
 						}
