@@ -15,7 +15,8 @@ export async function handle({ event, resolve }) {
 			// postgres.js handles connection pooling automatically
 			event.locals.db = createDb(databaseUrl);
 
-			const auth = createAuth(databaseUrl, baseUrl);
+			const env = event.platform?.env || null;
+			const auth = createAuth(databaseUrl, baseUrl, env);
 			const session = await auth.api.getSession({
 				headers: event.request.headers
 			});

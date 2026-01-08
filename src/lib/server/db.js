@@ -1,18 +1,32 @@
-import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
-import { drizzle as drizzlePostgres } from 'drizzle-orm/postgres-js';
+import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
-import postgres from 'postgres';
 import * as schema from './schema.js';
 
-// Singleton connection pools to avoid connection exhaustion
-/** @type {Map<string, ReturnType<typeof drizzlePostgres> | ReturnType<typeof drizzleNeon>>} */
+/**
+ * CRITICAL FOR CLOUDFLARE WORKERS:
+ * 
+ * This file MUST use Neon HTTP driver for ALL production connections.
+ * postgres.js uses TCP sockets which DON'T work in Cloudflare Workers.
+ * 
+ * Neon HTTP driver works with:
+ * - Neon databases (neon.tech)
+ * - Supabase databases (supabase.co) via connection pooler
+ * 
+ * Connection is created at module scope (edge-safe singleton pattern)
+ */
+
+// Singleton connection pools - created at module scope for edge safety
+/** @type {Map<string, ReturnType<typeof drizzle>>} */
 const dbInstances = new Map();
 
 /**
  * Create database connection (singleton pattern)
- * Uses postgres.js for local dev and Supabase, Neon HTTP for Neon only
+ * 
+ * ALWAYS uses Neon HTTP driver - works in both Cloudflare Workers and local dev
+ * This is the ONLY driver that works in Cloudflare Workers (uses HTTP fetch, not TCP)
+ * 
  * @param {string} databaseUrl - The database connection URL
- * @returns {ReturnType<typeof drizzlePostgres> | ReturnType<typeof drizzleNeon>}
+ * @returns {ReturnType<typeof drizzle>}
  */
 export function createDb(databaseUrl) {
 	// Validate database URL
@@ -20,43 +34,45 @@ export function createDb(databaseUrl) {
 		throw new Error('Database URL is required but was not provided');
 	}
 
-	// Return existing instance if already created
+	// Return existing instance if already created (singleton pattern)
 	const existingInstance = dbInstances.get(databaseUrl);
 	if (existingInstance) {
 		return existingInstance;
 	}
 
-	// Check if this is a Neon database (not Supabase)
-	const isNeon = databaseUrl.includes('neon.tech') && !databaseUrl.includes('supabase');
-	const isSupabase = databaseUrl.includes('supabase.co');
-
-	let db;
-	if (isNeon) {
-		// Use Neon serverless driver for Neon databases only
-		console.log('Using Neon HTTP driver for database connection');
-		const sql = neon(databaseUrl);
-		db = drizzleNeon(sql, { schema });
-	} else {
-		// Use postgres.js for local development and Supabase
-		// Supabase works better with postgres.js, especially with connection pooler
-		console.log(isSupabase ? 'Using postgres.js for Supabase connection' : 'Using postgres.js for local development');
+	console.log('Creating database connection with Neon HTTP driver (works with Supabase and Neon)');
+	
+	// Clean up connection string for HTTP driver
+	// Remove pooler-specific params that might interfere with HTTP driver
+	let cleanUrl = databaseUrl;
+	try {
+		const urlObj = new URL(cleanUrl);
 		
-		// For Supabase, ensure we're using the connection pooler URL format
-		// Connection pooler URLs typically end with :6543 or have ?pgbouncer=true
-		const sql = postgres(databaseUrl, {
-			max: 10, // Maximum number of connections in the pool
-			idle_timeout: 20, // Close idle connections after 20 seconds
-			connect_timeout: 10, // Connection timeout
-			// For Cloudflare Workers, we need to use fetch-based connections
-			...(typeof fetch !== 'undefined' && {
-				fetch: fetch
-			})
-		});
-		db = drizzlePostgres(sql, { schema });
+		// Remove params that can break HTTP driver
+		// Neon HTTP driver works with Supabase pooler, but some params cause issues
+		urlObj.searchParams.delete('pgbouncer');
+		urlObj.searchParams.delete('pooler');
+		
+		// Ensure SSL is required for secure HTTPS connections
+		if (!urlObj.searchParams.has('sslmode')) {
+			urlObj.searchParams.set('sslmode', 'require');
+		}
+		
+		cleanUrl = urlObj.toString();
+	} catch (e) {
+		// If URL parsing fails, use original URL
+		console.warn('Could not parse database URL, using as-is');
 	}
-
-	// Cache the instance
+	
+	// Create Neon HTTP client - uses fetch API (works in Workers)
+	const sql = neon(cleanUrl);
+	
+	// Create Drizzle instance with schema
+	const db = drizzle(sql, { schema });
+	
+	// Cache the instance (singleton pattern)
 	dbInstances.set(databaseUrl, db);
+	
 	return db;
 }
 

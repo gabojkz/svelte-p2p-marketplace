@@ -4,7 +4,8 @@ import { createAuth } from '$lib/server/auth.js';
 export async function GET({ request, platform }) {
 	const databaseUrl = platform?.env?.DATABASE_URL || process.env.DATABASE_URL || '';
 	const baseUrl = new URL(request.url).origin;
-	const auth = createAuth(databaseUrl, baseUrl);
+	const env = platform?.env || null;
+	const auth = createAuth(databaseUrl, baseUrl, env);
 
 	return auth.handler(request);
 }
@@ -13,7 +14,8 @@ export async function GET({ request, platform }) {
 export async function POST({ request, platform }) {
 	const databaseUrl = platform?.env?.DATABASE_URL || process.env.DATABASE_URL || '';
 	const baseUrl = new URL(request.url).origin;
-	const auth = createAuth(databaseUrl, baseUrl);
+	const env = platform?.env || null;
+	const auth = createAuth(databaseUrl, baseUrl, env);
 
 	return auth.handler(request);
 }

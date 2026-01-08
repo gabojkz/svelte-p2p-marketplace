@@ -60,7 +60,8 @@ export async function POST({ request, platform }) {
         // Send password reset email
         try {
           const { sendPasswordResetEmail } = await import("$lib/server/email.js");
-          const emailResult = await sendPasswordResetEmail(foundUser.email, resetUrl);
+          const env = platform?.env || null;
+          const emailResult = await sendPasswordResetEmail(foundUser.email, resetUrl, env);
           
           if (!emailResult.success) {
             console.error("Failed to send password reset email:", emailResult.error);

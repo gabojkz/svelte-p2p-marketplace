@@ -5,9 +5,20 @@
 
 import { APP_NAME } from '../utils/constants.js';
 
-const EMAIL_PROVIDER = process.env.EMAIL_PROVIDER || 'resend'; // 'resend' | 'sendgrid' | 'postmark'
-const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@yourdomain.com';
-const FROM_NAME = process.env.FROM_NAME || APP_NAME;
+/**
+ * Get environment variable from platform or process.env (for Cloudflare Workers compatibility)
+ * @param {any} env - Environment object (platform.env or process.env)
+ * @param {string} key - Environment variable key
+ * @param {string} [defaultValue] - Default value if not found
+ * @returns {string}
+ */
+function getEnv(env, key, defaultValue = '') {
+	if (env && typeof env === 'object' && key in env) {
+		return env[key];
+	}
+	// Fallback to process.env for local development
+	return process.env[key] || defaultValue;
+}
 
 /**
  * Send email using the configured provider
@@ -16,27 +27,33 @@ const FROM_NAME = process.env.FROM_NAME || APP_NAME;
  * @param {string} options.subject - Email subject
  * @param {string} options.html - HTML content
  * @param {string} [options.text] - Plain text content (optional)
+ * @param {any} [options.env] - Environment variables (platform.env for Cloudflare Workers)
  * @returns {Promise<{success: boolean, messageId?: string, error?: string}>}
  */
-export async function sendEmail({ to, subject, html, text }) {
-  try {
-    switch (EMAIL_PROVIDER) {
-      case 'resend':
-        return await sendWithResend({ to, subject, html, text });
-      case 'sendgrid':
-        return await sendWithSendGrid({ to, subject, html, text });
-      case 'postmark':
-        return await sendWithPostmark({ to, subject, html, text });
-      default:
-        throw new Error(`Unknown email provider: ${EMAIL_PROVIDER}`);
-    }
-  } catch (error) {
-    console.error('Error sending email:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to send email'
-    };
-  }
+export async function sendEmail({ to, subject, html, text, env = null }) {
+	try {
+		const emailProvider = getEnv(env, 'EMAIL_PROVIDER', 'resend');
+		const fromEmail = getEnv(env, 'FROM_EMAIL', 'noreply@yourdomain.com');
+		const fromName = getEnv(env, 'FROM_NAME', APP_NAME);
+
+		switch (emailProvider) {
+			case 'resend':
+				return await sendWithResend({ to, subject, html, text, env, fromEmail, fromName });
+			case 'sendgrid':
+				return await sendWithSendGrid({ to, subject, html, text, env, fromEmail, fromName });
+			case 'postmark':
+				return await sendWithPostmark({ to, subject, html, text, env, fromEmail, fromName });
+			default:
+				throw new Error(`Unknown email provider: ${emailProvider}`);
+		}
+	} catch (error) {
+		console.error('Error sending email:', error);
+		console.error('Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+		return {
+			success: false,
+			error: error.message || 'Failed to send email'
+		};
+	}
 }
 
 /**
@@ -44,8 +61,8 @@ export async function sendEmail({ to, subject, html, text }) {
  * Get API key from: https://resend.com/api-keys
  * Free tier: 100 emails/day, 3,000 emails/month
  */
-async function sendWithResend({ to, subject, html, text }) {
-  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+async function sendWithResend({ to, subject, html, text, env, fromEmail, fromName }) {
+  const RESEND_API_KEY = getEnv(env, 'RESEND_API_KEY');
   
   if (!RESEND_API_KEY) {
     throw new Error('RESEND_API_KEY environment variable is not set');
@@ -58,7 +75,7 @@ async function sendWithResend({ to, subject, html, text }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      from: `${fromName} <${fromEmail}>`,
       to: [to],
       subject,
       html,
@@ -83,8 +100,8 @@ async function sendWithResend({ to, subject, html, text }) {
  * Get API key from: https://app.sendgrid.com/settings/api_keys
  * Free tier: 100 emails/day forever
  */
-async function sendWithSendGrid({ to, subject, html, text }) {
-  const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+async function sendWithSendGrid({ to, subject, html, text, env, fromEmail, fromName }) {
+  const SENDGRID_API_KEY = getEnv(env, 'SENDGRID_API_KEY');
   
   if (!SENDGRID_API_KEY) {
     throw new Error('SENDGRID_API_KEY environment variable is not set');
@@ -103,8 +120,8 @@ async function sendWithSendGrid({ to, subject, html, text }) {
         },
       ],
       from: {
-        email: FROM_EMAIL,
-        name: FROM_NAME,
+        email: fromEmail,
+        name: fromName,
       },
       subject,
       content: [
@@ -137,9 +154,9 @@ async function sendWithSendGrid({ to, subject, html, text }) {
  * Free tier: 100 emails/month
  * Best deliverability rates
  */
-async function sendWithPostmark({ to, subject, html, text }) {
-  const POSTMARK_API_KEY = process.env.POSTMARK_API_KEY;
-  const POSTMARK_SERVER_TOKEN = process.env.POSTMARK_SERVER_TOKEN || POSTMARK_API_KEY;
+async function sendWithPostmark({ to, subject, html, text, env, fromEmail, fromName }) {
+  const POSTMARK_API_KEY = getEnv(env, 'POSTMARK_API_KEY');
+  const POSTMARK_SERVER_TOKEN = getEnv(env, 'POSTMARK_SERVER_TOKEN') || POSTMARK_API_KEY;
   
   if (!POSTMARK_SERVER_TOKEN) {
     throw new Error('POSTMARK_SERVER_TOKEN environment variable is not set');
@@ -152,7 +169,7 @@ async function sendWithPostmark({ to, subject, html, text }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      From: `${FROM_NAME} <${FROM_EMAIL}>`,
+      From: `${fromName} <${fromEmail}>`,
       To: to,
       Subject: subject,
       HtmlBody: html,
@@ -177,8 +194,9 @@ async function sendWithPostmark({ to, subject, html, text }) {
  * Send email verification email
  * @param {string} email - User email
  * @param {string} verificationUrl - Verification link URL
+ * @param {any} [env] - Environment variables (platform.env for Cloudflare Workers)
  */
-export async function sendVerificationEmail(email, verificationUrl) {
+export async function sendVerificationEmail(email, verificationUrl, env = null) {
   const html = `
     <!DOCTYPE html>
     <html>
@@ -213,6 +231,7 @@ export async function sendVerificationEmail(email, verificationUrl) {
     to: email,
     subject: 'Verify Your Email Address',
     html,
+    env,
   });
 }
 
@@ -220,8 +239,9 @@ export async function sendVerificationEmail(email, verificationUrl) {
  * Send password reset email
  * @param {string} email - User email
  * @param {string} resetUrl - Password reset link URL
+ * @param {any} [env] - Environment variables (platform.env for Cloudflare Workers)
  */
-export async function sendPasswordResetEmail(email, resetUrl) {
+export async function sendPasswordResetEmail(email, resetUrl, env = null) {
   const html = `
     <!DOCTYPE html>
     <html>
@@ -256,6 +276,7 @@ export async function sendPasswordResetEmail(email, resetUrl) {
     to: email,
     subject: 'Reset Your Password',
     html,
+    env,
   });
 }
 
