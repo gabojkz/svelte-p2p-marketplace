@@ -1,14 +1,15 @@
 # Database Connection Debugging Guide
 
 ## Issue
-Getting errors when trying to query `allowed_email_domains` table from Cloudflare deployment connected to Supabase.
+Getting errors when trying to query `allowed_email_domains` table from Cloudflare deployment connected to Neon or local PostgreSQL.
 
 ## Changes Made
 
 ### 1. Fixed Database Driver Selection
-- **Problem**: Code was using Neon HTTP driver for Supabase, which may not be compatible
-- **Solution**: Updated `src/lib/server/db.js` to use `postgres.js` for Supabase connections instead of Neon HTTP driver
-- **Note**: Neon HTTP driver is now only used for actual Neon databases
+- **Problem**: Code was using Neon HTTP driver for all connections, which doesn't work with local PostgreSQL (TCP-based)
+- **Solution**: Updated `src/lib/server/db.js` to automatically select the appropriate driver:
+  - **Local databases** (localhost): Uses `postgres.js` with Drizzle (TCP-based)
+  - **Remote databases** (Neon): Uses Neon HTTP driver with Drizzle (HTTP-based)
 
 ### 2. Enhanced Error Logging
 Added detailed error logging in:
@@ -33,22 +34,17 @@ This endpoint will test:
 
 ## Important: Cloudflare Workers Limitation
 
-⚠️ **CRITICAL**: `postgres.js` uses TCP connections, which **may not work in Cloudflare Workers**. Cloudflare Workers only support HTTP-based connections.
+⚠️ **CRITICAL**: `postgres.js` uses TCP connections, which **does not work in Cloudflare Workers**. Cloudflare Workers only support HTTP-based connections.
 
-### Solutions for Supabase on Cloudflare Workers:
+### Solutions for Cloudflare Workers:
 
-#### Option 1: Use Supabase Connection Pooler (Recommended)
-Use Supabase's **Transaction Pooler** connection string (port 6543) which supports HTTP:
+#### For Neon Databases (Recommended for Production)
+Neon databases work perfectly with Cloudflare Workers using the Neon HTTP driver:
 
-1. In Supabase Dashboard:
-   - Go to **Project Settings** → **Database**
-   - Find **Connection string** section
-   - Select **Transaction** mode (not Session)
-   - Copy the connection string (should have `:6543` port)
-
+1. Get your Neon connection string from the Neon dashboard
 2. The connection string should look like:
    ```
-   postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true
+   postgresql://[USER]:[PASSWORD]@[HOST]/[DATABASE]?sslmode=require
    ```
 
 3. Set this as `DATABASE_URL` in Cloudflare:
@@ -56,11 +52,15 @@ Use Supabase's **Transaction Pooler** connection string (port 6543) which suppor
    wrangler secret put DATABASE_URL
    ```
 
-#### Option 2: Use Supabase REST API (Alternative)
-If TCP connections don't work, you may need to use Supabase's REST API instead of direct database queries. This would require significant code changes.
+The code will automatically use the Neon HTTP driver for remote databases.
 
-#### Option 3: Use Neon HTTP Driver with Supabase
-Some users report success using Neon's HTTP driver with Supabase's pooler URL. You can test this by temporarily modifying the code.
+#### For Local Development
+Use a local PostgreSQL connection string:
+```
+postgresql://postgres:password@localhost:5432/database
+```
+
+The code will automatically use `postgres.js` (TCP-based) for localhost connections.
 
 ## Debugging Steps
 
@@ -75,7 +75,7 @@ wrangler pages deployment tail
 Look for log messages showing:
 - Database URL length
 - Database URL preview
-- Whether it's detected as Supabase
+- Whether it's detected as local or Neon
 
 ### 2. Test Database Connection
 Visit the test endpoint (after setting up):
@@ -90,14 +90,20 @@ wrangler pages deployment tail
 ```
 
 Look for:
-- "Using postgres.js for Supabase connection" message
+- "Creating database connection with Neon HTTP (fetch) driver" message (for remote)
+- "Creating database connection with postgres.js (TCP) driver" message (for local)
 - Any connection errors
 - Detailed error messages from enhanced logging
 
-### 4. Verify Supabase Connection String Format
-Ensure your connection string:
-- Uses port **6543** (Transaction pooler) or **5432** (Direct connection)
-- Includes `?pgbouncer=true` if using pooler
+### 4. Verify Connection String Format
+For Neon databases, ensure your connection string:
+- Uses the correct Neon hostname (from Neon dashboard)
+- Includes `?sslmode=require` for secure connections
+- Has correct credentials
+
+For local databases:
+- Uses `localhost` or `127.0.0.1` as hostname
+- Uses port **5432** (default PostgreSQL port)
 - Has correct credentials
 
 ### 5. Test Connection String Locally
@@ -117,9 +123,10 @@ DATABASE_URL="your-supabase-connection-string" npm run dev
 
 ### Issue: Connection timeout
 **Possible causes:**
-1. Using direct connection (port 5432) instead of pooler (port 6543)
-2. Supabase project paused (free tier)
-3. Network issues
+1. For Neon: Network issues or incorrect hostname
+2. For local: PostgreSQL server not running
+3. Firewall blocking connection
+4. Incorrect port number
 
 ### Issue: "Table does not exist"
 **Possible causes:**
@@ -129,15 +136,15 @@ DATABASE_URL="your-supabase-connection-string" npm run dev
 
 ## Next Steps
 
-1. **Verify connection string format** - Ensure you're using Transaction pooler URL
+1. **Verify connection string format** - Ensure you're using the correct format for Neon or local PostgreSQL
 2. **Test the debug endpoint** - Use `/api/debug/db-test` to see detailed error messages
 3. **Check Cloudflare logs** - Look for the enhanced error messages
-4. **If postgres.js doesn't work** - Consider using Supabase REST API or Neon HTTP driver as fallback
+4. **Verify driver selection** - Check logs to confirm the correct driver is being used
 
 ## Environment Variables Checklist
 
 Make sure these are set in Cloudflare:
-- ✅ `DATABASE_URL` - Supabase connection string (Transaction pooler recommended)
+- ✅ `DATABASE_URL` - Neon connection string (for production) or local PostgreSQL connection string (for development)
 - ✅ `BETTER_AUTH_SECRET` - Auth secret
 - ⚠️ `DB_TEST_SECRET` - Optional, for testing endpoint security
 

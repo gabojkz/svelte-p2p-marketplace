@@ -8,69 +8,75 @@ Failed to get session
 ```
 
 ## Root Cause
-The code was using `postgres.js` (TCP-based) for Supabase connections, which **does not work in Cloudflare Workers**. Cloudflare Workers only support HTTP-based connections.
+The code was using `postgres.js` (TCP-based) for remote database connections, which **does not work in Cloudflare Workers**. Cloudflare Workers only support HTTP-based connections.
 
 ## Solution
-Changed `src/lib/server/db.js` to **always use Neon HTTP driver** (`@neondatabase/serverless`), which:
-- ✅ Uses HTTP fetch API (works in Cloudflare Workers)
-- ✅ Works with both Supabase and Neon databases
-- ✅ Works with Supabase's connection pooler
+Changed `src/lib/server/db.js` to **automatically select the appropriate driver**:
+- ✅ **Local databases** (localhost): Uses `postgres.js` with Drizzle (TCP-based)
+- ✅ **Remote databases** (Neon): Uses Neon HTTP driver (`@neondatabase/serverless`) with Drizzle (HTTP-based)
+- ✅ Neon HTTP driver uses HTTP fetch API (works in Cloudflare Workers)
+- ✅ Works with Neon databases
 - ✅ Works in both production (Cloudflare) and local development
 
 ## Changes Made
 
-### 1. Removed TCP-based postgres.js from server code
-- Removed `import postgres from 'postgres'`
-- Removed `import { drizzle } from 'drizzle-orm/postgres-js'`
-- Now only uses `drizzle-orm/neon-http` and `@neondatabase/serverless`
+### 1. Automatic driver selection
+- **Local databases**: Uses `postgres.js` with `drizzle-orm/postgres-js` (TCP-based)
+- **Remote databases**: Uses `@neondatabase/serverless` with `drizzle-orm/neon-http` (HTTP-based)
+- Automatically detects local vs remote based on hostname
 
-### 2. Simplified connection logic
-- Always uses Neon HTTP driver (works everywhere)
+### 2. Connection logic
 - Singleton pattern ensures connection reuse
 - Connection created at module scope (edge-safe)
+- Local databases: Uses original connection string as-is
+- Remote databases: Cleans up params and ensures SSL
 
-### 3. Connection string cleanup
+### 3. Connection string cleanup (remote only)
 - Removes `pgbouncer` and `pooler` params that can interfere
 - Ensures `sslmode=require` for secure connections
 
 ## Important Notes
 
 ### ✅ What Works Now
-- Database connections in Cloudflare Workers
+- Database connections in Cloudflare Workers (using Neon HTTP driver)
 - Session persistence across page refreshes
-- Works with Supabase connection pooler
 - Works with Neon databases
-- Works in local development
+- Works in local development (using postgres.js for localhost)
 
 ### ❌ What Was Broken
-- `postgres.js` uses TCP sockets (doesn't work in Workers)
+- Using `postgres.js` for remote databases in Cloudflare Workers (TCP sockets don't work in Workers)
 - Connections would fail after a few requests
 - Better Auth couldn't read sessions (database connection failed)
 
 ## Connection String Requirements
 
-For Supabase on Cloudflare Workers, use the **Transaction Pooler** connection string:
+For Neon on Cloudflare Workers, use your Neon connection string:
 
 ```
-postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require
+postgresql://[USER]:[PASSWORD]@[HOST]/[DATABASE]?sslmode=require
 ```
 
 **Important:**
-- Use port `6543` (Transaction pooler)
-- Include `?sslmode=require`
+- Include `?sslmode=require` for secure connections
 - The code will automatically clean up any `pgbouncer` or `pooler` params
+- For local development, use `postgresql://localhost:5432/[DATABASE]`
 
 ## Verification
 
 After deploying, check Cloudflare logs for:
 ```
-Creating database connection with Neon HTTP driver (works with Supabase and Neon)
+Creating database connection with Neon HTTP (fetch) driver
+```
+
+For local development, you should see:
+```
+Creating database connection with postgres.js (TCP) driver
 ```
 
 You should **NOT** see:
-- "Using postgres.js" messages
 - "Database connection error" after initial connection
 - "Failed to get session" errors
+- "fetch failed" errors when using localhost
 
 ## Testing
 
@@ -89,7 +95,7 @@ The seed scripts in `scripts/` folder still use `postgres.js` - this is fine bec
 - They don't get bundled into the Workers build
 
 ### Local Development
-Neon HTTP driver works fine in local development too. If you prefer `postgres.js` for local dev, you can add conditional logic, but it's not necessary.
+The code automatically uses `postgres.js` for local databases (localhost, 127.0.0.1) and Neon HTTP driver for remote databases. This provides the best compatibility for both environments.
 
 ## References
 

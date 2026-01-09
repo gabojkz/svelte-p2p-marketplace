@@ -17,8 +17,8 @@ export async function GET({ platform, url }) {
 		hasDatabaseUrl: !!databaseUrl,
 		databaseUrlLength: databaseUrl?.length || 0,
 		databaseUrlPreview: databaseUrl ? `${databaseUrl.substring(0, 10)}...${databaseUrl.substring(databaseUrl.length - 10)}` : 'N/A',
-		isSupabase: databaseUrl.includes('supabase.co'),
 		isNeon: databaseUrl.includes('neon.tech'),
+		isLocal: databaseUrl.includes('localhost') || databaseUrl.includes('127.0.0.1'),
 		tests: []
 	};
 

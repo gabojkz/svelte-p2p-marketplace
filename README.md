@@ -1,6 +1,6 @@
 # ⚡ AuthFlow - SvelteKit Authentication Starter
 
-A production-ready authentication starter with **SvelteKit**, **Better Auth**, **PostgreSQL**, **Podman**, **Supabase**, and **Cloudflare Pages** deployment.
+A production-ready authentication starter with **SvelteKit**, **Better Auth**, **PostgreSQL**, **Podman**, **Neon**, and **Cloudflare Pages** deployment.
 
 ## 🎯 Use as Template
 
@@ -23,7 +23,7 @@ npm install
 - **🔐 Better Auth** - Modern authentication with JSDoc types
 - **🐘 PostgreSQL** - Battle-tested relational database
 - **🐳 Podman** - Container-based local development
-- **☁️ Supabase** - Managed PostgreSQL for production
+- **☁️ Neon** - Serverless PostgreSQL for production
 - **⚡ Cloudflare Pages** - Edge deployment with Workers
 - **🎨 Beautiful UI** - Modern dark theme with smooth animations
 
@@ -31,7 +31,7 @@ npm install
 
 - Node.js 20+
 - Podman (for local development)
-- Supabase account (for production database)
+- Neon account (for production database) or local PostgreSQL
 - Cloudflare account (for deployment)
 
 ## 🏃 Quick Start
@@ -78,21 +78,23 @@ npm run dev
 
 Visit `http://localhost:5173` 🎉
 
-## 🗄️ Production Setup with Supabase
+## 🗄️ Production Setup with Neon
 
-### 1. Create Supabase Project
+### 1. Create Neon Project
 
-1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Navigate to **Project Settings** → **Database** → **Connection string**
-3. Copy the **URI** connection string (use Transaction pooler for serverless)
+1. Go to [neon.tech](https://neon.tech) and create a new project
+2. Navigate to your project dashboard
+3. Copy the connection string from the **Connection Details** section
 
 ### 2. Configure Production Database
 
-Run migrations against Supabase:
+Run migrations against Neon:
 
 ```bash
-DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres" npm run db:push
+DATABASE_URL="postgresql://[USER]:[PASSWORD]@[HOST]/[DATABASE]?sslmode=require" npm run db:push
 ```
+
+Replace `[USER]`, `[PASSWORD]`, `[HOST]`, and `[DATABASE]` with your Neon project details.
 
 ### 3. Set Cloudflare Secrets
 
@@ -210,7 +212,7 @@ emailAndPassword: {
 - [Better Auth Docs](https://www.better-auth.com/docs)
 - [Drizzle ORM Docs](https://orm.drizzle.team)
 - [Cloudflare Pages Docs](https://developers.cloudflare.com/pages)
-- [Supabase Docs](https://supabase.com/docs)
+- [Neon Docs](https://neon.tech/docs)
 
 ## 📄 License
 

@@ -8,12 +8,11 @@ import * as schema from './schema.js';
  * CRITICAL FOR CLOUDFLARE WORKERS:
  * 
  * This file automatically selects the appropriate driver:
- * - Local databases (localhost): Uses postgres.js (TCP-based)
- * - Remote databases (Neon/Supabase): Uses Neon HTTP driver (HTTP-based)
+ * - Local databases (localhost): Uses postgres.js (TCP-based) with Drizzle
+ * - Remote databases (Neon): Uses Neon HTTP driver (HTTP-based) with Drizzle
  * 
  * Neon HTTP driver works with:
  * - Neon databases (neon.tech)
- * - Supabase databases (supabase.co) via connection pooler
  * - Cloudflare Workers (uses HTTP fetch, not TCP)
  * 
  * postgres.js works with:
@@ -147,7 +146,6 @@ export function createDb(databaseUrl) {
 			host,
 			urlLength: cleanUrl.length,
 			isLocal,
-			isSupabase: host.includes('supabase.co'),
 			isNeon: host.includes('neon.tech')
 		});
 
@@ -164,7 +162,7 @@ export function createDb(databaseUrl) {
 			db = drizzlePostgres(sql, { schema });
 		} else {
 			// Use Neon HTTP driver for remote databases (HTTP-based)
-			// This works in Cloudflare Workers and with Neon/Supabase
+			// This works in Cloudflare Workers and with Neon databases
 			const sql = neon(cleanUrl);
 			db = drizzleNeon(sql, { schema });
 		}
