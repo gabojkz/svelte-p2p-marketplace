@@ -104,7 +104,8 @@ export async function POST({ params, request, locals, platform }) {
 					originalName: file.name,
 					listingId: listingId.toString(),
 					uploadedBy: marketplaceUser.id.toString()
-				}
+				},
+				platform
 			);
 
 			// For thumbnails, we'll use the same image for now

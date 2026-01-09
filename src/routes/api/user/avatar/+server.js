@@ -78,7 +78,8 @@ export async function POST({ request, locals, platform }) {
 				originalName: file.name,
 				userId: marketplaceUser.id.toString(),
 				uploadedBy: marketplaceUser.id.toString()
-			}
+			},
+			platform
 		);
 
 		// Delete old avatar if it exists

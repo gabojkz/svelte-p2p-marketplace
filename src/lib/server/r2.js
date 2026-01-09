@@ -104,9 +104,10 @@ async function uploadToLocal(key, body) {
  * @param {ArrayBuffer | Uint8Array | ReadableStream} body - File content
  * @param {string} contentType - MIME type
  * @param {Record<string, string>} metadata - Optional metadata
+ * @param {any} [platform] - Platform environment (for accessing env vars in Workers)
  * @returns {Promise<string>} Public URL
  */
-export async function uploadToR2(bucket, key, body, contentType, metadata = {}) {
+export async function uploadToR2(bucket, key, body, contentType, metadata = {}, platform = null) {
 	// If no bucket, use local file system (development mode) - only in Node.js
 	if (!bucket) {
 		if (isWorkersEnvironment) {
@@ -151,7 +152,7 @@ export async function uploadToR2(bucket, key, body, contentType, metadata = {}) 
 	});
 
 	// Return public URL (assuming R2 public bucket or custom domain)
-	const publicUrl = getR2PublicUrl(key);
+	const publicUrl = getR2PublicUrl(key, false, platform);
 	return publicUrl;
 }
 
@@ -159,33 +160,40 @@ export async function uploadToR2(bucket, key, body, contentType, metadata = {}) 
  * Get public URL for an R2 object or local file
  * @param {string} key - Object key
  * @param {boolean} isLocal - Whether we're in local development mode
+ * @param {any} [platform] - Platform environment (for accessing env vars in Workers)
  * @returns {string}
  */
-export function getR2PublicUrl(key, isLocal = false) {
+export function getR2PublicUrl(key, isLocal = false, platform = null) {
 	// Local development: return local path
 	if (isLocal) {
 		return `/uploads/${key}`;
 	}
 	
-	// Option 1: Use R2 public bucket URL
-	// Format: https://<account-id>.r2.cloudflarestorage.com/<bucket-name>/<key>
-	const accountId = process.env.R2_ACCOUNT_ID || '';
-	const bucketName = process.env.R2_BUCKET_NAME || 'svelte-p2p-market';
+	// Get environment variables from platform (Workers) or process.env (Node.js)
+	const env = platform?.env || (typeof process !== 'undefined' ? process.env : {});
 	
-	// Option 2: Use custom domain (recommended)
+	// Option 1: Use custom domain (recommended)
 	// Format: https://<custom-domain>/<key>
-	const customDomain = process.env.R2_PUBLIC_URL || '';
+	const customDomain = env.R2_PUBLIC_URL || '';
 	
 	if (customDomain) {
-		return `${customDomain}/${key}`;
+		// Ensure custom domain doesn't have trailing slash
+		const cleanDomain = customDomain.replace(/\/$/, '');
+		return `${cleanDomain}/${key}`;
 	}
 	
-	// Fallback to R2 public URL
+	// Option 2: Use R2 public bucket URL
+	// Format: https://<account-id>.r2.cloudflarestorage.com/<bucket-name>/<key>
+	const accountId = env.R2_ACCOUNT_ID || '';
+	const bucketName = env.R2_BUCKET_NAME || 'svelte-p2p-market';
+	
 	if (accountId) {
 		return `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${key}`;
 	}
 	
 	// If no public URL configured, return the key (you'll need to set up public access)
+	// In production, this should be configured via R2_PUBLIC_URL or R2_ACCOUNT_ID
+	console.warn(`R2 public URL not configured. Using key as fallback: ${key}`);
 	return key;
 }
 
