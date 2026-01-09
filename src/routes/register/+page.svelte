@@ -44,17 +44,11 @@
     }
   }
 
-  // Handle email input with debounce
-  /** @type {ReturnType<typeof setTimeout> | null} */
-  let emailTimeout = null;
-
-  async function handleEmailInput() {
-    if (emailTimeout) clearTimeout(emailTimeout);
-    emailTimeout = setTimeout(async () => {
-      if (email) {
-        await validateEmailDomain(email);
-      }
-    }, 500);
+  // Handle email validation on blur (when user leaves the field)
+  async function handleEmailBlur() {
+    if (email) {
+      await validateEmailDomain(email);
+    }
   }
 
   /** @param {SubmitEvent} e */
@@ -169,7 +163,7 @@
                 autocomplete="email"
                 required
                 disabled={loading || checkingEmail}
-                oninput={handleEmailInput}
+                onblur={handleEmailBlur}
               />
               {#if checkingEmail}
                 <span class="form-helper" style="color: var(--color-gray-500);">

@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { createDb } from '$lib/server/db.js';
-import { allowedEmailDomains } from '$lib/server/schema.js';
+import { allowedEmailDomains, user } from '$lib/server/schema.js';
 import { eq, sql } from 'drizzle-orm';
 
 /** @type {import('./$types').RequestHandler} */
@@ -64,6 +64,26 @@ export async function GET({ platform, url }) {
 				status: 'error',
 				message: error?.message || 'Unknown error',
 				error: JSON.stringify(error, Object.getOwnPropertyNames(error))
+			});
+		}
+
+		// Test 2.5: Check if user table exists and is accessible
+		try {
+			const userCount = await db.select().from(user).limit(1);
+			results.tests.push({
+				name: 'Query user table (Better Auth)',
+				status: 'success',
+				message: 'User table exists and is accessible',
+				result: `Table accessible, sample count: ${userCount.length}`
+			});
+		} catch (error) {
+			results.tests.push({
+				name: 'Query user table (Better Auth)',
+				status: 'error',
+				message: error?.message || 'Unknown error',
+				error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+				stack: error?.stack,
+				diagnosis: 'The user table might not exist. Run migrations: npm run db:push'
 			});
 		}
 
