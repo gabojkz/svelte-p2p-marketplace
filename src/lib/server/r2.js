@@ -3,15 +3,32 @@
  * Handles file uploads to R2 buckets with local file system fallback for development
  */
 
-import { writeFile, mkdir, readFile, unlink } from 'fs/promises';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+// Check if we're in a Cloudflare Workers environment
+// Workers don't have process.cwd() or file system APIs
+// We check for process.cwd since import.meta.url might exist but be undefined
+const isWorkersEnvironment = typeof process === 'undefined' || typeof process.cwd !== 'function';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Lazy load Node.js file system APIs only when needed (not in Workers)
+let fsModule, pathModule;
+let LOCAL_STORAGE_DIR;
 
-// Local storage directory for development
-const LOCAL_STORAGE_DIR = join(process.cwd(), 'static', 'uploads');
+async function getNodeModules() {
+	if (isWorkersEnvironment) {
+		return null;
+	}
+	
+	if (!fsModule) {
+		fsModule = await import('fs/promises');
+		pathModule = await import('path');
+		
+		// Initialize local storage directory
+		if (typeof process !== 'undefined' && process.cwd) {
+			LOCAL_STORAGE_DIR = pathModule.join(process.cwd(), 'static', 'uploads');
+		}
+	}
+	
+	return { fs: fsModule, path: pathModule };
+}
 
 /**
  * Get R2 bucket from platform environment
@@ -51,19 +68,30 @@ export function generateImagePath(listingId, filename, isThumbnail = false) {
 
 /**
  * Upload a file to local file system (for development)
+ * Only works in Node.js environment, not in Cloudflare Workers
  * @param {string} key - Object key (path)
  * @param {ArrayBuffer} body - File content
  * @returns {Promise<string>} Public URL
  */
 async function uploadToLocal(key, body) {
-	const filePath = join(LOCAL_STORAGE_DIR, key);
-	const fileDir = dirname(filePath);
+	if (isWorkersEnvironment) {
+		throw new Error('Local file system operations are not available in Cloudflare Workers. R2 bucket must be configured.');
+	}
+	
+	const modules = await getNodeModules();
+	if (!modules) {
+		throw new Error('File system modules not available');
+	}
+	
+	const { fs, path } = modules;
+	const filePath = path.join(LOCAL_STORAGE_DIR, key);
+	const fileDir = path.dirname(filePath);
 	
 	// Ensure directory exists
-	await mkdir(fileDir, { recursive: true });
+	await fs.mkdir(fileDir, { recursive: true });
 	
 	// Write file
-	await writeFile(filePath, Buffer.from(body));
+	await fs.writeFile(filePath, Buffer.from(body));
 	
 	// Return local URL path
 	return `/uploads/${key}`;
@@ -79,8 +107,12 @@ async function uploadToLocal(key, body) {
  * @returns {Promise<string>} Public URL
  */
 export async function uploadToR2(bucket, key, body, contentType, metadata = {}) {
-	// If no bucket, use local file system (development mode)
+	// If no bucket, use local file system (development mode) - only in Node.js
 	if (!bucket) {
+		if (isWorkersEnvironment) {
+			throw new Error('R2 bucket is required in Cloudflare Workers. Please configure R2_BUCKET in your Cloudflare Pages/Workers environment.');
+		}
+		
 		// Convert body to ArrayBuffer if needed
 		let arrayBuffer;
 		if (body instanceof ArrayBuffer) {
@@ -159,13 +191,24 @@ export function getR2PublicUrl(key, isLocal = false) {
 
 /**
  * Delete a file from local file system (for development)
+ * Only works in Node.js environment, not in Cloudflare Workers
  * @param {string} key - Object key (path)
  * @returns {Promise<void>}
  */
 async function deleteFromLocal(key) {
-	const filePath = join(LOCAL_STORAGE_DIR, key);
+	if (isWorkersEnvironment) {
+		throw new Error('Local file system operations are not available in Cloudflare Workers. R2 bucket must be configured.');
+	}
+	
+	const modules = await getNodeModules();
+	if (!modules) {
+		throw new Error('File system modules not available');
+	}
+	
+	const { fs, path } = modules;
+	const filePath = path.join(LOCAL_STORAGE_DIR, key);
 	try {
-		await unlink(filePath);
+		await fs.unlink(filePath);
 	} catch (err) {
 		// File might not exist, ignore error
 		if (err.code !== 'ENOENT') {
@@ -182,6 +225,9 @@ async function deleteFromLocal(key) {
  */
 export async function deleteFromR2(bucket, key) {
 	if (!bucket) {
+		if (isWorkersEnvironment) {
+			throw new Error('R2 bucket is required in Cloudflare Workers. Please configure R2_BUCKET in your Cloudflare Pages/Workers environment.');
+		}
 		// Local development: delete from file system
 		await deleteFromLocal(key);
 		return;
