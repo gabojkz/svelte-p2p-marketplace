@@ -1,8 +1,9 @@
-import { categories, listings, users } from '$lib/server/schema.js';
+import { categories, listings, users, listingImages } from '$lib/server/schema.js';
 import { eq, and, or, like, sql, desc, asc, gte, lte } from 'drizzle-orm';
+import { getR2PublicUrl } from '$lib/server/r2.js';
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ locals, url }) {
+export async function load({ locals, url, platform }) {
 	const db = locals.db;
 
 	// If database is not available, return empty data instead of throwing
@@ -191,6 +192,7 @@ export async function load({ locals, url }) {
 			title: listings.title,
 			description: listings.description,
 			price: listings.price,
+			type: listings.type,
 			locationCity: listings.locationCity,
 			locationPostcode: listings.locationPostcode,
 			locationLatitude: listings.locationLatitude,
@@ -228,7 +230,7 @@ export async function load({ locals, url }) {
 			.limit(limit)
 			.offset(offset);
 
-		// Get category info for each listing
+		// Get category info and first image for each listing
 		const listingsWithCategories = await Promise.all(
 			listingsData.map(async (listing) => {
 				const [category] = await db
@@ -237,9 +239,27 @@ export async function load({ locals, url }) {
 					.where(eq(categories.id, listing.categoryId))
 					.limit(1);
 
+				// Get first image (primary or first by display order)
+				const [firstImage] = await db
+					.select()
+					.from(listingImages)
+					.where(eq(listingImages.listingId, listing.id))
+					.orderBy(listingImages.displayOrder)
+					.limit(1);
+
+				// Convert image URL to full R2 URL if it's just a key
+				let imageUrl = null;
+				if (firstImage) {
+					imageUrl = firstImage.imageUrl;
+					if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+						imageUrl = getR2PublicUrl(imageUrl, false, platform);
+					}
+				}
+
 				return {
 					...listing,
-					category: category || null
+					category: category || null,
+					imageUrl: imageUrl || null
 				};
 			})
 		);

@@ -536,12 +536,27 @@
               {@const listingUrl = isOwner ? `/listings/edit/${listing.id}` : `/listing-details/${listing.id}`}
               <a href={listingUrl} class="listing-card listing-card--list">
                 <div class="listing-card__image">
-                  <div
-                    class="listing-card__placeholder"
-                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
-                  >
-                    🚗
-                  </div>
+                  {#if listing.imageUrl}
+                    <img
+                      src={listing.imageUrl}
+                      alt={listing.title || 'Listing image'}
+                      class="listing-card__image-img"
+                      loading="lazy"
+                    />
+                  {:else}
+                    <div
+                      class="listing-card__placeholder"
+                      style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+                    >
+                      {#if listing?.category?.icon}
+                        {listing.category.icon}
+                      {:else if listing?.type === 'product'}
+                        📦
+                      {:else}
+                        🔧
+                      {/if}
+                    </div>
+                  {/if}
                   {#if listing.featured}
                     <span class="listing-card__badge listing-card__badge--featured">Featured</span>
                   {/if}
