@@ -1,9 +1,10 @@
 import { error } from '@sveltejs/kit';
 import { listings, users, user, categories, reviews, trades, favorites, listingImages, userSettings } from '$lib/server/schema';
 import { eq, and, or, ne, sql, desc } from 'drizzle-orm';
+import { getR2PublicUrl } from '$lib/server/r2.js';
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ params, locals, url }) {
+export async function load({ params, locals, url, platform }) {
 	const db = locals.db;
 	if (!db) {
 		throw error(500, 'Database not available');
@@ -159,6 +160,25 @@ export async function load({ params, locals, url }) {
 		.where(eq(listingImages.listingId, listingId))
 		.orderBy(listingImages.displayOrder);
 
+	// Convert image keys to full R2 URLs
+	const images = listingImagesData.map((img) => {
+		// Check if imageUrl is already a full URL (starts with http:// or https://)
+		// If not, it's a key and needs to be converted
+		const imageUrl = img.imageUrl?.startsWith('http://') || img.imageUrl?.startsWith('https://')
+			? img.imageUrl
+			: getR2PublicUrl(img.imageUrl, false, platform);
+		
+		const thumbnailUrl = img.thumbnailUrl?.startsWith('http://') || img.thumbnailUrl?.startsWith('https://')
+			? img.thumbnailUrl
+			: getR2PublicUrl(img.thumbnailUrl || img.imageUrl, false, platform);
+
+		return {
+			...img,
+			imageUrl,
+			thumbnailUrl
+		};
+	});
+
 	// Get seller's contact information (only if user is logged in)
 	let sellerContactInfo = null;
 	if (locals.session && locals.user && listing.seller) {
@@ -182,7 +202,7 @@ export async function load({ params, locals, url }) {
 			...listing.listing,
 			category: listing.category,
 			subcategory: subcategory,
-			images: listingImagesData,
+			images: images,
 			seller: listing.seller ? {
 				...listing.seller,
 				emailVerified: listing.authUser?.emailVerified || false,

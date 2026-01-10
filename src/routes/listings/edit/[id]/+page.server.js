@@ -1,9 +1,10 @@
 import { redirect } from "@sveltejs/kit";
 import { listings, categories, users } from "$lib/server/schema";
 import { eq, and } from "drizzle-orm";
+import { getR2PublicUrl } from "$lib/server/r2.js";
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ locals, params }) {
+export async function load({ locals, params, platform }) {
   if (!locals.session || !locals.user) {
     throw redirect(302, "/login");
   }
@@ -58,11 +59,30 @@ export async function load({ locals, params }) {
 
   // Fetch listing images
   const { listingImages } = await import("$lib/server/schema");
-  const images = await db
+  const imagesData = await db
     .select()
     .from(listingImages)
     .where(eq(listingImages.listingId, listingId))
     .orderBy(listingImages.displayOrder);
+
+  // Convert image keys to full R2 URLs
+  const images = imagesData.map((img) => {
+    // Check if imageUrl is already a full URL (starts with http:// or https://)
+    // If not, it's a key and needs to be converted
+    const imageUrl = img.imageUrl?.startsWith('http://') || img.imageUrl?.startsWith('https://')
+      ? img.imageUrl
+      : getR2PublicUrl(img.imageUrl, false, platform);
+    
+    const thumbnailUrl = img.thumbnailUrl?.startsWith('http://') || img.thumbnailUrl?.startsWith('https://')
+      ? img.thumbnailUrl
+      : getR2PublicUrl(img.thumbnailUrl || img.imageUrl, false, platform);
+
+    return {
+      ...img,
+      imageUrl,
+      thumbnailUrl
+    };
+  });
 
   return {
     session: locals.session,
