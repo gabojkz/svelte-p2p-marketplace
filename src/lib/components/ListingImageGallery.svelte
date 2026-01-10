@@ -8,59 +8,39 @@
   let isDragging = $state(false);
   let startX = $state(0);
   let scrollLeft = $state(0);
-  let loadedImages = $state(new Set());
+  let loadingImages = $state(new Set());
   let failedImages = $state(new Set());
 
-  // Handle image load success - reassign Set to trigger reactivity
+  // Handle image load success
   function handleImageLoad(index) {
-    loadedImages = new Set([...loadedImages, index]);
-    failedImages = new Set([...failedImages].filter(i => i !== index));
+    loadingImages.delete(index);
+    failedImages.delete(index);
   }
 
-  // Handle image load error - reassign Set to trigger reactivity
+  // Handle image load error
   function handleImageError(index, imageUrl) {
     console.error('Failed to load image:', {
       url: imageUrl,
       index,
       image: images?.[index]
     });
-    failedImages = new Set([...failedImages, index]);
-    loadedImages = new Set([...loadedImages].filter(i => i !== index));
+    loadingImages.delete(index);
+    failedImages.add(index);
   }
 
-  // Preload current and adjacent images
-  function preloadImages() {
-    if (!images || images.length === 0) return;
-    
-    const indicesToLoad = [currentIndex];
-    if (currentIndex > 0) indicesToLoad.push(currentIndex - 1);
-    if (currentIndex < images.length - 1) indicesToLoad.push(currentIndex + 1);
-    
-    indicesToLoad.forEach(index => {
-      if (!loadedImages.has(index) && !failedImages.has(index) && images[index]) {
-        const imageUrl = getImageUrl(images[index], true);
-        if (imageUrl) {
-          const img = new Image();
-          img.onload = () => handleImageLoad(index);
-          img.onerror = () => handleImageError(index, imageUrl);
-          img.src = imageUrl;
-        }
-      }
-    });
-  }
-
-  // Preload images when current index changes
-  $effect(() => {
-    if (images && images.length > 0) {
-      preloadImages();
+  // Mark image as loading when it starts
+  function handleImageLoadStart(index) {
+    if (!failedImages.has(index) && !loadingImages.has(index)) {
+      loadingImages.add(index);
     }
-  });
+  }
+
+
 
   // Navigate to specific image
   function goToImage(index) {
     if (index >= 0 && index < images.length) {
       currentIndex = index;
-      preloadImages();
     }
   }
 
@@ -157,10 +137,24 @@
     
     if (!url) {
       console.warn('No URL found for image:', image);
+    } else {
+      // Debug: log URL in production
+      if (typeof window !== 'undefined' && window.location.hostname.includes('pages.dev')) {
+        console.log('Getting image URL:', { url, useHighQuality, image });
+      }
     }
     
     return url || '';
   }
+
+  // Debug: log images when they change
+  $effect(() => {
+    if (images && images.length > 0) {
+      console.log('ListingImageGallery - Images received:', images.length, images);
+    } else {
+      console.log('ListingImageGallery - No images');
+    }
+  });
 
   onMount(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -186,42 +180,38 @@
     onmouseleave={handleMouseUp}
   >
     {#if images && images.length > 0}
-      {#each images as image, index}
+      {#each images as image, index (image.id || index)}
         <div 
           class="gallery-slide"
           class:active={currentIndex === index}
         >
-          <!-- Always render img tag to trigger loading -->
           <img
             src={getImageUrl(image, true)}
             alt="{title} - Image {index + 1}"
             loading={index === 0 ? 'eager' : 'lazy'}
             class="gallery-image"
-            class:gallery-image--loaded={loadedImages.has(index)}
-            class:gallery-image--failed={failedImages.has(index)}
-            onload={() => handleImageLoad(index)}
-            onerror={() => handleImageError(index, getImageUrl(image, true))}
+            onload={() => {
+              handleImageLoad(index);
+              console.log('Image loaded successfully:', index, getImageUrl(image, true));
+            }}
+            onerror={(e) => {
+              const imageUrl = getImageUrl(image, true);
+              console.error('Image failed to load:', {
+                url: imageUrl,
+                index,
+                error: e,
+                image: image
+              });
+              handleImageError(index, imageUrl);
+            }}
           />
-          {#if !loadedImages.has(index) && !failedImages.has(index)}
-            <div class="gallery-placeholder">
-              <div class="spinner"></div>
-            </div>
-          {/if}
           {#if failedImages.has(index)}
             <div class="gallery-placeholder gallery-placeholder--error">
               <div class="placeholder-icon">⚠️</div>
               <p>Failed to load image</p>
-              <button
-                type="button"
-                onclick={() => {
-                  failedImages = new Set([...failedImages].filter(i => i !== index));
-                  loadedImages = new Set([...loadedImages].filter(i => i !== index));
-                  preloadImages();
-                }}
-                class="retry-button"
-              >
-                Retry
-              </button>
+              <p class="gallery-error-url" style="font-size: 0.75rem; margin-top: 0.5rem; word-break: break-all;">
+                {getImageUrl(image, true)}
+              </p>
             </div>
           {/if}
         </div>
@@ -311,20 +301,18 @@
           type="button"
           aria-label="View image {index + 1}"
         >
-          {#if loadedImages.has(index)}
-            <img
-              src={getImageUrl(image, false)}
-              alt="Thumbnail {index + 1}"
-              loading="lazy"
-              class="gallery-thumbnail__image"
-              onerror={() => {
-                // Retry loading on error
-                failedImages = new Set([...failedImages].filter(i => i !== index));
-                loadedImages = new Set([...loadedImages].filter(i => i !== index));
-                preloadImages();
-              }}
-            />
-          {:else}
+          <img
+            src={getImageUrl(image, false)}
+            alt="Thumbnail {index + 1}"
+            loading="lazy"
+            class="gallery-thumbnail__image"
+            onload={() => handleImageLoad(index)}
+            onerror={(e) => {
+              const imageUrl = getImageUrl(image, false);
+              handleImageError(index, imageUrl);
+            }}
+          />
+          {#if loadingImages.has(index) && !failedImages.has(index)}
             <div class="gallery-thumbnail__placeholder"></div>
           {/if}
         </button>
@@ -376,6 +364,11 @@
     z-index: 1;
   }
 
+  .gallery-error-url {
+    max-width: 100%;
+    padding: 0 var(--space-2);
+  }
+
   .gallery-image {
     width: 100%;
     height: 100%;
@@ -383,20 +376,23 @@
     background: var(--color-gray-50);
     display: block;
     transition: opacity 0.3s ease-in-out;
-    opacity: 0;
+  }
+
+  .gallery-image--loading {
+    opacity: 0.3;
+  }
+
+  .gallery-image-overlay {
     position: absolute;
     top: 0;
     left: 0;
-  }
-
-  .gallery-image--loaded {
-    opacity: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.8);
     z-index: 2;
-  }
-
-  .gallery-image--failed {
-    opacity: 0;
-    z-index: 0;
   }
 
   .gallery-placeholder {
@@ -417,21 +413,6 @@
   .gallery-placeholder--error {
     background: var(--color-error-subtle);
     color: var(--color-error);
-  }
-
-  .retry-button {
-    margin-top: var(--space-2);
-    padding: var(--space-2) var(--space-4);
-    background: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    font-size: var(--text-sm);
-  }
-
-  .retry-button:hover {
-    background: var(--color-primary-dark);
   }
 
   .placeholder-icon {
