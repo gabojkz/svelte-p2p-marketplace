@@ -62,6 +62,8 @@
         whatsapp: settings?.whatsapp || "",
         telegram: settings?.telegram || "",
       };
+      // Update avatar preview when marketplaceUser changes
+      avatarPreview = marketplaceUser.avatarUrl || null;
     }
   });
 
@@ -92,6 +94,100 @@
       return marketplaceUser.username[0].toUpperCase();
     }
     return "?";
+  }
+
+  // Handle avatar upload
+  async function handleAvatarUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      avatarError = t('settings.avatarErrorType', userLanguage) || 'Invalid file type. Please upload a JPEG, PNG, WebP, or GIF image.';
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+      avatarError = t('settings.avatarErrorSize', userLanguage) || 'File size must be less than 2MB';
+      return;
+    }
+
+    avatarUploading = true;
+    avatarError = null;
+
+    try {
+      // Create FormData
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      // Upload to API
+      const response = await fetch('/api/user/avatar', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to upload avatar');
+      }
+
+      // Update preview with new avatar URL
+      avatarPreview = result.avatarUrl;
+      
+      // Update marketplaceUser if it's reactive
+      if (marketplaceUser) {
+        marketplaceUser.avatarUrl = result.avatarUrl;
+      }
+
+      // Clear any previous errors
+      avatarError = null;
+    } catch (err) {
+      console.error('Error uploading avatar:', err);
+      avatarError = err instanceof Error ? err.message : 'Failed to upload avatar';
+    } finally {
+      avatarUploading = false;
+      // Reset file input
+      event.target.value = '';
+    }
+  }
+
+  // Handle avatar deletion
+  async function handleAvatarDelete() {
+    if (!avatarPreview) return;
+
+    avatarUploading = true;
+    avatarError = null;
+
+    try {
+      const response = await fetch('/api/user/avatar', {
+        method: 'DELETE'
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to delete avatar');
+      }
+
+      // Clear preview
+      avatarPreview = null;
+      
+      // Update marketplaceUser if it's reactive
+      if (marketplaceUser) {
+        marketplaceUser.avatarUrl = null;
+      }
+
+      avatarError = null;
+    } catch (err) {
+      console.error('Error deleting avatar:', err);
+      avatarError = err instanceof Error ? err.message : 'Failed to delete avatar';
+    } finally {
+      avatarUploading = false;
+    }
   }
 </script>
 

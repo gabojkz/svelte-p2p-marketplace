@@ -1,5 +1,5 @@
 import { categories, listings, users, listingImages } from '$lib/server/schema.js';
-import { eq, and, or, like, sql, desc, asc, gte, lte } from 'drizzle-orm';
+import { eq, and, or, like, sql, desc, asc, gte, lte, inArray } from 'drizzle-orm';
 import { getR2PublicUrl } from '$lib/server/r2.js';
 
 /** @type {import('./$types').PageServerLoad} */
@@ -221,48 +221,67 @@ export async function load({ locals, url, platform }) {
 			}
 		}
 
-		// Fetch listings
-		const listingsData = await db
-			.select(selectFields)
+		// Optimized: Use JOINs to fetch listings with categories and images in a single query
+		// This eliminates N+1 query problem (was making 1 + 20*2 = 41 queries, now makes 2 queries)
+		
+		// First, get listings with categories using LEFT JOIN
+		const listingsWithCategoriesData = await db
+			.select({
+				...selectFields,
+				category: categories
+			})
 			.from(listings)
+			.leftJoin(categories, eq(listings.categoryId, categories.id))
 			.where(and(...conditions))
 			.orderBy(orderBy)
 			.limit(limit)
 			.offset(offset);
 
-		// Get category info and first image for each listing
-		const listingsWithCategories = await Promise.all(
-			listingsData.map(async (listing) => {
-				const [category] = await db
-					.select()
-					.from(categories)
-					.where(eq(categories.id, listing.categoryId))
-					.limit(1);
-
-				// Get first image (primary or first by display order)
-				const [firstImage] = await db
-					.select()
-					.from(listingImages)
-					.where(eq(listingImages.listingId, listing.id))
-					.orderBy(listingImages.displayOrder)
-					.limit(1);
-
-				// Convert image URL to full R2 URL if it's just a key
-				let imageUrl = null;
-				if (firstImage) {
-					imageUrl = firstImage.imageUrl;
-					if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
-						imageUrl = getR2PublicUrl(imageUrl, false, platform);
-					}
+		// Get listing IDs for batch image fetching
+		const listingIds = listingsWithCategoriesData.map(l => l.id);
+		
+		// Batch fetch first image for each listing using a single query
+		// This gets the first image (by displayOrder) for each listing in one query
+		let imagesMap = new Map();
+		if (listingIds.length > 0) {
+			const imagesData = await db
+				.select({
+					listingId: listingImages.listingId,
+					imageUrl: listingImages.imageUrl,
+					displayOrder: listingImages.displayOrder
+				})
+				.from(listingImages)
+				.where(inArray(listingImages.listingId, listingIds))
+				.orderBy(listingImages.displayOrder);
+			
+			// Group by listingId and take first image for each
+			for (const img of imagesData) {
+				if (!imagesMap.has(img.listingId)) {
+					imagesMap.set(img.listingId, img);
 				}
+			}
+		}
 
-				return {
-					...listing,
-					category: category || null,
-					imageUrl: imageUrl || null
-				};
-			})
-		);
+		// Combine listings with categories and images
+		const listingsWithCategories = listingsWithCategoriesData.map((listing) => {
+			// Get image for this listing
+			const firstImage = imagesMap.get(listing.id);
+			
+			// Convert image URL to full R2 URL if it's just a key
+			let imageUrl = null;
+			if (firstImage) {
+				imageUrl = firstImage.imageUrl;
+				if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+					imageUrl = getR2PublicUrl(imageUrl, false, platform);
+				}
+			}
+
+			return {
+				...listing,
+				category: listing.category || null,
+				imageUrl: imageUrl || null
+			};
+		});
 
 		// Get total count
 		const [countResult] = await db

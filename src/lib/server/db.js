@@ -79,16 +79,33 @@ function validateDatabaseUrl(databaseUrl) {
 		const isLocal = isLocalDatabase(host);
 
 		// For local databases, don't require SSL and keep original URL
-		// For remote databases, clean up params and ensure SSL
+		// For remote databases, optimize for performance
 		if (!isLocal) {
-			// Remove params that can break HTTP driver
-			urlObj.searchParams.delete('pgbouncer');
-			urlObj.searchParams.delete('pooler');
+			// For Neon databases, prefer pooler endpoint for better performance
+			// Pooler endpoint typically has '-pooler' in the hostname or uses port 6543
+			// If pgbouncer=true is set, keep it (it enables connection pooling)
+			const hasPgbouncer = urlObj.searchParams.has('pgbouncer') && 
+				urlObj.searchParams.get('pgbouncer') === 'true';
+			
+			// If hostname doesn't have pooler and we want to use it, we could modify it
+			// But for now, we'll keep the connection string as-is if pgbouncer=true
+			// Otherwise, we'll ensure SSL but not force pooler (user can configure it)
+			
+			// Remove pooler param if it's not 'true' (it might interfere)
+			if (urlObj.searchParams.get('pooler') !== 'true') {
+				urlObj.searchParams.delete('pooler');
+			}
+			
+			// Keep pgbouncer=true if set (enables connection pooling)
+			if (!hasPgbouncer) {
+				urlObj.searchParams.delete('pgbouncer');
+			}
 
 			// Ensure SSL is required for secure HTTPS connections
 			if (!urlObj.searchParams.has('sslmode')) {
 				urlObj.searchParams.set('sslmode', 'require');
 			}
+			
 			cleanUrl = urlObj.toString();
 		}
 		// For local databases, use the original URL as-is
@@ -163,6 +180,8 @@ export function createDb(databaseUrl) {
 		} else {
 			// Use Neon HTTP driver for remote databases (HTTP-based)
 			// This works in Cloudflare Workers and with Neon databases
+			// The Neon HTTP driver automatically handles connection pooling
+			// when using the pooler endpoint (with pgbouncer=true or port 6543)
 			const sql = neon(cleanUrl);
 			db = drizzleNeon(sql, { schema });
 		}
