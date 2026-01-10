@@ -23,6 +23,21 @@
   const listingImages = $derived(listing?.images || []);
   const sellerContactInfo = $derived(data?.sellerContactInfo || null);
   
+  // Debug: Log images to check URLs
+  $effect(() => {
+    if (listingImages && listingImages.length > 0) {
+      console.log('Listing images:', listingImages);
+      listingImages.forEach((img, idx) => {
+        console.log(`Image ${idx}:`, {
+          id: img.id,
+          imageUrl: img.imageUrl,
+          thumbnailUrl: img.thumbnailUrl,
+          fullObject: img
+        });
+      });
+    }
+  });
+  
   // Debug: Log seller data to check if lastLoginAt is present
   $effect(() => {
     if (listing?.seller) {

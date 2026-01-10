@@ -9,20 +9,46 @@
   let startX = $state(0);
   let scrollLeft = $state(0);
   let loadedImages = $state(new Set());
+  let failedImages = $state(new Set());
 
-  // Initialize with first image loaded
-  $effect(() => {
-    if (images && images.length > 0) {
-      loadedImages.add(0);
-    }
-  });
-
-  // Lazy load images
+  // Actually load image and wait for it to load
   function loadImage(index) {
-    if (images && !loadedImages.has(index) && images[index]) {
-      loadedImages.add(index);
+    if (images && !loadedImages.has(index) && !failedImages.has(index) && images[index]) {
+      const img = new Image();
+      const imageUrl = getImageUrl(images[index], true);
+      
+      if (!imageUrl) {
+        console.warn('No image URL for image at index', index, images[index]);
+        failedImages.add(index);
+        return;
+      }
+
+      img.onload = () => {
+        loadedImages.add(index);
+        failedImages.delete(index);
+      };
+      
+      img.onerror = (error) => {
+        console.error('Failed to load image:', {
+          url: imageUrl,
+          index,
+          image: images[index],
+          error
+        });
+        failedImages.add(index);
+        loadedImages.delete(index);
+      };
+      
+      img.src = imageUrl;
     }
   }
+
+  // Initialize with first image loading
+  $effect(() => {
+    if (images && images.length > 0) {
+      loadImage(0);
+    }
+  });
 
   // Preload adjacent images
   function preloadAdjacentImages() {
@@ -133,9 +159,19 @@
 
   // Get high quality image URL
   function getImageUrl(image, useHighQuality = false) {
-    if (!image) return '';
+    if (!image) {
+      console.warn('getImageUrl called with no image');
+      return '';
+    }
+    
     // Use full image URL for main display, thumbnail for thumbnails
-    return useHighQuality ? image.imageUrl : (image.thumbnailUrl || image.imageUrl);
+    const url = useHighQuality ? image.imageUrl : (image.thumbnailUrl || image.imageUrl);
+    
+    if (!url) {
+      console.warn('No URL found for image:', image);
+    }
+    
+    return url || '';
   }
 
   onMount(() => {
@@ -173,7 +209,17 @@
               alt="{title} - Image {index + 1}"
               loading={index === 0 ? 'eager' : 'lazy'}
               class="gallery-image"
+              onerror={(e) => {
+                console.error('Image load error:', getImageUrl(image, true));
+                failedImages.add(index);
+                loadedImages.delete(index);
+              }}
             />
+          {:else if failedImages.has(index)}
+            <div class="gallery-placeholder gallery-placeholder--error">
+              <div class="placeholder-icon">⚠️</div>
+              <p>Failed to load image</p>
+            </div>
           {:else}
             <div class="gallery-placeholder">
               <div class="spinner"></div>
@@ -272,6 +318,11 @@
               alt="Thumbnail {index + 1}"
               loading="lazy"
               class="gallery-thumbnail__image"
+              onerror={() => {
+                // Retry loading on error
+                loadedImages.delete(index);
+                loadImage(index);
+              }}
             />
           {:else}
             <div class="gallery-thumbnail__placeholder"></div>
@@ -346,6 +397,11 @@
   .gallery-placeholder--empty {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+  }
+
+  .gallery-placeholder--error {
+    background: var(--color-error-subtle);
+    color: var(--color-error);
   }
 
   .placeholder-icon {

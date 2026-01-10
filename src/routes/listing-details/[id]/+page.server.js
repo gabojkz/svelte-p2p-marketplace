@@ -164,18 +164,30 @@ export async function load({ params, locals, url, platform }) {
 	const images = listingImagesData.map((img) => {
 		// Check if imageUrl is already a full URL (starts with http:// or https://)
 		// If not, it's a key and needs to be converted
-		const imageUrl = img.imageUrl?.startsWith('http://') || img.imageUrl?.startsWith('https://')
-			? img.imageUrl
-			: getR2PublicUrl(img.imageUrl, false, platform);
+		let imageUrl = img.imageUrl;
+		if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+			imageUrl = getR2PublicUrl(imageUrl, false, platform);
+		}
 		
-		const thumbnailUrl = img.thumbnailUrl?.startsWith('http://') || img.thumbnailUrl?.startsWith('https://')
-			? img.thumbnailUrl
-			: getR2PublicUrl(img.thumbnailUrl || img.imageUrl, false, platform);
+		let thumbnailUrl = img.thumbnailUrl || img.imageUrl;
+		if (thumbnailUrl && !thumbnailUrl.startsWith('http://') && !thumbnailUrl.startsWith('https://')) {
+			thumbnailUrl = getR2PublicUrl(thumbnailUrl, false, platform);
+		}
+
+		// Debug logging in production
+		if (platform?.env) {
+			console.log('Converting image URL:', {
+				original: img.imageUrl,
+				converted: imageUrl,
+				hasR2PublicUrl: !!platform.env.R2_PUBLIC_URL,
+				r2PublicUrl: platform.env.R2_PUBLIC_URL
+			});
+		}
 
 		return {
 			...img,
-			imageUrl,
-			thumbnailUrl
+			imageUrl: imageUrl || '',
+			thumbnailUrl: thumbnailUrl || imageUrl || ''
 		};
 	});
 
