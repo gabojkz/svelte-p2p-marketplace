@@ -10,7 +10,8 @@ import { get, post } from './api.js';
  */
 export async function getUserProfile() {
   const data = await get('/api/user/profile');
-  return data.user || data;
+  // API returns { marketplaceUser: {...} }
+  return data.marketplaceUser || data.user || data;
 }
 
 /**

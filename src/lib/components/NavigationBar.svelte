@@ -35,14 +35,19 @@
   // User dropdown state
   let userDropdownOpen = $state(false);
   let marketplaceUsername = $state(null);
+  /** @type {any} */
+  let marketplaceUser = $state(null);
 
-  // Load marketplace username
+  // Load marketplace user profile (including avatar)
   async function loadMarketplaceUser() {
     if (!user) return;
 
     try {
-      const data = await getUserProfile();
-      marketplaceUsername = /** @type {any} */ (data)?.username || null;
+      const data = /** @type {any} */ (await getUserProfile());
+      // API returns { marketplaceUser: {...} } or just the user object
+      const profile = data?.marketplaceUser || data || null;
+      marketplaceUser = profile;
+      marketplaceUsername = /** @type {any} */ (profile)?.username || null;
     } catch (error) {
       console.error("Error loading marketplace user:", error);
     }
@@ -283,9 +288,8 @@
               aria-expanded={userDropdownOpen}
             >
               <Avatar 
-                user={user ? { name: user.name, email: user.email } : null}
+                user={marketplaceUser || (user ? { name: user.name, email: user.email } : null)}
                 size="sm"
-                class="user-avatar"
               />
               <span class="user-name">{user.name || user.email}</span>
               <svg
@@ -312,9 +316,8 @@
               <div class="user-dropdown">
                 <div class="user-dropdown__header">
                   <Avatar 
-                    user={user ? { name: user.name, email: user.email } : null}
+                    user={marketplaceUser || (user ? { name: user.name, email: user.email } : null)}
                     size="md"
-                    class="user-avatar user-avatar--large"
                   />
                   <div class="user-dropdown__info">
                     <a
@@ -403,29 +406,6 @@
     background: var(--color-primary-subtle);
   }
 
-  .user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(
-      135deg,
-      var(--color-primary) 0%,
-      var(--color-tertiary) 100%
-    );
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: var(--text-sm);
-    flex-shrink: 0;
-  }
-
-  .user-avatar--large {
-    width: 48px;
-    height: 48px;
-    font-size: var(--text-base);
-  }
 
   .user-name {
     font-weight: 500;
@@ -706,10 +686,5 @@
       padding: var(--space-2);
     }
 
-    .user-dropdown-toggle .user-avatar {
-      width: 28px;
-      height: 28px;
-      font-size: var(--text-xs);
-    }
   }
 </style>
