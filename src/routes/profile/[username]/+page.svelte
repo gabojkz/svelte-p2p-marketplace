@@ -1,5 +1,6 @@
 <script>
   import NavigationBar from "$lib/components/NavigationBar.svelte";
+  import Avatar from "$lib/components/Avatar.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import { t } from "$lib/utils/translations.js";
@@ -220,16 +221,12 @@
         <div class="profile-header__content">
           <!-- Avatar -->
           <div class="profile-avatar">
-            {#if profileUser?.avatarUrl}
-              <img src={profileUser.avatarUrl} alt={profileUser.username} />
-            {:else}
-              <div class="profile-avatar__initials">
-                {getUserInitials()}
-              </div>
-            {/if}
-            {#if profileUser?.emailVerified}
-              <span class="profile-avatar__badge" title="Verified">✓</span>
-            {/if}
+            <Avatar 
+              user={profileUser} 
+              size="2xl" 
+              showVerified={true}
+              alt={profileUser?.username || 'User'}
+            />
           </div>
 
           <!-- Profile Info -->
@@ -429,17 +426,11 @@
               <div class="review-card">
                 <div class="review-card__header">
                   <div class="review-card__reviewer">
-                    {#if review.reviewer?.avatarUrl}
-                      <img 
-                        src={review.reviewer.avatarUrl} 
-                        alt={review.reviewer.username || "Reviewer"}
-                        class="review-card__avatar"
-                      />
-                    {:else}
-                      <div class="review-card__avatar review-card__avatar--initials">
-                        {getReviewerInitials(review.reviewer)}
-                      </div>
-                    {/if}
+                    <Avatar 
+                      user={review.reviewer} 
+                      size="md"
+                      class="review-card__avatar"
+                    />
                     <div class="review-card__reviewer-info">
                       <div class="review-card__reviewer-name">
                         {review.reviewer?.firstName && review.reviewer?.lastName

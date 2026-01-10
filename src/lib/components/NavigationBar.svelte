@@ -12,6 +12,7 @@
     faGear
   } from "@fortawesome/free-solid-svg-icons";
   import Logo from "$lib/components/Logo.svelte";
+  import Avatar from "$lib/components/Avatar.svelte";
   import { useSession, signOut } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
@@ -281,9 +282,11 @@
               aria-label="User menu"
               aria-expanded={userDropdownOpen}
             >
-              <div class="user-avatar">
-                {getUserInitials()}
-              </div>
+              <Avatar 
+                user={user ? { name: user.name, email: user.email } : null}
+                size="sm"
+                class="user-avatar"
+              />
               <span class="user-name">{user.name || user.email}</span>
               <svg
                 class="dropdown-arrow"
@@ -308,9 +311,11 @@
             {#if userDropdownOpen}
               <div class="user-dropdown">
                 <div class="user-dropdown__header">
-                  <div class="user-avatar user-avatar--large">
-                    {getUserInitials()}
-                  </div>
+                  <Avatar 
+                    user={user ? { name: user.name, email: user.email } : null}
+                    size="md"
+                    class="user-avatar user-avatar--large"
+                  />
                   <div class="user-dropdown__info">
                     <a
                       href={marketplaceUsername ? `/profile/${marketplaceUsername}` : "#"}

@@ -1,5 +1,6 @@
 <script>
   import NavigationBar from "$lib/components/NavigationBar.svelte";
+  import Avatar from "$lib/components/Avatar.svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { APP_NAME } from "$lib/utils/constants.js";
@@ -163,9 +164,7 @@
               }}
             >
               <div class="chat-room-card__avatar">
-                <div class="avatar">
-                  {getOtherUserInitials(conversation.otherUser)}
-                </div>
+                <Avatar user={conversation.otherUser} size="md" />
                 {#if conversation.userUnreadCount > 0}
                   <span class="chat-room-card__badge">{conversation.userUnreadCount}</span>
                 {/if}

@@ -1,5 +1,6 @@
 <script>
   import NavigationBar from "$lib/components/NavigationBar.svelte";
+  import Avatar from "$lib/components/Avatar.svelte";
   import TradeStatusCard from "$lib/components/TradeStatusCard.svelte";
   import ReviewForm from "$lib/components/ReviewForm.svelte";
   import ReportUser from "$lib/components/ReportUser.svelte";
@@ -319,7 +320,7 @@
           {/if}
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="avatar avatar--sm">{getOtherPartyInitials()}</div>
+              <Avatar user={otherParty} size="sm" />
               <div>
                 <div
                   style="font-weight: var(--font-semibold); font-size: var(--text-sm);"
@@ -365,7 +366,7 @@
           {@const isOwnMessage = message.senderId === marketplaceUser?.id}
           <div class="chat-message" class:chat-message--own={isOwnMessage}>
             {#if !isOwnMessage}
-              <div class="avatar avatar--sm">{getSellerInitials()}</div>
+              <Avatar user={seller} size="sm" />
             {/if}
             <div>
               <div class="chat-message__bubble">{message.content}</div>
@@ -511,7 +512,7 @@
             </h4>
 
             <div class="flex items-center gap-3 mb-3">
-              <div class="avatar">{getSellerInitials()}</div>
+              <Avatar user={seller} size="md" />
               <div>
                 <div
                   style="font-weight: var(--font-semibold); font-size: var(--text-sm);"

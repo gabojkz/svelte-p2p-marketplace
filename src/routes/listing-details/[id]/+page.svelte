@@ -1,5 +1,6 @@
 <script>
   import NavigationBar from "$lib/components/NavigationBar.svelte";
+  import Avatar from "$lib/components/Avatar.svelte";
   import ListingMap from "$lib/components/ListingMap.svelte";
   import ListingImageGallery from "$lib/components/ListingImageGallery.svelte";
   import SEOHead from "$lib/components/SEOHead.svelte";
@@ -643,9 +644,11 @@
                     <div
                       style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-4);"
                     >
-                      <div class="avatar avatar--lg">
-                        {getSellerInitials(listing.seller)}
-                      </div>
+                      <Avatar 
+                        user={listing.seller} 
+                        size="lg"
+                        showVerified={listing.seller && /** @type {any} */ (listing.seller).emailVerified}
+                      />
                       <div>
                         <a
                           href="/profile/{listing.seller.username || 'user'}"
