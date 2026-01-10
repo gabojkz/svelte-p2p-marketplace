@@ -9,6 +9,7 @@
   import { sendMessage } from "$lib/services/conversations.js";
   import { completeTrade, submitReview } from "$lib/services/trade.js";
   import { createDispute } from "$lib/services/disputes.js";
+  import { t } from "$lib/utils/translations.js";
 
   const { data } = $props();
   const userLanguage = $derived(data?.userLanguage || 'en');
@@ -330,7 +331,7 @@
                   style="font-size: var(--text-xs); color: var(--color-gray-500);"
                 >
                   <span class="status-dot status-dot--{isOtherPartyOnline ? 'online' : 'offline'}"></span>
-                  <span>{isOtherPartyOnline ? 'Online' : 'Offline'}</span>
+                  <span>{isOtherPartyOnline ? t('common.online', userLanguage) : t('common.offline', userLanguage)}</span>
                 </div>
               </div>
             </div>

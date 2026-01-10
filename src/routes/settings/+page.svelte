@@ -2,12 +2,14 @@
   import NavigationBar from "$lib/components/NavigationBar.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { enhance } from "$app/forms";
+  import { t } from "$lib/utils/translations.js";
 
   const session = useSession();
   const user = $derived($session.data?.user);
 
   // Get data from server load function
   const { data, form } = $props();
+  const userLanguage = $derived(data?.userLanguage || 'en');
 
   const marketplaceUser = $derived(data?.marketplaceUser);
   const settings = $derived(data?.settings);
@@ -95,21 +97,21 @@
 
 <div class="page-wrapper">
   <!-- Header -->
-  <NavigationBar userLanguage="es" />
+  <NavigationBar {userLanguage} />
 
   <!-- Main Content -->
   <main class="main-content">
     <div class="container settings-container">
       <!-- Page Header -->
       <div class="settings-header">
-        <h1>Settings</h1>
-        <p class="text-muted">Manage your account, preferences, and privacy</p>
+        <h1>{t('settings.title', userLanguage)}</h1>
+        <p class="text-muted">{t('settings.subtitle', userLanguage)}</p>
       </div>
 
       <!-- Success/Error Messages -->
       {#if form?.success}
         <div class="alert alert--success">
-          {form.message || "Settings saved successfully!"}
+          {form.message || t('settings.saved', userLanguage)}
         </div>
       {/if}
       {#if form?.error}
@@ -129,7 +131,7 @@
               type="button"
             >
               <span class="settings-nav__icon">👤</span>
-              <span>Profile</span>
+              <span>{t('settings.profile', userLanguage)}</span>
             </button>
             <button
               class="settings-nav__item"
@@ -138,7 +140,7 @@
               type="button"
             >
               <span class="settings-nav__icon">🔔</span>
-              <span>Notifications</span>
+              <span>{t('settings.notifications', userLanguage)}</span>
             </button>
             <button
               class="settings-nav__item"
@@ -147,7 +149,7 @@
               type="button"
             >
               <span class="settings-nav__icon">🔒</span>
-              <span>Privacy</span>
+              <span>{t('settings.privacy', userLanguage)}</span>
             </button>
             <button
               class="settings-nav__item"
@@ -156,7 +158,7 @@
               type="button"
             >
               <span class="settings-nav__icon">⚙️</span>
-              <span>Preferences</span>
+              <span>{t('settings.preferences', userLanguage)}</span>
             </button>
             <button
               class="settings-nav__item"
@@ -165,7 +167,7 @@
               type="button"
             >
               <span class="settings-nav__icon">🛡️</span>
-              <span>Security</span>
+              <span>{t('settings.security', userLanguage)}</span>
             </button>
           </nav>
         </aside>
@@ -175,14 +177,14 @@
           <!-- Profile Tab -->
           {#if activeTab === "profile"}
             <section class="settings-section">
-              <h2>Profile Information</h2>
+              <h2>{t('settings.profileInfo', userLanguage)}</h2>
               <p class="text-muted">
-                Update your personal information and profile details
+                {t('settings.profileSubtitle', userLanguage)}
               </p>
 
               <!-- Avatar Upload Section -->
               <div class="avatar-upload-section">
-                <label class="form-label">Profile Picture</label>
+                <label class="form-label">{t('settings.profilePicture', userLanguage)}</label>
                 <div class="avatar-upload">
                   <div class="avatar-preview">
                     {#if avatarPreview}
@@ -200,7 +202,7 @@
                   </div>
                   <div class="avatar-upload-actions">
                     <label for="avatar-input" class="btn btn--secondary btn--sm">
-                      {avatarPreview ? "Change" : "Upload"} Avatar
+                      {avatarPreview ? t('settings.change', userLanguage) : t('settings.upload', userLanguage)} {t('settings.profilePicture', userLanguage)}
                     </label>
                     <input
                       type="file"
@@ -217,7 +219,7 @@
                         onclick={handleAvatarDelete}
                         disabled={avatarUploading}
                       >
-                        Remove
+                        {t('settings.remove', userLanguage)}
                       </button>
                     {/if}
                   </div>
@@ -225,14 +227,14 @@
                     <p class="form-error">{avatarError}</p>
                   {/if}
                   <p class="form-helper">
-                    Upload a JPEG, PNG, WebP, or GIF image (max 2MB)
+                    {t('settings.avatarHelper', userLanguage)}
                   </p>
                 </div>
               </div>
 
               <form method="POST" action="?/updateProfile" use:enhance>
                 <div class="form-group">
-                  <label for="username" class="form-label">Username</label>
+                  <label for="username" class="form-label">{t('settings.username', userLanguage)}</label>
                   <input
                     type="text"
                     id="username"
@@ -241,12 +243,12 @@
                     readonly
                     style="background: var(--color-gray-50);"
                   />
-                  <p class="form-helper">Username cannot be changed</p>
+                  <p class="form-helper">{t('settings.usernameHelper', userLanguage)}</p>
                 </div>
 
                 <div class="form-row">
                   <div class="form-group">
-                    <label for="firstName" class="form-label">First Name</label>
+                    <label for="firstName" class="form-label">{t('settings.firstName', userLanguage)}</label>
                     <input
                       type="text"
                       id="firstName"
@@ -256,7 +258,7 @@
                     />
                   </div>
                   <div class="form-group">
-                    <label for="lastName" class="form-label">Last Name</label>
+                    <label for="lastName" class="form-label">{t('settings.lastName', userLanguage)}</label>
                     <input
                       type="text"
                       id="lastName"
@@ -268,7 +270,7 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="email" class="form-label">Email</label>
+                  <label for="email" class="form-label">{t('settings.email', userLanguage)}</label>
                   <div class="form-input-group">
                     <input
                       type="email"
@@ -278,31 +280,31 @@
                       readonly
                     />
                     {#if user?.emailVerified}
-                      <span class="badge badge--success">Verified</span>
+                      <span class="badge badge--success">{t('settings.verified', userLanguage)}</span>
                     {:else}
-                      <span class="badge badge--warning">Unverified</span>
+                      <span class="badge badge--warning">{t('settings.unverified', userLanguage)}</span>
                     {/if}
                   </div>
                   <p class="form-helper">
-                    Email is managed by your account settings
+                    {t('settings.emailHelper', userLanguage)}
                   </p>
                 </div>
 
                 <div class="form-group">
-                  <label for="phone" class="form-label">Phone Number</label>
+                  <label for="phone" class="form-label">{t('settings.phone', userLanguage)}</label>
                   <input
                     type="tel"
                     id="phone"
                     name="phone"
                     class="form-input"
                     bind:value={profileForm.phone}
-                    placeholder="+44 7700 900000"
+                    placeholder={t('settings.phonePlaceholder', userLanguage)}
                   />
                 </div>
 
                 <div class="form-row">
                   <div class="form-group">
-                    <label for="locationCity" class="form-label">City</label>
+                    <label for="locationCity" class="form-label">{t('settings.city', userLanguage)}</label>
                     <input
                       type="text"
                       id="locationCity"
@@ -314,7 +316,7 @@
                   </div>
                   <div class="form-group">
                     <label for="locationPostcode" class="form-label"
-                      >Postcode</label
+                      >{t('settings.postcode', userLanguage)}</label
                     >
                     <input
                       type="text"
@@ -328,14 +330,14 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="bio" class="form-label">Bio</label>
+                  <label for="bio" class="form-label">{t('settings.bio', userLanguage)}</label>
                   <textarea
                     id="bio"
                     name="bio"
                     class="form-textarea"
                     rows="4"
                     bind:value={profileForm.bio}
-                    placeholder="Tell us about yourself..."
+                    placeholder={t('settings.bioPlaceholder', userLanguage)}
                   ></textarea>
                 </div>
 
@@ -423,9 +425,9 @@
           <!-- Notifications Tab -->
           {#if activeTab === "notifications"}
             <section class="settings-section">
-              <h2>Notification Preferences</h2>
+              <h2>{t('settings.notificationSettings', userLanguage)}</h2>
               <p class="text-muted">
-                Choose how you want to be notified about activity
+                {t('settings.notificationSubtitle', userLanguage)}
               </p>
 
               <form method="POST" action="?/updateSettings" use:enhance>
@@ -436,11 +438,10 @@
                         for="emailNotifications"
                         class="settings-item__label"
                       >
-                        Email Notifications
+                        {t('settings.emailNotifications', userLanguage)}
                       </label>
                       <p class="settings-item__description">
-                        Receive email notifications about messages, trades, and
-                        updates
+                        {t('settings.emailNotificationsDesc', userLanguage)}
                       </p>
                     </div>
                     <label class="toggle">
@@ -461,10 +462,10 @@
                         for="pushNotifications"
                         class="settings-item__label"
                       >
-                        Push Notifications
+                        {t('settings.pushNotifications', userLanguage)}
                       </label>
                       <p class="settings-item__description">
-                        Receive browser push notifications for real-time updates
+                        {t('settings.pushNotificationsDesc', userLanguage)}
                       </p>
                     </div>
                     <label class="toggle">
@@ -485,11 +486,10 @@
                         for="smsNotifications"
                         class="settings-item__label"
                       >
-                        SMS Notifications
+                        {t('settings.smsNotifications', userLanguage)}
                       </label>
                       <p class="settings-item__description">
-                        Receive text message notifications (requires verified
-                        phone)
+                        {t('settings.smsNotificationsDesc', userLanguage)}
                       </p>
                     </div>
                     <label class="toggle">
@@ -507,7 +507,7 @@
 
                 <div class="form-actions">
                   <button type="submit" class="btn btn--primary"
-                    >Save Changes</button
+                    >{t('settings.updateNotifications', userLanguage)}</button
                   >
                 </div>
               </form>
@@ -517,9 +517,9 @@
           <!-- Privacy Tab -->
           {#if activeTab === "privacy"}
             <section class="settings-section">
-              <h2>Privacy Settings</h2>
+              <h2>{t('settings.privacySettings', userLanguage)}</h2>
               <p class="text-muted">
-                Control what information is visible to other users
+                {t('settings.privacySubtitle', userLanguage)}
               </p>
 
               <form method="POST" action="?/updateSettings" use:enhance>

@@ -4,6 +4,7 @@
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import { enhance } from "$app/forms";
+  import { t } from "$lib/utils/translations.js";
 
   const session = useSession();
   const user = $derived($session.data?.user);
@@ -150,7 +151,7 @@
       window.location.reload();
     } catch (error) {
       console.error("Error updating listing status:", error);
-      alert("Failed to update listing status. Please try again.");
+      alert(t('listings.myListings.updateFailed', userLanguage));
     }
   }
 
@@ -220,14 +221,14 @@
       <!-- Page Header -->
       <div class="page-header">
         <div>
-          <h1>My Listings</h1>
-          <p class="text-muted">Manage your listings</p>
+          <h1>{t('listings.myListings.title', userLanguage)}</h1>
+          <p class="text-muted">{t('listings.myListings.subtitle', userLanguage)}</p>
         </div>
         <a
           href="/listings/create"
           class="btn btn--primary"
         >
-          + Create New Listing
+          {t('listings.myListings.createNew', userLanguage)}
         </a>
       </div>
 
@@ -263,7 +264,7 @@
             <input
               type="text"
               class="search-input"
-              placeholder="Search listings..."
+              placeholder={t('listings.myListings.searchPlaceholder', userLanguage)}
               bind:value={searchQuery}
               onkeydown={(e) => e.key === "Enter" && handleSearch()}
             />
@@ -274,18 +275,18 @@
 
           <!-- Status Filter -->
           <div class="filter-group">
-            <label for="status-filter" class="filter-label">Status:</label>
+            <label for="status-filter" class="filter-label">{t('listings.myListings.status', userLanguage)}</label>
             <select
               id="status-filter"
               class="filter-select"
               bind:value={statusFilter}
               onchange={() => handleStatusFilter(statusFilter)}
             >
-              <option value="all">All ({stats.total || 0})</option>
-              <option value="active">Active ({stats.active || 0})</option>
-              <option value="paused">Paused ({stats.paused || 0})</option>
-              <option value="draft">Draft ({stats.draft || 0})</option>
-              <option value="sold">Sold ({stats.sold || 0})</option>
+              <option value="all">{t('listings.myListings.all', userLanguage, { count: stats.total || 0 })}</option>
+              <option value="active">{t('listings.myListings.active', userLanguage)} ({stats.active || 0})</option>
+              <option value="paused">{t('listings.myListings.paused', userLanguage)} ({stats.paused || 0})</option>
+              <option value="draft">{t('listings.myListings.draft', userLanguage)} ({stats.draft || 0})</option>
+              <option value="sold">{t('listings.myListings.sold', userLanguage)} ({stats.sold || 0})</option>
             </select>
           </div>
         </div>
@@ -302,7 +303,7 @@
                   onclick={() => handleSort("title")}
                   type="button"
                 >
-                  Title
+                  {t('listings.myListings.title', userLanguage)}
                   {#if sortBy === "title"}
                     <span class="sort-indicator"
                       >{sortOrder === "asc" ? "↑" : "↓"}</span
@@ -316,7 +317,7 @@
                   onclick={() => handleSort("price")}
                   type="button"
                 >
-                  Price
+                  {t('listings.myListings.price', userLanguage)}
                   {#if sortBy === "price"}
                     <span class="sort-indicator"
                       >{sortOrder === "asc" ? "↑" : "↓"}</span
@@ -324,15 +325,15 @@
                   {/if}
                 </button>
               </th>
-              <th>Category</th>
-              <th>Location</th>
+              <th>{t('listings.myListings.category', userLanguage)}</th>
+              <th>{t('listings.myListings.location', userLanguage)}</th>
               <th>
                 <button
                   class="table-header-button"
                   onclick={() => handleSort("status")}
                   type="button"
                 >
-                  Status
+                  {t('listings.myListings.status', userLanguage)}
                   {#if sortBy === "status"}
                     <span class="sort-indicator"
                       >{sortOrder === "asc" ? "↑" : "↓"}</span
@@ -346,7 +347,7 @@
                   onclick={() => handleSort("views")}
                   type="button"
                 >
-                  Views
+                  {t('listings.myListings.views', userLanguage)}
                   {#if sortBy === "views"}
                     <span class="sort-indicator"
                       >{sortOrder === "asc" ? "↑" : "↓"}</span
@@ -360,7 +361,7 @@
                   onclick={() => handleSort("trades")}
                   type="button"
                 >
-                  Trades
+                  {t('listings.myListings.trades', userLanguage)}
                   {#if sortBy === "trades"}
                     <span class="sort-indicator"
                       >{sortOrder === "asc" ? "↑" : "↓"}</span
@@ -374,7 +375,7 @@
                   onclick={() => handleSort("newest")}
                   type="button"
                 >
-                  Created
+                  {t('listings.myListings.created', userLanguage)}
                   {#if sortBy === "newest"}
                     <span class="sort-indicator"
                       >{sortOrder === "asc" ? "↑" : "↓"}</span
@@ -382,7 +383,7 @@
                   {/if}
                 </button>
               </th>
-              <th>Actions</th>
+              <th>{t('listings.myListings.actions', userLanguage)}</th>
             </tr>
           </thead>
           <tbody>
@@ -390,8 +391,8 @@
               <tr>
                 <td colspan="9" class="table-empty">
                   {searchQuery || statusFilter !== "all"
-                    ? "No listings match your filters"
-                    : "No listings yet. Create your first listing!"}
+                    ? t('listings.myListings.noMatches', userLanguage)
+                    : t('listings.myListings.noListings', userLanguage)}
                 </td>
               </tr>
             {:else}
@@ -407,11 +408,11 @@
                       </a>
                       {#if listing.featured}
                         <span class="badge badge--primary badge--sm"
-                          >Featured</span
+                          >{t('listings.myListings.featured', userLanguage)}</span
                         >
                       {/if}
                       {#if listing.urgent}
-                        <span class="badge badge--error badge--sm">Urgent</span>
+                        <span class="badge badge--error badge--sm">{t('listings.myListings.urgent', userLanguage)}</span>
                       {/if}
                     </div>
                   </td>
@@ -469,14 +470,14 @@
                       <a
                         href="/listings/edit/{listing.id}"
                         class="table-action-button"
-                        title="Edit"
+                        title={t('common.edit', userLanguage)}
                       >
                         ✏️
                       </a>
                       <a
                         href="/listing-details/{listing.id}"
                         class="table-action-button"
-                        title="View"
+                        title={t('common.view', userLanguage)}
                       >
                         👁️
                       </a>
@@ -484,7 +485,7 @@
                         class="table-action-button table-action-button--danger"
                         onclick={() => deleteListing(listing.id)}
                         type="button"
-                        title="Delete"
+                        title={t('common.delete', userLanguage)}
                       >
                         🗑️
                       </button>

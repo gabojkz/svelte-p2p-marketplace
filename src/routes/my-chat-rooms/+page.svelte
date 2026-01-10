@@ -3,6 +3,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { APP_NAME } from "$lib/utils/constants.js";
+  import { t } from "$lib/utils/translations.js";
 
   const { data } = $props();
   const userLanguage = $derived(data?.userLanguage || 'en');
@@ -103,11 +104,11 @@
       <!-- Header -->
       <div class="chat-rooms-header">
         <div>
-          <h1>My Chat Rooms</h1>
+          <h1>{t('chatRooms.title', userLanguage)}</h1>
           <p class="text-muted">
-            {conversations.length} {conversations.length === 1 ? "conversation" : "conversations"}
+            {conversations.length} {conversations.length === 1 ? t('chatRooms.conversation', userLanguage) : t('chatRooms.conversations', userLanguage)}
             {#if totalUnread > 0}
-              · <span style="color: var(--color-primary); font-weight: var(--font-semibold);">{totalUnread} unread</span>
+              · <span style="color: var(--color-primary); font-weight: var(--font-semibold);">{totalUnread} {t('common.unread', userLanguage)}</span>
             {/if}
           </p>
         </div>
@@ -121,7 +122,7 @@
             <input
               type="text"
               class="search-input"
-              placeholder="Search conversations, listings, or users..."
+              placeholder={t('chatRooms.searchPlaceholder', userLanguage)}
               value={localSearchQuery}
               oninput={handleSearchInput}
             />

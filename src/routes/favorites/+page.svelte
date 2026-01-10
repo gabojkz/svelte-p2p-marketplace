@@ -2,6 +2,7 @@
   import NavigationBar from "$lib/components/NavigationBar.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
+  import { t } from "$lib/utils/translations.js";
 
   const session = useSession();
   const user = $derived($session.data?.user);
@@ -153,8 +154,8 @@
       <!-- Page Header -->
       <div class="page-header">
         <div>
-          <h1>My Favorites</h1>
-          <p class="text-muted">All your saved listings in one place</p>
+          <h1>{t('favorites.title', userLanguage)}</h1>
+          <p class="text-muted">{t('favorites.subtitle', userLanguage)}</p>
         </div>
       </div>
 
@@ -162,11 +163,11 @@
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-card__value">{favorites.length}</div>
-          <div class="stat-card__label">Total Favorites</div>
+          <div class="stat-card__label">{t('favorites.total', userLanguage)}</div>
         </div>
         <div class="stat-card">
           <div class="stat-card__value">{filteredFavorites.length}</div>
-          <div class="stat-card__label">Showing</div>
+          <div class="stat-card__label">{t('favorites.showing', userLanguage)}</div>
         </div>
       </div>
 
@@ -178,7 +179,7 @@
             <input
               type="text"
               class="search-input"
-              placeholder="Search favorites by title, description, category, or location..."
+              placeholder={t('favorites.searchPlaceholder', userLanguage)}
               bind:value={searchQuery}
               onkeydown={(e) => e.key === "Enter" && handleSearch()}
             />

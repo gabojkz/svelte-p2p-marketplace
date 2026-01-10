@@ -3,6 +3,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { APP_NAME } from "$lib/utils/constants.js";
+  import { t } from "$lib/utils/translations.js";
 
   const props = $props();
   const { error: errorObj, status } = props;
@@ -87,55 +88,55 @@
       case 404:
         return {
           icon: '🔍',
-          title: 'Page Not Found',
-          message: "Sorry, we couldn't find the page you're looking for.",
-          suggestion: 'The page may have been moved, deleted, or the URL might be incorrect.',
-          buttonText: 'Go to Homepage',
+          title: t('error.404.title', userLanguage),
+          message: t('error.404.message', userLanguage),
+          suggestion: t('error.404.suggestion', userLanguage),
+          buttonText: t('error.404.button', userLanguage),
           buttonAction: () => goto('/')
         };
       case 500:
         return {
           icon: '⚠️',
-          title: 'Server Error',
-          message: errorMessage || 'Something went wrong on our end.',
-          suggestion: 'We\'re working to fix this issue. Please try again in a few moments.',
-          buttonText: 'Go to Homepage',
+          title: t('error.500.title', userLanguage),
+          message: errorMessage || t('error.500.message', userLanguage),
+          suggestion: t('error.500.suggestion', userLanguage),
+          buttonText: t('error.500.button', userLanguage),
           buttonAction: () => goto('/')
         };
       case 403:
         return {
           icon: '🚫',
-          title: 'Access Forbidden',
-          message: "You don't have permission to access this resource.",
-          suggestion: 'If you believe this is an error, please contact support.',
-          buttonText: 'Go to Homepage',
+          title: t('error.403.title', userLanguage),
+          message: t('error.403.message', userLanguage),
+          suggestion: t('error.403.suggestion', userLanguage),
+          buttonText: t('error.403.button', userLanguage),
           buttonAction: () => goto('/')
         };
       case 401:
         return {
           icon: '🔐',
-          title: 'Unauthorized',
-          message: 'You need to be logged in to access this page.',
-          suggestion: 'Please sign in to continue.',
-          buttonText: 'Sign In',
+          title: t('error.401.title', userLanguage),
+          message: t('error.401.message', userLanguage),
+          suggestion: t('error.401.suggestion', userLanguage),
+          buttonText: t('error.401.button', userLanguage),
           buttonAction: () => goto('/login')
         };
       case 400:
         return {
           icon: '❌',
-          title: 'Bad Request',
-          message: errorMessage || 'The request was invalid or malformed.',
-          suggestion: 'Please check your input and try again.',
-          buttonText: 'Go Back',
+          title: t('error.400.title', userLanguage),
+          message: errorMessage || t('error.400.message', userLanguage),
+          suggestion: t('error.400.suggestion', userLanguage),
+          buttonText: t('error.400.button', userLanguage),
           buttonAction: () => window.history.back()
         };
       default:
         return {
           icon: '⚠️',
-          title: `Error ${stat || 'Unknown'}`,
-          message: errorMessage || 'An unexpected error occurred',
-          suggestion: 'Please try again or contact support if the problem persists.',
-          buttonText: 'Go to Homepage',
+          title: t('error.unknown.title', userLanguage, { status: stat || 'Unknown' }),
+          message: errorMessage || t('error.unknown.message', userLanguage),
+          suggestion: t('error.unknown.suggestion', userLanguage),
+          buttonText: t('error.unknown.button', userLanguage),
           buttonAction: () => goto('/')
         };
     }
@@ -155,7 +156,7 @@
     </pre>
     <div style="margin-top: 1rem;">
       <button onclick={() => window.location.reload()} style="padding: 0.5rem 1rem; background: #007acc; color: white; border: none; border-radius: 4px; cursor: pointer;">
-        Reload Page
+        {t('error.reload', userLanguage)}
       </button>
     </div>
   </div>
@@ -212,16 +213,16 @@
           onclick={() => window.history.back()}
           type="button"
         >
-          Go Back
+          {t('error.goBack', userLanguage)}
         </button>
       </div>
 
       <div class="error-links">
-        <a href="/marketplace" class="error-link">Browse Marketplace</a>
+        <a href="/marketplace" class="error-link">{t('error.browseMarketplace', userLanguage)}</a>
         <span class="error-link-separator">•</span>
-        <a href="/my-listings" class="error-link">My Listings</a>
+        <a href="/my-listings" class="error-link">{t('error.myListings', userLanguage)}</a>
         <span class="error-link-separator">•</span>
-        <a href="/my-trades" class="error-link">My Trades</a>
+        <a href="/my-trades" class="error-link">{t('error.myTrades', userLanguage)}</a>
       </div>
     </div>
   </main>

@@ -47,33 +47,99 @@ export function t(key, lang = 'en', params = {}) {
   // Replace parameters in the translation
   if (Object.keys(params).length > 0) {
     // Handle pluralization: {count, plural, =1 {singular} other {plural}}
-    value = value.replace(/\{(\w+),\s*plural,\s*([^}]+)\}/g, (match, paramKey, pluralRules) => {
+    // Find plural blocks and parse them manually to handle nested braces
+    let result = value;
+    let searchIndex = 0;
+    
+    while (true) {
+      // Find the start of a plural block
+      const pluralStart = result.indexOf('{', searchIndex);
+      if (pluralStart === -1) break;
+      
+      // Check if this is a plural pattern
+      const pluralMatch = result.substring(pluralStart).match(/^\{(\w+),\s*plural,\s*/);
+      if (!pluralMatch) {
+        searchIndex = pluralStart + 1;
+        continue;
+      }
+      
+      const paramKey = pluralMatch[1];
       const count = params[paramKey];
-      if (count === undefined) return match;
       
-      // Parse plural rules: =1 {one} other {many}
+      if (count === undefined) {
+        searchIndex = pluralStart + pluralMatch[0].length;
+        continue;
+      }
+      
+      // Find the matching closing brace by counting depth
+      let depth = 1;
+      let i = pluralStart + pluralMatch[0].length;
       const rules = {};
-      const ruleMatches = pluralRules.match(/(?:=\s*(\d+)|other)\s*\{([^}]+)\}/g);
-      if (ruleMatches) {
-        ruleMatches.forEach(rule => {
-          const exactMatch = rule.match(/=\s*(\d+)\s*\{([^}]+)\}/);
-          if (exactMatch) {
-            rules[parseInt(exactMatch[1])] = exactMatch[2];
-          } else {
-            const otherMatch = rule.match(/other\s*\{([^}]+)\}/);
-            if (otherMatch) {
-              rules.other = otherMatch[1];
-            }
+      let currentRule = '';
+      let currentValue = '';
+      let inRuleValue = false;
+      let currentNumber = null;
+      
+      while (i < result.length && depth > 0) {
+        const char = result[i];
+        
+        if (char === '{') {
+          depth++;
+          if (depth === 2 && !inRuleValue) {
+            // Start of a rule value
+            inRuleValue = true;
+            currentValue = '';
+          } else if (inRuleValue) {
+            currentValue += char;
           }
-        });
+        } else if (char === '}') {
+          if (depth === 2 && inRuleValue) {
+            // End of a rule value
+            if (currentNumber !== null) {
+              rules[currentNumber] = currentValue;
+            } else if (currentRule.trim() === 'other') {
+              rules.other = currentValue;
+            }
+            currentRule = '';
+            currentValue = '';
+            currentNumber = null;
+            inRuleValue = false;
+          } else if (inRuleValue) {
+            currentValue += char;
+          }
+          depth--;
+        } else if (inRuleValue) {
+          currentValue += char;
+        } else {
+          // Parse rule type before the opening brace
+          const remaining = result.substring(i);
+          const exactMatch = remaining.match(/^=\s*(\d+)\s*\{/);
+          if (exactMatch) {
+            currentNumber = parseInt(exactMatch[1]);
+            i += exactMatch[0].length - 1; // Position before the {
+            continue;
+          } else if (remaining.startsWith('other')) {
+            currentRule = 'other';
+            i += 5; // Skip "other"
+            // Skip whitespace
+            while (i < result.length && /\s/.test(result[i])) i++;
+            if (result[i] === '{') {
+              i--; // Back up to process the {
+            }
+            continue;
+          }
+        }
+        i++;
       }
       
-      // Return appropriate form
-      if (rules[count] !== undefined) {
-        return rules[count];
-      }
-      return rules.other || match;
-    });
+      // Replace the entire plural block with the selected value
+      const pluralBlock = result.substring(pluralStart, i);
+      const selectedValue = rules[count] !== undefined ? rules[count] : (rules.other || '');
+      result = result.substring(0, pluralStart) + selectedValue + result.substring(i);
+      searchIndex = pluralStart + selectedValue.length;
+    }
+    
+    value = result;
     
     // Replace simple parameters: {key}
     value = value.replace(/\{(\w+)\}/g, (match, paramKey) => {

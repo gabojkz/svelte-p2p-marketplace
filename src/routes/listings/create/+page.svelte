@@ -4,6 +4,7 @@
   import ImageUpload from "$lib/components/ImageUpload.svelte";
   import { goto } from "$app/navigation";
   import { createListing, uploadListingImages } from "$lib/services/listings.js";
+  import { t } from "$lib/utils/translations.js";
 
   // Get data from server load function
   const { data } = $props();
@@ -119,10 +120,10 @@
       <!-- Page Header -->
       <div class="listing-editor-header">
         <div>
-          <h1>Create New Listing</h1>
-          <p class="text-muted">Fill in the details below to create your listing</p>
+          <h1>{t('listings.create.title', userLanguage)}</h1>
+          <p class="text-muted">{t('listings.create.subtitle', userLanguage)}</p>
         </div>
-        <a href="/my-listings" class="btn btn--ghost">Cancel</a>
+        <a href="/my-listings" class="btn btn--ghost">{t('common.cancel', userLanguage)}</a>
       </div>
 
       <!-- Error Message -->
@@ -149,7 +150,7 @@
       >
         <!-- Listing Type -->
         <section class="form-section">
-          <h2 class="form-section__title">Listing Type</h2>
+          <h2 class="form-section__title">{t('listings.create.listingType', userLanguage)}</h2>
           <div class="listing-type-toggle">
             <label class="listing-type-option">
               <input
@@ -163,7 +164,7 @@
                 class:listing-type-card--selected={listingType === "product"}
               >
                 <span class="listing-type-icon">📦</span>
-                <span>Product</span>
+                <span>{t('listings.create.product', userLanguage)}</span>
               </div>
             </label>
             <label class="listing-type-option">
@@ -178,7 +179,7 @@
                 class:listing-type-card--selected={listingType === "service"}
               >
                 <span class="listing-type-icon">🔧</span>
-                <span>Service</span>
+                <span>{t('listings.create.service', userLanguage)}</span>
               </div>
             </label>
           </div>
@@ -189,10 +190,10 @@
 
         <!-- Category -->
         <section class="form-section">
-          <h2 class="form-section__title">Category</h2>
+          <h2 class="form-section__title">{t('common.category', userLanguage)}</h2>
           <div class="form-group">
             <label for="categoryId" class="form-label form-label--required"
-              >Category</label
+              >{t('common.category', userLanguage)}</label
             >
             <select
               id="categoryId"
@@ -202,7 +203,7 @@
               bind:value={categoryId}
               required
             >
-              <option value="">Select a category...</option>
+              <option value="">{t('listings.create.selectCategory', userLanguage)}</option>
               {#if filteredCategories.length > 0}
                 {#each filteredCategories.filter((c) => !c.parentId) as category}
                   <option value={category.id}>
@@ -218,7 +219,7 @@
             filteredCategories.some((c) => c.parentId === Number(categoryId))}
               <div class="form-group mt-3">
                 <label for="subcategoryId" class="form-label"
-                  >Subcategory (optional)</label
+                  >{t('listings.create.subcategoryOptional', userLanguage)}</label
                 >
                 <select
                   id="subcategoryId"
@@ -226,7 +227,7 @@
                   class="form-select"
                   bind:value={subcategoryId}
                 >
-                  <option value="">None</option>
+                  <option value="">{t('listings.create.none', userLanguage)}</option>
                   {#each filteredCategories.filter(
                     (c) => c.parentId === Number(categoryId)
                   ) as subcategory}
@@ -242,10 +243,10 @@
 
         <!-- Basic Information -->
         <section class="form-section">
-          <h2 class="form-section__title">Basic Information</h2>
+          <h2 class="form-section__title">{t('listings.create.basicInfo', userLanguage)}</h2>
           <div class="form-group">
             <label for="title" class="form-label form-label--required"
-              >Title</label
+              >{t('listing.title', userLanguage)}</label
             >
             <input
               type="text"
@@ -253,7 +254,7 @@
               name="title"
               class="form-input"
               class:form-input--error={hasFieldError("title")}
-              placeholder="e.g., 2019 BMW 3 Series 320i M Sport"
+              placeholder={t('listings.create.titlePlaceholder', userLanguage)}
               maxlength="200"
               bind:value={title}
               required
@@ -265,7 +266,7 @@
 
           <div class="form-group">
             <label for="description" class="form-label form-label--required"
-              >Description</label
+              >{t('listing.description', userLanguage)}</label
             >
             <textarea
               id="description"
@@ -273,7 +274,7 @@
               class="form-textarea"
               class:form-textarea--error={hasFieldError("description")}
               rows="6"
-              placeholder="Describe your item in detail..."
+              placeholder={t('listings.create.descriptionPlaceholder', userLanguage)}
               bind:value={description}
               required
             ></textarea>
@@ -283,11 +284,10 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Images</label>
+            <label class="form-label">{t('listing.images', userLanguage)}</label>
             <ImageUpload bind:images maxImages={10} maxSizeMB={5} />
             <p class="form-helper">
-              Add up to 10 images. The first image will be set as the primary
-              image.
+              {t('listings.create.imagesHelper', userLanguage)}
             </p>
           </div>
         </section>
@@ -295,10 +295,10 @@
         <!-- Product Details (for products only) -->
         {#if listingType === "product"}
           <section class="form-section">
-            <h2 class="form-section__title">Product Details</h2>
+            <h2 class="form-section__title">{t('listings.create.productDetails', userLanguage)}</h2>
             <div class="form-group">
               <label for="condition" class="form-label form-label--required"
-                >Condition</label
+                >{t('listing.condition', userLanguage)}</label
               >
               <select
                 id="condition"
@@ -308,12 +308,12 @@
                 bind:value={condition}
                 required
               >
-                <option value="">Select condition...</option>
-                <option value="new">New (Unused, with tags)</option>
-                <option value="like-new">Like New (Excellent)</option>
-                <option value="good">Good (Minor wear)</option>
-                <option value="fair">Fair (Visible wear)</option>
-                <option value="parts">For Parts / Not Working</option>
+                <option value="">{t('common.select', userLanguage)} {t('listing.condition', userLanguage).toLowerCase()}...</option>
+                <option value="new">{t('listing.new', userLanguage)}</option>
+                <option value="like-new">{t('listing.likeNew', userLanguage)}</option>
+                <option value="good">{t('listing.good', userLanguage)}</option>
+                <option value="fair">{t('listing.fair', userLanguage)}</option>
+                <option value="parts">{t('listing.forParts', userLanguage)}</option>
               </select>
               {#if hasFieldError("condition")}
                 <p class="form-error">{getFieldError("condition")}</p>
@@ -321,13 +321,13 @@
             </div>
 
             <div class="form-group">
-              <label for="brand" class="form-label">Brand (optional)</label>
+              <label for="brand" class="form-label">{t('listingDetails.brand', userLanguage)} ({t('common.optional', userLanguage)})</label>
               <input
                 type="text"
                 id="brand"
                 name="brand"
                 class="form-input"
-                placeholder="e.g., Apple, Samsung, BMW"
+                placeholder={t('listings.create.brandPlaceholder', userLanguage)}
                 bind:value={brand}
               />
             </div>
@@ -336,10 +336,10 @@
 
         <!-- Pricing -->
         <section class="form-section">
-          <h2 class="form-section__title">Pricing</h2>
+          <h2 class="form-section__title">{t('listings.create.pricing', userLanguage)}</h2>
           <div class="form-group">
             <label for="price" class="form-label form-label--required"
-              >Price</label
+              >{t('listing.price', userLanguage)}</label
             >
             <div class="input-group">
               <span class="input-group__prefix">£</span>
@@ -362,11 +362,11 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Options</label>
+            <label class="form-label">{t('common.options', userLanguage)}</label>
             <div class="checkbox-group">
               <label class="checkbox">
                 <input type="checkbox" bind:checked={acceptsOffers} />
-                <span>Accept offers</span>
+                <span>{t('listings.create.acceptsOffers', userLanguage)}</span>
               </label>
             </div>
           </div>
@@ -374,11 +374,11 @@
 
         <!-- Location -->
         <section class="form-section">
-          <h2 class="form-section__title">Location</h2>
+          <h2 class="form-section__title">{t('listings.create.location', userLanguage)}</h2>
           <div class="form-row">
             <div class="form-group">
               <label for="locationCity" class="form-label form-label--required"
-                >City</label
+                >{t('listings.create.city', userLanguage)}</label
               >
               <input
                 type="text"
@@ -398,7 +398,7 @@
               <label
                 for="locationPostcode"
                 class="form-label form-label--required"
-                >Postcode</label
+                >{t('listings.create.postcode', userLanguage)}</label
               >
               <input
                 type="text"
@@ -419,50 +419,50 @@
 
         <!-- Delivery Options -->
         <section class="form-section">
-          <h2 class="form-section__title">Delivery Options</h2>
+          <h2 class="form-section__title">{t('listings.create.delivery', userLanguage)}</h2>
           <div class="checkbox-group">
             <label class="checkbox">
               <input type="checkbox" bind:checked={deliveryCollection} />
-              <span>Collection</span>
+              <span>{t('listings.create.collection', userLanguage)}</span>
             </label>
             <label class="checkbox">
               <input type="checkbox" bind:checked={deliveryLocal} />
-              <span>Local Delivery</span>
+              <span>{t('listings.create.localDelivery', userLanguage)}</span>
             </label>
             <label class="checkbox">
               <input type="checkbox" bind:checked={deliveryShipping} />
-              <span>Shipping</span>
+              <span>{t('listings.create.shipping', userLanguage)}</span>
             </label>
           </div>
         </section>
 
         <!-- Publishing Options -->
         <section class="form-section">
-          <h2 class="form-section__title">Publishing Options</h2>
+          <h2 class="form-section__title">{t('listings.create.publishing', userLanguage)}</h2>
           <div class="form-group">
-            <label for="status" class="form-label">Status</label>
+            <label for="status" class="form-label">{t('listings.create.status', userLanguage)}</label>
             <select
               id="status"
               name="status"
               class="form-select"
               bind:value={status}
             >
-              <option value="draft">Draft (Save for later)</option>
-              <option value="active">Publish Now</option>
-              <option value="paused">Paused</option>
+              <option value="draft">{t('listings.create.draft', userLanguage)} ({t('listings.create.saveForLater', userLanguage)})</option>
+              <option value="active">{t('listings.create.publishNow', userLanguage)}</option>
+              <option value="paused">{t('listings.create.paused', userLanguage)}</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Additional Options</label>
+            <label class="form-label">{t('listings.create.additionalOptions', userLanguage)}</label>
             <div class="checkbox-group">
               <label class="checkbox">
                 <input type="checkbox" bind:checked={featured} />
-                <span>Featured Listing</span>
+                <span>{t('listings.create.featured', userLanguage)}</span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" bind:checked={urgent} />
-                <span>Urgent</span>
+                <span>{t('listings.create.urgent', userLanguage)}</span>
               </label>
             </div>
           </div>
@@ -470,13 +470,13 @@
 
         <!-- Form Actions -->
         <div class="form-actions">
-          <a href="/my-listings" class="btn btn--ghost">Cancel</a>
+          <a href="/my-listings" class="btn btn--ghost">{t('common.cancel', userLanguage)}</a>
           <button
             type="submit"
             class="btn btn--primary"
             disabled={saving}
           >
-            {saving ? "Creating..." : "Create Listing"}
+            {saving ? t('listings.create.saving', userLanguage) : t('listings.create.save', userLanguage)}
           </button>
         </div>
       </form>

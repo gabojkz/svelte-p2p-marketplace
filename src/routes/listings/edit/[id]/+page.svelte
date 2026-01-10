@@ -5,6 +5,8 @@
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import { updateListing, uploadListingImages } from "$lib/services/listings.js";
+  import { t } from "$lib/utils/translations.js";
+  import { translateCategoryName } from "$lib/utils/category-translations.js";
 
   // Get data from server load function
   const { data } = $props();
@@ -38,6 +40,7 @@
   let status = $state("draft");
   let featured = $state(false);
   let urgent = $state(false);
+  /** @type {Array<{id?: number, imageUrl: string, thumbnailUrl?: string, displayOrder?: number, isPrimary?: boolean}>} */
   let images = $state([]);
 
   // Filter categories by type
@@ -83,10 +86,12 @@
   });
 
   // Helper functions
+  /** @param {string} fieldName */
   function getFieldError(fieldName) {
     return fieldErrors[fieldName] || null;
   }
 
+  /** @param {string} fieldName */
   function hasFieldError(fieldName) {
     return !!fieldErrors[fieldName];
   }
@@ -144,7 +149,7 @@
       // Success - redirect to listing details
       await goto(`/listing-details/${listing.id}`);
     } catch (err) {
-      error = err.message || "Failed to update listing";
+      error = (err instanceof Error ? err.message : "Failed to update listing") || "Failed to update listing";
       console.error("Error updating listing:", err);
     } finally {
       saving = false;
@@ -167,10 +172,10 @@
         <!-- Page Header -->
         <div class="listing-editor-header">
           <div>
-            <h1>Edit Listing</h1>
-            <p class="text-muted">Update your listing details below</p>
+            <h1>{t('listings.edit.title', userLanguage)}</h1>
+            <p class="text-muted">{t('listings.edit.subtitle', userLanguage)}</p>
           </div>
-          <a href="/my-listings" class="btn btn--ghost">Cancel</a>
+          <a href="/my-listings" class="btn btn--ghost">{t('common.cancel', userLanguage)}</a>
         </div>
 
         <!-- Error Message -->
@@ -237,28 +242,23 @@
 
           <!-- Category -->
           <section class="form-section">
-            <h2 class="form-section__title">Category</h2>
+            <h2 class="form-section__title">{t('common.category', userLanguage)}</h2>
             <div class="form-group">
-              <label for="categoryId" class="form-label form-label--required"
-                >Category</label
-              >
-              <select
+              <CategorySelect
+                categories={/** @type {any} */ (filteredCategories)}
+                selectedValue={categoryId ? Number(categoryId) : ""}
                 id="categoryId"
-                name="categoryId"
-                class="form-select"
-                class:form-select--error={hasFieldError("categoryId")}
-                bind:value={categoryId}
-                required
-              >
-                <option value="">Select a category...</option>
-                {#if filteredCategories.length > 0}
-                  {#each filteredCategories.filter((c) => !c.parentId) as category}
-                    <option value={category.id}>
-                      {category.icon || "📦"} {category.name}
-                    </option>
-                  {/each}
-                {/if}
-              </select>
+                label={t('common.category', userLanguage)}
+                showLabel={true}
+                required={true}
+                mode="form"
+                filterByType={listingType === 'product' || listingType === 'service' ? listingType : null}
+                userLanguage={userLanguage}
+                onChange={(value) => {
+                  categoryId = value ? value.toString() : "";
+                  subcategoryId = ""; // Reset subcategory when main category changes
+                }}
+              />
               {#if hasFieldError("categoryId")}
                 <p class="form-error">{getFieldError("categoryId")}</p>
               {/if}
@@ -266,7 +266,7 @@
               filteredCategories.some((c) => c.parentId === Number(categoryId))}
                 <div class="form-group mt-3">
                   <label for="subcategoryId" class="form-label"
-                    >Subcategory (optional)</label
+                    >{t('listings.create.subcategoryOptional', userLanguage)}</label
                   >
                   <select
                     id="subcategoryId"
@@ -274,12 +274,12 @@
                     class="form-select"
                     bind:value={subcategoryId}
                   >
-                    <option value="">None</option>
+                    <option value="">{t('listings.create.none', userLanguage)}</option>
                     {#each filteredCategories.filter(
                       (c) => c.parentId === Number(categoryId)
                     ) as subcategory}
                       <option value={subcategory.id}>
-                        {subcategory.icon || "📦"} {subcategory.name}
+                        {subcategory.icon || "📦"} {translateCategoryName(subcategory, userLanguage)}
                       </option>
                     {/each}
                   </select>
@@ -389,7 +389,7 @@
               <label for="price" class="form-label form-label--required"
                 >Price</label
               >
-              <div class="input-group">
+              <div class="input-group" class:input-group--error={hasFieldError("price")}>
                 <span class="input-group__prefix">£</span>
                 <input
                   type="number"
@@ -617,19 +617,62 @@
 
   .input-group {
     display: flex;
+    align-items: stretch;
+    position: relative;
+    gap: 0 !important; /* Override global gap to eliminate whitespace */
   }
 
   .input-group__prefix {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: var(--space-3) var(--space-4);
     background: var(--color-gray-100);
     border: 2px solid var(--color-gray-200);
-    border-right: none;
+    border-right: none; /* Remove right border so input's left border connects */
     border-radius: var(--radius-md) 0 0 var(--radius-md);
     font-weight: var(--font-medium);
+    line-height: 1;
+    min-height: 48px; /* Match form-input height */
+    box-sizing: border-box;
+    flex-shrink: 0;
+    transition: border-color var(--transition-fast);
+    z-index: 1;
   }
 
   .input-group .form-input {
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    border-left: 2px solid var(--color-gray-200); /* Restore left border now that gap is 0 */
+    flex: 1;
+    min-height: 48px;
+    box-sizing: border-box;
+    transition: border-color var(--transition-fast);
+  }
+
+  /* Ensure seamless connection on focus */
+  .input-group:focus-within .input-group__prefix {
+    border-color: var(--color-primary);
+    border-right: none;
+    z-index: 2;
+  }
+
+  .input-group:focus-within .form-input {
+    border-left-color: var(--color-primary);
+    border-color: var(--color-primary);
+    z-index: 1;
+  }
+
+  /* Error state */
+  .input-group--error .input-group__prefix {
+    border-color: var(--color-error);
+    border-right: none;
+    z-index: 2;
+  }
+
+  .input-group--error .form-input {
+    border-left-color: var(--color-error);
+    border-color: var(--color-error);
+    z-index: 1;
   }
 
   .checkbox-group {

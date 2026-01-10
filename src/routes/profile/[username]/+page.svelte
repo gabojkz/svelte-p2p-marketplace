@@ -2,6 +2,7 @@
   import NavigationBar from "$lib/components/NavigationBar.svelte";
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
+  import { t } from "$lib/utils/translations.js";
 
   const session = useSession();
   const user = $derived($session.data?.user);
@@ -240,20 +241,20 @@
                   : profileUser?.username || "User"}
               </h1>
               {#if profileUser?.emailVerified}
-                <span class="badge badge--success badge--sm">Verified</span>
+                <span class="badge badge--success badge--sm">{t('settings.verified', userLanguage)}</span>
               {/if}
             </div>
 
             <!-- Key Data Points -->
             <div class="profile-info__data">
               <div class="profile-info__data-item">
-                <span class="profile-info__data-label">Username</span>
+                <span class="profile-info__data-label">{t('settings.username', userLanguage)}</span>
                 <span class="profile-info__data-value">@{profileUser?.username}</span>
               </div>
               
               {#if profileUser?.locationCity}
                 <div class="profile-info__data-item">
-                  <span class="profile-info__data-label">Location</span>
+                  <span class="profile-info__data-label">{t('common.location', userLanguage)}</span>
                   <span class="profile-info__data-value">
                     {profileUser.locationCity}
                     {#if profileUser.locationPostcode}
@@ -264,26 +265,26 @@
               {/if}
 
               <div class="profile-info__data-item">
-                <span class="profile-info__data-label">Member since</span>
+                <span class="profile-info__data-label">{t('profile.memberSince', userLanguage)}</span>
                 <span class="profile-info__data-value">{formatDate(profileUser?.createdAt)}</span>
               </div>
 
               <div class="profile-info__data-item">
-                <span class="profile-info__data-label">Last active</span>
+                <span class="profile-info__data-label">{t('profile.lastActive', userLanguage)}</span>
                 <span class="profile-info__data-value">
-                  {profileUser?.lastLoginAt ? formatLastLogin(profileUser.lastLoginAt) : "Never"}
+                  {profileUser?.lastLoginAt ? formatLastLogin(profileUser.lastLoginAt) : t('profile.never', userLanguage)}
                 </span>
               </div>
 
               {#if averageRating > 0}
                 <div class="profile-info__data-item">
-                  <span class="profile-info__data-label">Rating</span>
+                  <span class="profile-info__data-label">{t('profile.rating', userLanguage)}</span>
                   <span class="profile-info__data-value">
                     <span style="color: var(--color-accent-yellow); font-weight: var(--font-semibold);">
                       ⭐ {averageRating.toFixed(1)}
                     </span>
                     <span style="color: var(--color-gray-500); margin-left: var(--space-1);">
-                      ({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})
+                      ({totalReviews} {totalReviews === 1 ? t('profile.review', userLanguage) : t('profile.reviews', userLanguage)})
                     </span>
                   </span>
                 </div>
@@ -299,7 +300,7 @@
           <div class="profile-actions">
             {#if isOwnProfile}
               <a href="/settings" class="btn btn--primary btn--sm">
-                Edit Profile
+                {t('common.edit', userLanguage)} {t('settings.profile', userLanguage)}
               </a>
             {:else if user}
               <button
@@ -307,7 +308,7 @@
                 onclick={startConversation}
                 type="button"
               >
-                Message
+                {t('common.message', userLanguage)}
               </button>
               {#if profileUser?.email || profileUser?.phone}
                 <button
@@ -321,7 +322,7 @@
                   }}
                   type="button"
                 >
-                  Contact
+                  {t('profile.contact', userLanguage)}
                 </button>
               {/if}
               <button
@@ -329,11 +330,11 @@
                 onclick={() => showReportModal = true}
                 type="button"
               >
-                Report
+                {t('listingDetails.report', userLanguage)}
               </button>
             {:else}
               <a href="/login" class="btn btn--primary btn--sm">
-                Message
+                {t('common.message', userLanguage)}
               </a>
             {/if}
           </div>

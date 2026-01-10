@@ -3,6 +3,7 @@
   import { useSession } from "$lib/auth-client.js";
   import { goto } from "$app/navigation";
   import { APP_NAME } from "$lib/utils/constants.js";
+  import { t } from "$lib/utils/translations.js";
 
   const session = useSession();
   const user = $derived($session.data?.user);
@@ -215,7 +216,7 @@
               {stats.total || 0}
             </div>
             <div style="font-size: var(--text-sm); color: var(--color-gray-600); margin-top: var(--space-1);">
-              Total Trades
+              {t('trades.myTrades.totalTrades', userLanguage)}
             </div>
           </div>
         </div>
@@ -225,7 +226,7 @@
               {stats.active || 0}
             </div>
             <div style="font-size: var(--text-sm); color: var(--color-gray-600); margin-top: var(--space-1);">
-              Active
+              {t('trades.myTrades.active', userLanguage)}
             </div>
           </div>
         </div>
@@ -235,7 +236,7 @@
               {stats.completed || 0}
             </div>
             <div style="font-size: var(--text-sm); color: var(--color-gray-600); margin-top: var(--space-1);">
-              Completed
+              {t('trades.myTrades.completed', userLanguage)}
             </div>
           </div>
         </div>
@@ -245,7 +246,7 @@
               {stats.asBuyer || 0}
             </div>
             <div style="font-size: var(--text-sm); color: var(--color-gray-600); margin-top: var(--space-1);">
-              As Buyer
+              {t('trades.myTrades.asBuyer', userLanguage)}
             </div>
           </div>
         </div>
@@ -255,7 +256,7 @@
               {stats.asSeller || 0}
             </div>
             <div style="font-size: var(--text-sm); color: var(--color-gray-600); margin-top: var(--space-1);">
-              As Seller
+              {t('trades.myTrades.asSeller', userLanguage)}
             </div>
           </div>
         </div>
@@ -335,12 +336,12 @@
             <div style="padding: var(--space-8); text-align: center;">
               <p style="font-size: var(--text-lg); color: var(--color-gray-600); margin-bottom: var(--space-4);">
                 {searchQuery || statusFilter !== "all" || roleFilter !== "all"
-                  ? "No trades found matching your filters"
-                  : "You haven't made any trades yet"}
+                  ? t('trades.myTrades.noMatches', userLanguage)
+                  : t('trades.myTrades.noTrades', userLanguage)}
               </p>
               {#if !searchQuery && statusFilter === "all" && roleFilter === "all"}
                 <a href="/marketplace" class="btn btn--primary">
-                  Browse Marketplace
+                  {t('trades.myTrades.browseMarketplace', userLanguage)}
                 </a>
               {/if}
             </div>
@@ -349,28 +350,28 @@
               <thead>
                 <tr style="border-bottom: 2px solid var(--color-gray-200); background: var(--color-gray-50);">
                   <th style="padding: var(--space-3); text-align: left; font-size: var(--text-sm); font-weight: var(--font-semibold);">
-                    Trade #
+                    {t('trades.myTrades.tradeNumber', userLanguage)}
                   </th>
                   <th style="padding: var(--space-3); text-align: left; font-size: var(--text-sm); font-weight: var(--font-semibold);">
-                    Listing
+                    {t('trades.myTrades.listing', userLanguage)}
                   </th>
                   <th style="padding: var(--space-3); text-align: left; font-size: var(--text-sm); font-weight: var(--font-semibold);">
-                    Other Party
+                    {t('trades.myTrades.otherParty', userLanguage)}
                   </th>
                   <th style="padding: var(--space-3); text-align: left; font-size: var(--text-sm); font-weight: var(--font-semibold);">
-                    My Role
+                    {t('trades.myTrades.myRole', userLanguage)}
                   </th>
                   <th style="padding: var(--space-3); text-align: left; font-size: var(--text-sm); font-weight: var(--font-semibold);">
-                    Amount
+                    {t('trades.myTrades.amount', userLanguage)}
                   </th>
                   <th style="padding: var(--space-3); text-align: left; font-size: var(--text-sm); font-weight: var(--font-semibold);">
-                    Status
+                    {t('trades.myTrades.status', userLanguage)}
                   </th>
                   <th style="padding: var(--space-3); text-align: left; font-size: var(--text-sm); font-weight: var(--font-semibold);">
-                    Created
+                    {t('trades.myTrades.created', userLanguage)}
                   </th>
                   <th style="padding: var(--space-3); text-align: center; font-size: var(--text-sm); font-weight: var(--font-semibold);">
-                    Actions
+                    {t('trades.myTrades.actions', userLanguage)}
                   </th>
                 </tr>
               </thead>
@@ -410,7 +411,7 @@
                     </td>
                     <td style="padding: var(--space-3);">
                       <span class="badge badge--{trade.userRole === 'buyer' ? 'info' : 'secondary'}" style="font-size: var(--text-xs);">
-                        {trade.userRole === "buyer" ? "Buyer" : "Seller"}
+                        {trade.userRole === "buyer" ? t('trades.myTrades.buyer', userLanguage) : t('trades.myTrades.seller', userLanguage)}
                       </span>
                     </td>
                     <td style="padding: var(--space-3);">
@@ -437,7 +438,7 @@
                         onclick={() => goToTradeRoom(trade.id, trade.listingId, trade.conversationId)}
                         type="button"
                       >
-                        View
+                        {t('trades.myTrades.view', userLanguage)}
                       </button>
                     </td>
                   </tr>

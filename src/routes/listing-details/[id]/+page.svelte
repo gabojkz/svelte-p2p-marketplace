@@ -8,6 +8,7 @@
   import { page } from "$app/stores";
   import { getProductSchema } from "$lib/utils/seo.js";
   import { APP_NAME } from "$lib/utils/constants.js";
+  import { t } from "$lib/utils/translations.js";
 
   const session = useSession();
   const user = $derived($session.data?.user);
@@ -293,9 +294,9 @@
     <div class="container">
       {#if !listing}
         <div class="error-state">
-          <h1>Listing not found</h1>
+          <h1>{t('listingDetails.notFound', userLanguage)}</h1>
           <p>
-            The listing you're looking for doesn't exist or has been removed.
+            {t('listingDetails.notFoundMessage', userLanguage)}
           </p>
           <a href="/marketplace" class="btn btn--primary">Browse Marketplace</a>
         </div>
@@ -306,7 +307,7 @@
           style="margin-bottom: var(--space-6); font-size: var(--text-sm);"
         >
           <a href="/marketplace" style="color: var(--color-gray-500);"
-            >Marketplace</a
+            >{t('marketplace.title', userLanguage)}</a
           >
           {#each breadcrumbPath as crumb}
             <span
@@ -371,9 +372,9 @@
                     : ""}</span
                 >
                 <span>•</span>
-                <span>Listed {getTimeAgo(listing.createdAt)}</span>
+                <span>{t('listingDetails.listed', userLanguage)} {getTimeAgo(listing.createdAt)}</span>
                 <span>•</span>
-                <span>👁 {listing.viewCount || 0} views</span>
+                <span>👁 {listing.viewCount || 0} {t('listingDetails.views', userLanguage)}</span>
               </div>
             </div>
 
@@ -382,7 +383,7 @@
               <div class="card" style="margin-bottom: var(--space-6);">
                 <div class="card__body">
                   <h3 style="margin-bottom: var(--space-4);">
-                    Key Specifications
+                    {t('listingDetails.keySpecs', userLanguage)}
                   </h3>
                   <div
                     style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--space-4);"
@@ -399,7 +400,7 @@
                       <div
                         style="font-size: var(--text-sm); color: var(--color-gray-500);"
                       >
-                        Condition
+                        {t('listingDetails.condition', userLanguage)}
                       </div>
                       <div
                         style="font-weight: var(--font-semibold); font-size: var(--text-sm);"
@@ -420,7 +421,7 @@
                         <div
                           style="font-size: var(--text-sm); color: var(--color-gray-500);"
                         >
-                          Brand
+                          {t('listingDetails.brand', userLanguage)}
                         </div>
                         <div
                           style="font-weight: var(--font-semibold); font-size: var(--text-sm);"
@@ -437,7 +438,7 @@
             <!-- Description -->
             <div class="card" style="margin-bottom: var(--space-6);">
               <div class="card__body">
-                <h3 style="margin-bottom: var(--space-4);">Description</h3>
+                <h3 style="margin-bottom: var(--space-4);">{t('listingDetails.description', userLanguage)}</h3>
                 <div
                   style="color: var(--color-gray-700); line-height: var(--leading-relaxed); white-space: pre-wrap;"
                 >
@@ -451,7 +452,7 @@
               <div class="card" style="margin-bottom: var(--space-6);">
                 <div class="card__body">
                   <h3 style="margin-bottom: var(--space-4);">
-                    Delivery Options
+                    {t('listingDetails.deliveryOptions', userLanguage)}
                   </h3>
                   <div
                     style="display: flex; flex-direction: column; gap: var(--space-2);"
@@ -461,7 +462,7 @@
                         style="display: flex; align-items: center; gap: var(--space-2);"
                       >
                         <span>✓</span>
-                        <span>Collection available</span>
+                        <span>{t('listingDetails.collectionAvailable', userLanguage)}</span>
                       </div>
                     {/if}
                     {#if listing.deliveryLocal}
@@ -469,7 +470,7 @@
                         style="display: flex; align-items: center; gap: var(--space-2);"
                       >
                         <span>✓</span>
-                        <span>Local delivery available</span>
+                        <span>{t('listingDetails.localDeliveryAvailable', userLanguage)}</span>
                       </div>
                     {/if}
                     {#if listing.deliveryShipping}
@@ -477,7 +478,7 @@
                         style="display: flex; align-items: center; gap: var(--space-2);"
                       >
                         <span>✓</span>
-                        <span>Nationwide shipping available</span>
+                        <span>{t('listingDetails.shippingAvailable', userLanguage)}</span>
                       </div>
                     {/if}
                   </div>
@@ -488,7 +489,7 @@
             <!-- Location Map -->
             <div class="card">
               <div class="card__body">
-                <h3 style="margin-bottom: var(--space-4);">Location</h3>
+                <h3 style="margin-bottom: var(--space-4);">{t('listingDetails.location', userLanguage)}</h3>
                 <div style="margin-bottom: var(--space-3);">
                   <p
                     style="font-weight: var(--font-semibold); margin-bottom: var(--space-1);"
@@ -497,7 +498,7 @@
                     {listing.locationPostcode ? `, ${listing.locationPostcode}` : ""}
                   </p>
                   <p class="text-muted" style="font-size: var(--text-sm);">
-                    Approximate location shown on map
+                    {t('listingDetails.approximateLocation', userLanguage)}
                   </p>
                 </div>
                 <ListingMap
@@ -530,7 +531,7 @@
                         class="badge badge--primary"
                         style="margin-top: var(--space-2);"
                       >
-                        Price Negotiable
+                        {t('listingDetails.priceNegotiable', userLanguage)}
                       </span>
                     {/if}
                     {#if listing.priceType === "free"}
@@ -538,7 +539,7 @@
                         class="badge badge--success"
                         style="margin-top: var(--space-2);"
                       >
-                        Free
+                        {t('listingDetails.free', userLanguage)}
                       </span>
                     {/if}
                   </div>
@@ -552,14 +553,14 @@
                         onclick={startConversation}
                         type="button"
                       >
-                        💬 Message Seller
+                        💬 {t('listingDetails.messageSeller', userLanguage)}
                       </button>
                     {:else}
                       <a
                         href="/my-listings"
                         class="btn btn--primary btn--lg btn--full"
                       >
-                        ✏️ Edit Listing
+                        ✏️ {t('listingDetails.editListing', userLanguage)}
                       </a>
                     {/if}
                   </div>
@@ -572,7 +573,7 @@
                       <h4
                         style="font-size: var(--text-sm); font-weight: var(--font-semibold); color: var(--color-gray-700); margin-bottom: var(--space-3);"
                       >
-                        Contact Seller
+                        {t('listingDetails.contactSeller', userLanguage)}
                       </h4>
                       <div
                         style="display: flex; flex-direction: column; gap: var(--space-2);"
@@ -626,7 +627,7 @@
                           <p
                             style="font-size: var(--text-xs); color: var(--color-gray-500); text-align: center; padding: var(--space-2);"
                           >
-                            No contact information available
+                            {t('listingDetails.noContactInfo', userLanguage)}
                           </p>
                         {/if}
                       </div>
@@ -667,7 +668,7 @@
                               ⭐ {listing.seller.stats.avgRating.toFixed(1)}
                             </span>
                             <span class="text-muted">
-                              ({listing.seller.stats.reviewsCount} reviews)
+                              ({listing.seller.stats.reviewsCount} {t('listingDetails.reviews', userLanguage)})
                             </span>
                           {/if}
                         </div>
@@ -686,7 +687,7 @@
                         <div
                           style="font-size: var(--text-xs); color: var(--color-gray-500);"
                         >
-                          Listings
+                          {t('listingDetails.listings', userLanguage)}
                         </div>
                       </div>
                       <div>
@@ -698,7 +699,7 @@
                         <div
                           style="font-size: var(--text-xs); color: var(--color-gray-500);"
                         >
-                          Trades
+                          {t('listingDetails.trades', userLanguage)}
                         </div>
                       </div>
                       <div>
@@ -712,7 +713,7 @@
                         <div
                           style="font-size: var(--text-xs); color: var(--color-gray-500);"
                         >
-                          Rating
+                          {t('listingDetails.rating', userLanguage)}
                         </div>
                       </div>
                     </div>
@@ -725,26 +726,26 @@
                       >
                         <span>📍</span>
                         {listing.seller.locationCity ||
-                          "Location not specified"}
+                          t('listingDetails.locationNotSpecified', userLanguage)}
                       </div>
                       <div
                         style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);"
                       >
                         <span>📅</span>
-                        Member since {listing.seller.createdAt
+                        {t('listingDetails.memberSince', userLanguage)} {listing.seller.createdAt
                           ? new Date(
                               listing.seller.createdAt,
                             ).toLocaleDateString("en-GB", {
                               year: "numeric",
                               month: "short",
                             })
-                          : "Recently"}
+                          : t('listingDetails.recently', userLanguage)}
                       </div>
                       <div
                         style="display: flex; align-items: center; gap: var(--space-2);"
                       >
                         <span>🕐</span>
-                        Last active {listing.seller.lastLoginAt ? formatDate(listing.seller.lastLoginAt) : "Never"}
+                        {t('listingDetails.lastActive', userLanguage)} {listing.seller.lastLoginAt ? formatDate(listing.seller.lastLoginAt) : t('listingDetails.never', userLanguage)}
                       </div>
                     </div>
 
@@ -753,7 +754,7 @@
                       class="btn btn--ghost btn--full"
                       style="margin-top: var(--space-4);"
                     >
-                      View Profile →
+                      {t('listingDetails.viewProfile', userLanguage)} →
                     </a>
 
                     {#if user && !isSeller}
@@ -763,7 +764,7 @@
                         onclick={() => showReportModal = true}
                         type="button"
                       >
-                        🚨 Report Seller
+                        🚨 {t('listingDetails.reportSeller', userLanguage)}
                       </button>
                     {/if}
                   </div>
@@ -779,15 +780,15 @@
                   <h4
                     style="font-size: var(--text-sm); margin-bottom: var(--space-3);"
                   >
-                    🔒 Safety Tips
+                    🔒 {t('listingDetails.safetyTips', userLanguage)}
                   </h4>
                   <ul
                     style="font-size: var(--text-xs); color: var(--color-gray-600); display: flex; flex-direction: column; gap: var(--space-2);"
                   >
-                    <li>• Meet in a public place for viewings</li>
-                    <li>• Check item condition before buying</li>
-                    <li>• Never pay before seeing the item</li>
-                    <li>• Verify seller's identity and reviews</li>
+                    <li>• {t('listingDetails.safetyTip1', userLanguage)}</li>
+                    <li>• {t('listingDetails.safetyTip2', userLanguage)}</li>
+                    <li>• {t('listingDetails.safetyTip3', userLanguage)}</li>
+                    <li>• {t('listingDetails.safetyTip4', userLanguage)}</li>
                   </ul>
                 </div>
               </div>
@@ -801,12 +802,12 @@
             <div
               style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6); flex-wrap: wrap; gap: var(--space-4);"
             >
-              <h2>Similar Listings Near You</h2>
+              <h2>{t('listingDetails.similarListingsNearYou', userLanguage)}</h2>
               <a
                 href="/marketplace?category={listing.category?.slug || ''}"
                 class="btn btn--ghost"
               >
-                View All →
+                {t('listingDetails.viewAll', userLanguage)} →
               </a>
             </div>
 
@@ -859,7 +860,7 @@
     >
       <div class="modal-content" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.key === 'Escape' && e.stopPropagation()}>
         <div class="modal-header">
-          <h3>Report Seller</h3>
+          <h3>{t('listingDetails.reportSeller', userLanguage)}</h3>
           <button
             class="modal-close"
             onclick={closeReportModal}
@@ -871,20 +872,20 @@
         </div>
         <div class="modal-body">
           <p style="font-size: var(--text-sm); color: var(--color-gray-600); margin-bottom: var(--space-4);">
-            Reporting <strong>{listing?.seller?.firstName || listing?.seller?.username || 'this seller'}</strong> for inappropriate behavior or violation of platform rules related to this listing.
+            {t('listingDetails.reportingSeller', userLanguage, { seller: listing?.seller?.firstName || listing?.seller?.username || t('listingDetails.thisSeller', userLanguage) })}
           </p>
 
           <!-- Issue Type Selection -->
           <div style="margin-bottom: var(--space-4);">
             <label for="reportIssueType" class="form-label">
-              Reason for Report <span style="color: var(--color-error);">*</span>
+              {t('listingDetails.reasonForReport', userLanguage)} <span style="color: var(--color-error);">*</span>
             </label>
             <select
               id="reportIssueType"
               bind:value={reportIssueType}
               class="form-select"
             >
-              <option value="">Select a reason...</option>
+              <option value="">{t('listingDetails.selectReason', userLanguage)}</option>
               {#each reportIssueTypes as type}
                 <option value={type.value}>{type.label}</option>
               {/each}
@@ -899,43 +900,42 @@
           <!-- Title -->
           <div style="margin-bottom: var(--space-4);">
             <label for="reportTitle" class="form-label">
-              Title <span style="color: var(--color-error);">*</span>
+              {t('listingDetails.title', userLanguage)} <span style="color: var(--color-error);">*</span>
             </label>
             <input
               id="reportTitle"
               type="text"
               bind:value={reportTitle}
-              placeholder="Brief summary of the issue"
+              placeholder={t('listingDetails.briefSummary', userLanguage)}
               maxlength="200"
               class="form-input"
             />
             <p style="font-size: var(--text-xs); color: var(--color-gray-600); margin-top: var(--space-1);">
-              {reportTitle.length}/200 characters
+              {reportTitle.length}/200 {t('listingDetails.characters', userLanguage)}
             </p>
           </div>
 
           <!-- Description -->
           <div style="margin-bottom: var(--space-4);">
             <label for="reportDescription" class="form-label">
-              Detailed Description <span style="color: var(--color-error);">*</span>
+              {t('listingDetails.detailedDescription', userLanguage)} <span style="color: var(--color-error);">*</span>
             </label>
             <textarea
               id="reportDescription"
               bind:value={reportDescription}
-              placeholder="Please provide as much detail as possible about what happened. Include any relevant information that will help us investigate."
+              placeholder={t('listingDetails.descriptionPlaceholder', userLanguage)}
               rows="6"
               class="form-textarea"
             ></textarea>
             <p style="font-size: var(--text-xs); color: var(--color-gray-600); margin-top: var(--space-1);">
-              Minimum 20 characters. {reportDescription.length} characters entered.
+              {t('listingDetails.minimumCharacters', userLanguage, { count: reportDescription.length })}
             </p>
           </div>
 
           <!-- Warning Message -->
           <div style="padding: var(--space-3); background: var(--color-error-subtle); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
             <p style="font-size: var(--text-xs); color: var(--color-error); line-height: 1.5;">
-              <strong>⚠️ Important:</strong> False reports may result in action against your account. 
-              Please only report genuine violations of our platform rules.
+              <strong>⚠️ {t('listingDetails.important', userLanguage)}:</strong> {t('listingDetails.falseReportWarning', userLanguage)}
             </p>
           </div>
 
@@ -947,7 +947,7 @@
               onclick={closeReportModal}
               disabled={submittingReport}
             >
-              Cancel
+              {t('common.cancel', userLanguage)}
             </button>
             <button
               type="button"
@@ -955,7 +955,7 @@
               onclick={handleReportSubmit}
               disabled={submittingReport || !reportIssueType || !reportTitle.trim() || reportDescription.trim().length < 20}
             >
-              {submittingReport ? 'Submitting...' : 'Submit Report'}
+              {submittingReport ? t('listingDetails.submitting', userLanguage) : t('listingDetails.submitReport', userLanguage)}
             </button>
           </div>
         </div>
